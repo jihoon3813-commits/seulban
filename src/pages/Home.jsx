@@ -111,7 +111,7 @@ export default function Home({
 
       {/* 2. FLOATING QUICK BANNER (동물등록, 아직 안 하셨나요?) - Clean Rectangle */}
       <div className="max-w-6xl mx-auto px-4 sm:px-6 relative -mt-14 sm:-mt-16 z-20">
-        <div className="bg-[#F6F3EC] p-6 sm:p-8 shadow-[0_12px_30px_rgba(0,0,0,0.08)] border border-[#ECE5D8]">
+        <div className="bg-[#EEE6D9] p-6 sm:p-8 shadow-[0_12px_30px_rgba(0,0,0,0.08)] border border-[#DFD6C7]">
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-center">
             
             {/* Left text */}
