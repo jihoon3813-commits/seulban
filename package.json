@@ -5,11 +5,13 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
+    "dev:convex": "convex dev",
     "build": "vite build",
     "lint": "oxlint",
     "preview": "vite preview"
   },
   "dependencies": {
+    "convex": "^1.45.0",
     "react": "^19.2.8",
     "react-dom": "^19.2.8"
   },
