@@ -54,8 +54,8 @@ export default function Header({
       {/* Main Navigation Header */}
       <header className={`sticky top-0 z-40 transition-all duration-300 ${
         isScrolled 
-          ? 'glass-header shadow-[0_4px_20px_rgba(0,0,0,0.06)] py-3' 
-          : 'bg-white/95 border-b border-[#EFECE6] py-4'
+          ? 'bg-[#F4F0E8]/95 backdrop-blur-md shadow-[0_4px_20px_rgba(0,0,0,0.06)] py-3 border-b border-[#E5DFD1]' 
+          : 'bg-[#F4F0E8] border-b border-[#E5DFD1] py-4'
       }`}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between">
           
@@ -172,8 +172,8 @@ export default function Header({
 
         {/* Mobile Dropdown Menu */}
         {mobileMenuOpen && (
-          <div className="md:hidden border-t border-gray-100 bg-white px-5 py-4 space-y-3 shadow-xl">
-            <div className="grid grid-cols-2 gap-2 pb-3 border-b border-gray-100">
+          <div className="md:hidden border-t border-[#E5DFD1] bg-[#F4F0E8] px-5 py-4 space-y-3 shadow-xl">
+            <div className="grid grid-cols-2 gap-2 pb-3 border-b border-[#E5DFD1]">
               {navItems.map((item) => (
                 <button
                   key={item.id}
