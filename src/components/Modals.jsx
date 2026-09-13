@@ -720,83 +720,86 @@ export function MembershipModal({ isOpen, onClose, onLeadSubmit }) {
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fade-in">
-      <div className="bg-[#121615] text-white w-full max-w-2xl shadow-2xl border border-[#263733] overflow-hidden flex flex-col max-h-[90vh]">
+      <div className="bg-white text-[#1D2522] w-full max-w-2xl shadow-2xl border border-[#DDD5C7] overflow-hidden flex flex-col max-h-[90vh]">
         
         {/* Modal Top */}
-        <div className="px-6 py-5 border-b border-[#202E2A] flex items-center justify-between">
+        <div className="px-6 py-5 bg-[#144A42] text-white flex items-center justify-between">
           <div className="flex items-center gap-2.5">
-            <SparklesIcon className="w-5 h-5 text-[#C5A880]" />
+            <SparklesIcon className="w-5 h-5 text-[#E6CAA4]" />
             <span className="font-bold text-lg text-white">슬반생 프리미엄 멤버십 사전신청</span>
           </div>
-          <button onClick={onClose} className="p-1 text-gray-400 hover:text-white">
+          <button onClick={onClose} className="p-1 text-white/70 hover:text-white transition">
             <XIcon className="w-5 h-5" />
           </button>
         </div>
 
         {/* Modal Content */}
-        <div className="p-6 overflow-y-auto space-y-6 flex-1 text-sm text-[#CAD6D1]">
+        <div className="p-6 overflow-y-auto space-y-6 flex-1 text-sm text-[#2D3734] bg-white">
           
           {/* Header Copy */}
-          <div>
-            <span className="text-xs font-bold tracking-widest text-[#C5A880] uppercase">SEULBAN VIP CLUB</span>
-            <h3 className="text-2xl font-bold text-white mt-1 leading-snug">
-              반려생활의 부담은 가볍게,<br />혜택은 더 든든하게
+          <div className="bg-[#FAF8F5] p-5 border border-[#ECE5DA]">
+            <span className="text-xs font-bold tracking-widest text-[#9C7A4E] uppercase">SEULBAN VIP CLUB</span>
+            <h3 className="text-xl md:text-2xl font-bold text-[#144A42] mt-1 leading-snug">
+              반려생활의 부담은 가볍게,<br className="hidden sm:inline" />혜택은 더 든든하게
             </h3>
-            <p className="text-xs text-[#8E9F99] mt-2">
-              정기 론칭 전 사전신청자 분들께만 평생 월회비 40% 할인 혜택 및 웰컴 스타터 패키지를 선물합니다.
+            <p className="text-xs text-[#5E6D67] mt-2 leading-relaxed">
+              정식 론칭 전 사전신청자 분들께만 평생 월회비 40% 할인 혜택 및 웰컴 스타터 패키지를 선물합니다.
             </p>
           </div>
 
           {/* Perks Comparison Table */}
-          <div className="bg-[#192220] border border-[#2A3B37] overflow-hidden">
-            <div className="grid grid-cols-3 bg-[#202E2A] px-4 py-2.5 text-xs font-bold text-[#E5EFEA]">
+          <div className="bg-white border border-[#E3DDD1] overflow-hidden shadow-xs">
+            <div className="grid grid-cols-3 bg-[#F4F1EB] px-4 py-3 text-xs font-bold text-[#144A42] border-b border-[#E3DDD1]">
               <span>혜택 항목</span>
-              <span className="text-center text-gray-400">일반 회원</span>
-              <span className="text-center text-[#E8DEC8]">슬반생 멤버십</span>
+              <span className="text-center text-gray-500">일반 회원</span>
+              <span className="text-center text-[#9C7A4E] font-extrabold">★ 슬반생 멤버십</span>
             </div>
-            <div className="divide-y divide-[#263733] text-xs">
+            <div className="divide-y divide-[#EFECE6] text-xs">
               <div className="grid grid-cols-3 px-4 py-3 items-center">
-                <span className="font-medium text-gray-300">동물등록비</span>
-                <span className="text-center text-gray-400">대행 수수료만 지원</span>
-                <span className="text-center text-[#5EEAD4] font-bold">인식표 키트 전액 지원</span>
+                <span className="font-semibold text-gray-800">동물등록비</span>
+                <span className="text-center text-gray-500">대행 수수료만 지원</span>
+                <span className="text-center text-[#144A42] font-bold bg-[#EBF5F2] py-1">인식표 키트 전액 지원</span>
               </div>
               <div className="grid grid-cols-3 px-4 py-3 items-center">
-                <span className="font-medium text-gray-300">제휴 동물병원</span>
-                <span className="text-center text-gray-400">기본 상담</span>
-                <span className="text-center text-[#5EEAD4] font-bold">진료비 10~20% 즉시할인</span>
+                <span className="font-semibold text-gray-800">제휴 동물병원</span>
+                <span className="text-center text-gray-500">기본 상담</span>
+                <span className="text-center text-[#144A42] font-bold bg-[#EBF5F2] py-1">진료비 10~20% 즉시할인</span>
               </div>
               <div className="grid grid-cols-3 px-4 py-3 items-center">
-                <span className="font-medium text-gray-300">반려동물 숙소</span>
-                <span className="text-center text-gray-400">정가 이용</span>
-                <span className="text-center text-[#5EEAD4] font-bold">주중 최대 30% 우대</span>
+                <span className="font-semibold text-gray-800">반려동물 숙소</span>
+                <span className="text-center text-gray-500">정가 이용</span>
+                <span className="text-center text-[#144A42] font-bold bg-[#EBF5F2] py-1">주중 최대 30% 우대</span>
               </div>
               <div className="grid grid-cols-3 px-4 py-3 items-center">
-                <span className="font-medium text-gray-300">슬반생몰 쇼핑</span>
-                <span className="text-center text-gray-400">첫구매 3,000원</span>
-                <span className="text-center text-[#5EEAD4] font-bold">매월 50,000원 쿠폰팩</span>
+                <span className="font-semibold text-gray-800">슬반생몰 쇼핑</span>
+                <span className="text-center text-gray-500">첫구매 3,000원</span>
+                <span className="text-center text-[#144A42] font-bold bg-[#EBF5F2] py-1">매월 50,000원 쿠폰팩</span>
               </div>
             </div>
           </div>
 
           {/* Lead Submission Form */}
           {!submitted ? (
-            <form onSubmit={handleSubmit} className="bg-[#192220] p-5 border border-[#283A35] space-y-3.5">
-              <p className="font-bold text-white text-sm">사전 예약 신청서 (비용 발생 없음)</p>
+            <form onSubmit={handleSubmit} className="bg-[#FAF8F5] p-5 border border-[#ECE5DA] space-y-3.5 shadow-xs">
+              <div className="flex items-center justify-between border-b border-[#ECE5DA] pb-2.5">
+                <p className="font-bold text-[#144A42] text-sm">사전 예약 신청서</p>
+                <span className="text-xs font-semibold text-[#9C7A4E] bg-[#F2EDE2] px-2 py-0.5">비용 발생 없음</span>
+              </div>
               
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-xs font-semibold text-gray-300 mb-1">성함</label>
+                  <label className="block text-xs font-semibold text-gray-700 mb-1">성함 <span className="text-red-500">*</span></label>
                   <input 
                     type="text" 
                     value={leadForm.name} 
                     onChange={(e) => setLeadForm({...leadForm, name: e.target.value})}
                     placeholder="홍길동"
-                    className="w-full px-3.5 py-2.5 bg-[#111615] border border-[#30433E] text-white text-xs focus:border-[#C5A880] focus:outline-none"
+                    className="w-full px-3.5 py-2.5 bg-white border border-gray-300 text-gray-900 text-xs focus:border-[#144A42] focus:ring-1 focus:ring-[#144A42] focus:outline-none"
                     required
                   />
                 </div>
                 <div>
-                  <label className="block text-xs font-semibold text-gray-300 mb-1">연락처</label>
+                  <label className="block text-xs font-semibold text-gray-700 mb-1">연락처 <span className="text-red-500">*</span></label>
                   <input 
                     type="tel" 
                     inputMode="numeric"
@@ -805,7 +808,7 @@ export function MembershipModal({ isOpen, onClose, onLeadSubmit }) {
                     value={leadForm.phone} 
                     onChange={(e) => setLeadForm({...leadForm, phone: formatPhoneNumber(e.target.value)})}
                     placeholder="010-0000-0000"
-                    className="w-full px-3.5 py-2.5 bg-[#111615] border border-[#30433E] text-white text-xs focus:border-[#C5A880] focus:outline-none"
+                    className="w-full px-3.5 py-2.5 bg-white border border-gray-300 text-gray-900 text-xs focus:border-[#144A42] focus:ring-1 focus:ring-[#144A42] focus:outline-none"
                     required
                   />
                 </div>
@@ -813,21 +816,21 @@ export function MembershipModal({ isOpen, onClose, onLeadSubmit }) {
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-xs font-semibold text-gray-300 mb-1">반려견/묘 품종</label>
+                  <label className="block text-xs font-semibold text-gray-700 mb-1">반려견/묘 품종</label>
                   <input 
                     type="text" 
                     value={leadForm.petBreed} 
                     onChange={(e) => setLeadForm({...leadForm, petBreed: e.target.value})}
                     placeholder="예: 푸들, 말티즈, 코숏"
-                    className="w-full px-3.5 py-2.5 bg-[#111615] border border-[#30433E] text-white text-xs focus:border-[#C5A880] focus:outline-none"
+                    className="w-full px-3.5 py-2.5 bg-white border border-gray-300 text-gray-900 text-xs focus:border-[#144A42] focus:ring-1 focus:ring-[#144A42] focus:outline-none"
                   />
                 </div>
                 <div>
-                  <label className="block text-xs font-semibold text-gray-300 mb-1">가장 기대되는 혜택</label>
+                  <label className="block text-xs font-semibold text-gray-700 mb-1">가장 기대되는 혜택</label>
                   <select 
                     value={leadForm.interest} 
                     onChange={(e) => setLeadForm({...leadForm, interest: e.target.value})}
-                    className="w-full px-3.5 py-2.5 bg-[#111615] border border-[#30433E] text-white text-xs focus:border-[#C5A880] focus:outline-none"
+                    className="w-full px-3.5 py-2.5 bg-white border border-gray-300 text-gray-900 text-xs focus:border-[#144A42] focus:ring-1 focus:ring-[#144A42] focus:outline-none"
                   >
                     <option value="동물병원비 할인">동물병원비 할인</option>
                     <option value="반려동물 숙소 우대">반려동물 숙소 우대</option>
@@ -842,27 +845,28 @@ export function MembershipModal({ isOpen, onClose, onLeadSubmit }) {
                   type="checkbox" 
                   checked={leadForm.agree} 
                   onChange={(e) => setLeadForm({...leadForm, agree: e.target.checked})}
-                  className="text-[#C5A880]"
+                  className="accent-[#144A42] w-4 h-4"
                   required
                 />
-                <span className="text-[11px] text-gray-400">[필수] 사전 예약 혜택 안내 및 출시 알림 수신 동의</span>
+                <span className="text-xs text-gray-600">[필수] 사전 예약 혜택 안내 및 출시 알림 수신 동의</span>
               </label>
 
               <button
                 type="submit"
-                className="w-full py-3.5 bg-[#C5A880] hover:bg-[#B4956B] text-[#144A42] font-bold text-sm transition shadow-lg mt-2"
+                className="w-full py-3.5 bg-[#144A42] hover:bg-[#0E352F] text-white font-bold text-sm transition shadow-md mt-2 flex items-center justify-center gap-2"
               >
-                사전신청 완료하고 혜택 찜하기 →
+                <span>사전신청 완료하고 혜택 찜하기</span>
+                <span>→</span>
               </button>
             </form>
           ) : (
-            <div className="bg-[#192522] p-6 border border-[#2F4741] text-center space-y-2">
-              <div className="w-12 h-12 bg-[#203D37] text-[#5EEAD4] flex items-center justify-center mx-auto mb-2">
-                <CheckIcon className="w-6 h-6" />
+            <div className="bg-[#FAF8F5] p-8 border border-[#ECE5DA] text-center space-y-3">
+              <div className="w-14 h-14 bg-[#EAF5F2] text-[#144A42] flex items-center justify-center mx-auto rounded-full mb-1">
+                <CheckIcon className="w-8 h-8" />
               </div>
-              <h4 className="text-lg font-bold text-white">사전예약 신청이 접수되었습니다!</h4>
-              <p className="text-xs text-[#A0B4AD]">
-                정식 출시 시 가장 먼저 우대 혜택 알림톡을 발송해 드리겠습니다. 감사합니다.
+              <h4 className="text-xl font-bold text-[#144A42]">사전예약 신청이 완료되었습니다!</h4>
+              <p className="text-xs text-gray-600 max-w-md mx-auto leading-relaxed">
+                정식 출시 시 신청해주신 연락처로 가장 먼저 우대 혜택 및 알림톡을 발송해 드리겠습니다. 감사합니다.
               </p>
             </div>
           )}
