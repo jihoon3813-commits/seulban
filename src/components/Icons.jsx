@@ -31,11 +31,11 @@ export const PawOutlineIcon = ({ className = "w-7 h-7", ...props }) => (
   </svg>
 );
 
-export const LogoEmblem = ({ className = "w-8 h-8", imgClassName = "w-full h-full object-contain" }) => (
+export const LogoEmblem = ({ className = "h-8 sm:h-9 w-auto", imgClassName = "h-full w-auto object-contain" }) => (
   <div className={`flex items-center justify-center shrink-0 ${className}`}>
     <img 
-      src="https://res.cloudinary.com/lyjyvy54/image/upload/v1789272443/Group_4_3_jluqwi.png" 
-      alt="슬반생 심볼" 
+      src="https://res.cloudinary.com/lyjyvy54/image/upload/v1789272352/Group_2_5_l2foaz.png" 
+      alt="슬반생 로고" 
       className={imgClassName}
     />
   </div>
