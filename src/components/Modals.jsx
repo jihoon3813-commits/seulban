@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { 
   XIcon, CheckIcon, ShieldCheckIcon, PawIcon, ArrowRight, 
   PhoneIcon, MapPinIcon, HeartIcon, SparklesIcon, FileTextIcon, 
-  ClockIcon, StethoscopeIcon, UserIcon 
+  ClockIcon, StethoscopeIcon, UserIcon, CameraIcon 
 } from './Icons';
 import { BRAND_INFO, MEMBERSHIP_PERKS, REG_FAQS } from '../data/mockData';
 
@@ -31,6 +31,7 @@ export function ApplyRegistrationModal({ isOpen, onClose, onApplySuccess }) {
     address: '',
     postalCode: '',
     petName: '',
+    petPhoto: '',
     petType: 'dog',
     breed: '',
     gender: '남아',
@@ -57,6 +58,7 @@ export function ApplyRegistrationModal({ isOpen, onClose, onApplySuccess }) {
         address: '',
         postalCode: '',
         petName: '',
+        petPhoto: '',
         petType: 'dog',
         breed: '',
         gender: '남아',
@@ -72,6 +74,26 @@ export function ApplyRegistrationModal({ isOpen, onClose, onApplySuccess }) {
       setSubmittedNumber('');
     }
   }, [isOpen]);
+
+  // 반려동물 사진 업로드 핸들러
+  const handlePhotoUpload = (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (file.size > 5 * 1024 * 1024) {
+      alert('사진 용량은 5MB 이하만 등록 가능합니다.');
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      setFormData(prev => ({
+        ...prev,
+        petPhoto: event.target?.result
+      }));
+    };
+    reader.readAsDataURL(file);
+  };
 
   if (!isOpen) return null;
 
@@ -123,6 +145,7 @@ export function ApplyRegistrationModal({ isOpen, onClose, onApplySuccess }) {
       const newApp = {
         id: newRegId,
         petName: formData.petName || '우리 아이',
+        petPhoto: formData.petPhoto || '',
         ownerName: formData.ownerName,
         phone: formData.phone,
         type: formData.regType === 'external' ? '외장형 안심 목걸이 칩' : '내장형 마이크로칩 시술권',
@@ -142,7 +165,8 @@ export function ApplyRegistrationModal({ isOpen, onClose, onApplySuccess }) {
         birth: formData.petBirth || '2024-01-01',
         neutered: formData.neutered,
         regNumber: '발급 심사 진행 중',
-        status: '등록 신청 중'
+        status: '등록 신청 중',
+        photoUrl: formData.petPhoto || 'https://images.unsplash.com/photo-1543466835-00a7907e9de1?w=600&auto=format&fit=crop&q=80'
       });
       setStep(7);
       return;
@@ -316,6 +340,65 @@ export function ApplyRegistrationModal({ isOpen, onClose, onApplySuccess }) {
                 />
               </div>
 
+              {/* 반려동물 사진 등록 */}
+              <div>
+                <label className="block font-semibold mb-1.5 flex items-center justify-between">
+                  <span className="flex items-center gap-1.5 text-xs text-[#204941]">
+                    <CameraIcon className="w-4 h-4 text-[#144A42]" />
+                    <span>우리 아이 사진 등록 (동물등록증 카드 발급용)</span>
+                  </span>
+                  <span className="text-[10px] font-medium text-[#144A42] bg-[#EAF5F2] px-2 py-0.5 border border-[#CBE5DE]">
+                    선택 사항
+                  </span>
+                </label>
+                
+                <div className="flex items-center gap-4 p-3.5 bg-[#FAF8F5] border border-[#DDD5C7]">
+                  {/* Photo Preview Thumbnail */}
+                  <div className="w-20 h-20 bg-white border-2 border-[#144A42] flex items-center justify-center overflow-hidden shrink-0 relative shadow-inner">
+                    {formData.petPhoto ? (
+                      <img 
+                        src={formData.petPhoto} 
+                        alt="반려동물 사진 미리보기" 
+                        className="w-full h-full object-cover"
+                      />
+                    ) : (
+                      <div className="text-center p-2 text-gray-400 flex flex-col items-center">
+                        <PawIcon className="w-6 h-6 text-[#C5A880] mb-1" />
+                        <span className="text-[10px] text-gray-400 font-medium">사진 미등록</span>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Actions & Instructions */}
+                  <div className="flex-1 space-y-1.5 text-xs">
+                    <div className="flex items-center gap-2">
+                      <label className="px-3.5 py-1.5 bg-[#144A42] text-white font-bold cursor-pointer hover:bg-[#0D3832] transition flex items-center gap-1.5 shadow-sm text-xs">
+                        <CameraIcon className="w-3.5 h-3.5 text-[#C5A880]" />
+                        <span>{formData.petPhoto ? '사진 변경하기' : '사진 등록하기'}</span>
+                        <input 
+                          type="file" 
+                          accept="image/*" 
+                          onChange={handlePhotoUpload}
+                          className="hidden" 
+                        />
+                      </label>
+                      {formData.petPhoto && (
+                        <button
+                          type="button"
+                          onClick={() => setFormData(prev => ({ ...prev, petPhoto: '' }))}
+                          className="px-2.5 py-1.5 border border-gray-300 bg-white text-gray-600 hover:bg-gray-50 transition text-xs font-semibold"
+                        >
+                          삭제
+                        </button>
+                      )}
+                    </div>
+                    <p className="text-[11px] text-[#6B7973] leading-snug">
+                      모바일 갤러리 또는 카메라로 정면 얼굴 사진을 등록하시면 공식 동물등록증 카드에 인쇄됩니다.
+                    </p>
+                  </div>
+                </div>
+              </div>
+
               <div className="grid grid-cols-2 gap-3">
                 <div>
                   <label className="block font-semibold mb-1">축종</label>
@@ -483,9 +566,22 @@ export function ApplyRegistrationModal({ isOpen, onClose, onApplySuccess }) {
                   <span className="text-gray-500">보호자 / 연락처</span>
                   <span className="font-semibold">{formData.ownerName} ({formData.phone})</span>
                 </div>
-                <div className="flex justify-between py-1 border-b border-[#EFECE6]">
+                <div className="flex justify-between items-center py-1.5 border-b border-[#EFECE6]">
                   <span className="text-gray-500">반려동물</span>
-                  <span className="font-semibold">{formData.petName} ({formData.breed}, {formData.gender})</span>
+                  <div className="flex items-center gap-2">
+                    {formData.petPhoto ? (
+                      <img 
+                        src={formData.petPhoto} 
+                        alt="아이 사진" 
+                        className="w-7 h-7 object-cover border border-[#144A42] shrink-0"
+                      />
+                    ) : (
+                      <div className="w-7 h-7 bg-gray-100 border border-gray-200 flex items-center justify-center shrink-0">
+                        <PawIcon className="w-4 h-4 text-gray-400" />
+                      </div>
+                    )}
+                    <span className="font-semibold">{formData.petName} ({formData.breed || '믹스/기타'}, {formData.gender})</span>
+                  </div>
                 </div>
                 <div className="flex justify-between py-1 border-b border-[#EFECE6]">
                   <span className="text-gray-500">등록 방식</span>

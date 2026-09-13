@@ -615,10 +615,25 @@ export default function AdminPage({
                             <span className="text-[11px] text-gray-500 font-mono">{app.phone}</span>
                           </td>
                           <td className="p-3.5">
-                            <span className="font-bold text-emerald-800 block">{app.petName}</span>
-                            <span className="text-[11px] text-gray-500">
-                              {app.petBreed || '말티즈'} • {app.petGender || '남아'} ({app.petBirth || '2023.05.10'})
-                            </span>
+                            <div className="flex items-center gap-2.5">
+                              {app.petPhoto ? (
+                                <img 
+                                  src={app.petPhoto} 
+                                  alt={app.petName} 
+                                  className="w-9 h-9 object-cover rounded-sm border border-[#144A42] shrink-0"
+                                />
+                              ) : (
+                                <div className="w-9 h-9 bg-gray-100 border border-gray-200 rounded-sm flex items-center justify-center shrink-0">
+                                  <PawIcon className="w-4 h-4 text-gray-400" />
+                                </div>
+                              )}
+                              <div>
+                                <span className="font-bold text-emerald-800 block">{app.petName}</span>
+                                <span className="text-[11px] text-gray-500">
+                                  {app.petBreed || '말티즈'} • {app.petGender || '남아'} ({app.petBirth || '2023.05.10'})
+                                </span>
+                              </div>
+                            </div>
                           </td>
                           <td className="p-3.5 text-gray-700">
                             <span className="bg-gray-100 px-2 py-0.5 border border-gray-200">
