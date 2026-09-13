@@ -29,10 +29,36 @@ import {
   ADOPTION_LIST, 
   TRAVEL_LIST 
 } from './data/mockData';
-
 export default function App() {
+  // URL Parameter based initial tab check (?page=admin, #admin, /admin, etc.)
+  const getInitialTab = () => {
+    if (typeof window === 'undefined') return 'home';
+    const params = new URLSearchParams(window.location.search);
+    const page = params.get('page');
+    if (page) return page;
+
+    if (window.location.hash) {
+      const hash = window.location.hash.replace('#', '');
+      if (hash) return hash;
+    }
+
+    if (window.location.pathname.startsWith('/admin')) {
+      return 'admin';
+    }
+
+    return 'home';
+  };
+
   // Navigation
-  const [activeTab, setActiveTab] = useState('home');
+  const [activeTab, setActiveTab] = useState(getInitialTab);
+
+  useEffect(() => {
+    const handlePopState = () => {
+      setActiveTab(getInitialTab());
+    };
+    window.addEventListener('popstate', handlePopState);
+    return () => window.removeEventListener('popstate', handlePopState);
+  }, []);
 
   // User State
   const [user, setUser] = useState({
@@ -194,6 +220,25 @@ export default function App() {
   const handleNavigate = (tabId) => {
     setActiveTab(tabId);
     window.scrollTo({ top: 0, behavior: 'smooth' });
+    try {
+      const url = new URL(window.location.href);
+      if (tabId === 'home') {
+        url.searchParams.delete('page');
+        url.hash = '';
+      } else {
+        url.searchParams.set('page', tabId);
+      }
+      window.history.pushState({}, '', url.toString());
+    } catch (e) {
+      // ignore
+    }
+  };
+
+  // Open Admin in a new window/tab
+  const handleOpenAdmin = () => {
+    const adminUrl = new URL(window.location.href);
+    adminUrl.searchParams.set('page', 'admin');
+    window.open(adminUrl.toString(), '_blank');
   };
 
   // If in admin mode, show full-screen AdminPage
@@ -208,7 +253,10 @@ export default function App() {
         )}
 
         <AdminPage 
-          onNavigateHome={() => handleNavigate('home')}
+          onNavigateHome={() => {
+            handleNavigate('home');
+            window.location.href = window.location.origin + window.location.pathname;
+          }}
           applications={applications}
           onUpdateAppStatus={handleUpdateAppStatus}
           partners={partners}
@@ -248,7 +296,7 @@ export default function App() {
         activeTab={activeTab}
         onOpenApplyModal={() => setApplyModalOpen(true)}
         onOpenMembershipModal={() => setMembershipModalOpen(true)}
-        onOpenAdmin={() => handleNavigate('admin')}
+        onOpenAdmin={handleOpenAdmin}
       />
 
       {/* Main Page View */}
@@ -317,7 +365,7 @@ export default function App() {
 
       {/* Footer */}
       <Footer 
-        onOpenAdmin={() => handleNavigate('admin')}
+        onOpenAdmin={handleOpenAdmin}
         onNavigate={handleNavigate}
       />
 

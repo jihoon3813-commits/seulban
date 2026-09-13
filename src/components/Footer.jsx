@@ -57,14 +57,21 @@ export default function Footer({ onOpenAdmin, onNavigate }) {
             <a href="#privacy" className="hover:text-white underline">개인정보처리방침</a>
             <a href="#terms" className="hover:text-white">이용약관</a>
             <a href="#marketing" className="hover:text-white">마케팅 수신동의</a>
-            <span className="text-[#2C3833]">|</span>
-            <button
-              onClick={onOpenAdmin}
+            <a
+              href="?page=admin"
+              target="_blank"
+              rel="noopener noreferrer"
+              onClick={(e) => {
+                if (onOpenAdmin) {
+                  e.preventDefault();
+                  onOpenAdmin();
+                }
+              }}
               className="text-[11px] text-[#55645E] hover:text-[#A6B2AD] transition flex items-center gap-1"
-              title="관리자 모드"
+              title="관리자 콘솔 (새 창으로 열기)"
             >
               <span>관리자</span>
-            </button>
+            </a>
           </div>
           <div>
             © 2026 Seulban Life Inc. All rights reserved.

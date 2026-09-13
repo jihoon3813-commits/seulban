@@ -186,7 +186,18 @@ export default function AdminPage({
         {/* Top return to main button */}
         <div className="w-full max-w-md mb-4 flex justify-between items-center text-xs">
           <button
-            onClick={onNavigateHome}
+            onClick={() => {
+              try {
+                if (window.opener && !window.opener.closed) {
+                  window.opener.focus();
+                  window.close();
+                } else {
+                  onNavigateHome();
+                }
+              } catch (e) {
+                onNavigateHome();
+              }
+            }}
             className="flex items-center gap-1.5 text-[#144A42] hover:underline font-semibold"
           >
             <span>← 슬반생 서비스 홈으로 돌아가기</span>
@@ -304,11 +315,21 @@ export default function AdminPage({
               ))}
             </nav>
           </div>
-
           <div className="flex items-center gap-3 text-xs">
             <button
-              onClick={onNavigateHome}
+              onClick={() => {
+                try {
+                  if (window.opener && !window.opener.closed) {
+                    window.opener.focus();
+                  } else {
+                    window.open(window.location.origin + window.location.pathname, '_blank');
+                  }
+                } catch (e) {
+                  window.open(window.location.origin + window.location.pathname, '_blank');
+                }
+              }}
               className="px-3 py-1.5 bg-[#1F3D36] hover:bg-[#284E45] text-gray-200 border border-[#2D564D] flex items-center gap-1 transition"
+              title="사용자 화면 보기"
             >
               <ExternalLinkIcon className="w-3.5 h-3.5" />
               <span>사용자 화면 보기</span>
