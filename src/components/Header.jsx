@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { LogoEmblem, PawIcon, MenuIcon, XIcon, ExternalLinkIcon, UserIcon, ShieldCheckIcon } from './Icons';
+import { LogoEmblem, PawIcon, MenuIcon, XIcon, ExternalLinkIcon, UserIcon, ShieldCheckIcon, ShoppingBagIcon } from './Icons';
 import { BRAND_INFO } from '../data/mockData';
 
 export default function Header({ 
@@ -96,25 +96,26 @@ export default function Header({
           </nav>
 
           {/* Right Action Buttons */}
-          <div className="hidden md:flex items-center gap-3">
+          <div className="hidden md:flex items-center gap-2">
             {user ? (
               <div className="flex items-center gap-2">
                 <button
                   onClick={() => handleNavClick('mypage')}
-                  className="flex items-center gap-1.5 text-sm font-semibold text-[#144A42] bg-[#EBF4F2] px-3.5 py-1.5 hover:bg-[#DCEDE9] transition border border-[#C6E2DC]"
+                  className="flex items-center gap-1.5 text-xs sm:text-sm font-medium text-[#1F2C27] bg-transparent hover:bg-black/5 px-3 py-1.5 transition border border-[#D0C9BD]"
+                  title={`${user.name}님 마이페이지`}
                 >
-                  <UserIcon className="w-4 h-4 text-[#144A42]" />
-                  <span>{user.name}님 (MY)</span>
+                  <UserIcon className="w-3.5 h-3.5 text-[#1F2C27]" />
+                  <span>MY</span>
                 </button>
                 <button
                   onClick={onLogout}
-                  className="text-xs text-[#7B8580] hover:text-[#144A42] underline"
+                  className="text-xs text-[#7B8580] hover:text-[#144A42] underline ml-0.5"
                 >
                   로그아웃
                 </button>
               </div>
             ) : (
-              <div className="flex items-center text-sm font-medium text-[#4A5550] divide-x divide-gray-200">
+              <div className="flex items-center text-sm font-medium text-[#4A5550] divide-x divide-gray-300">
                 <button 
                   onClick={onOpenLogin}
                   className="px-2.5 py-1 hover:text-[#144A42] transition"
@@ -135,19 +136,19 @@ export default function Header({
               href="https://mall.seulbanlife.com" 
               target="_blank" 
               rel="noreferrer"
-              className="flex items-center gap-1 text-xs font-semibold px-3 py-1.5 border border-[#D5D0C3] text-[#4A5550] hover:border-[#144A42] hover:text-[#144A42] transition"
+              className="flex items-center gap-1.5 text-xs sm:text-sm font-medium px-3 py-1.5 border border-[#1F2C27] text-[#1F2C27] hover:bg-[#1F2C27] hover:text-white transition"
             >
+              <ShoppingBagIcon className="w-3.5 h-3.5" />
               <span>슬반생몰</span>
-              <ExternalLinkIcon className="w-3 h-3 text-[#8A948F]" />
             </a>
 
             {/* Admin Demo Switcher */}
             <button
               onClick={onOpenAdmin}
-              className="text-[11px] font-semibold text-white bg-[#144A42] hover:bg-[#0D3832] px-3 py-1.5 transition shadow-xs"
+              className="text-[11px] font-semibold text-[#144A42] border border-[#144A42] hover:bg-[#144A42] hover:text-white px-2.5 py-1.5 transition ml-1"
               title="기획서 13장 관리자 시스템 데모"
             >
-              관리자 모드
+              관리자
             </button>
           </div>
 

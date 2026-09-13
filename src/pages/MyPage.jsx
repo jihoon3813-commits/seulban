@@ -21,13 +21,13 @@ export default function MyPage({
       {/* My Profile Header */}
       <div className="bg-white p-6 sm:p-8 border border-[#EAE4D7] shadow-xs mb-10 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6">
         <div className="flex items-center gap-4">
-          <div className="w-16 h-16 bg-[#E5F5F0] text-[#144A42] flex items-center justify-center font-bold text-2xl border-2 border-[#144A42]">
+          <div className="w-16 h-16 bg-[#EBE4D8] text-[#144A42] flex items-center justify-center font-bold text-2xl border-2 border-[#144A42]">
             {user ? user.name.slice(0, 1) : '김'}
           </div>
           <div>
             <div className="flex items-center gap-2">
               <h1 className="text-xl sm:text-2xl font-bold text-[#142C27]">{user ? user.name : '김슬기'} 보호자님</h1>
-              <span className="text-xs font-bold text-[#144A42] bg-[#E1F3EE] px-2.5 py-0.5">
+              <span className="text-xs font-bold text-[#144A42] bg-[#E8E0D1] border border-[#D9D0C1] px-2.5 py-0.5">
                 슬반생 VIP 회원
               </span>
             </div>
