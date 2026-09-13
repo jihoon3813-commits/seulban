@@ -284,7 +284,7 @@ export default function AdminPage({
               onClick={() => setCurrentTab('dashboard')}
               title="슬반생 관리자 대시보드"
             >
-              <LogoEmblem className="h-9 sm:h-10 w-auto brightness-110 group-hover:scale-105 transition-transform" />
+              <LogoEmblem bright={true} className="h-9 sm:h-10 w-auto group-hover:scale-105 transition-transform" />
               <span className="text-[11px] px-2 py-0.5 bg-[#2A4D45] text-[#D4AF7A] font-bold tracking-wider border border-[#3E655B] rounded-sm uppercase">
                 ADMIN
               </span>
@@ -316,24 +316,16 @@ export default function AdminPage({
             </nav>
           </div>
           <div className="flex items-center gap-3 text-xs">
-            <button
-              onClick={() => {
-                try {
-                  if (window.opener && !window.opener.closed) {
-                    window.opener.focus();
-                  } else {
-                    window.open(window.location.origin + window.location.pathname, '_blank');
-                  }
-                } catch (e) {
-                  window.open(window.location.origin + window.location.pathname, '_blank');
-                }
-              }}
-              className="px-3 py-1.5 bg-[#1F3D36] hover:bg-[#284E45] text-gray-200 border border-[#2D564D] flex items-center gap-1 transition"
-              title="사용자 화면 보기"
+            <a
+              href="/"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="px-3 py-1.5 bg-[#1F3D36] hover:bg-[#284E45] text-gray-200 border border-[#2D564D] flex items-center gap-1.5 transition cursor-pointer"
+              title="사용자 화면 새 창으로 열기"
             >
               <ExternalLinkIcon className="w-3.5 h-3.5" />
               <span>사용자 화면 보기</span>
-            </button>
+            </a>
             <button
               onClick={handleLogout}
               className="px-3 py-1.5 bg-red-900/40 hover:bg-red-900/70 text-red-200 border border-red-700/50 transition font-semibold"
