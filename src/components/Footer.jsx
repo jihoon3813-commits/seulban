@@ -10,7 +10,7 @@ export default function Footer({ onOpenAdmin, onNavigate }) {
         {/* Top footer row: Logo and Quick links */}
         <div className="flex flex-col md:flex-row md:items-center justify-between pb-8 border-b border-[#1E2926] gap-6">
           <div className="flex items-center">
-            <LogoEmblem className="h-9 sm:h-10 w-auto brightness-110" />
+            <LogoEmblem className="h-11 sm:h-13 w-auto brightness-110" />
           </div>
 
           <div className="flex flex-wrap gap-x-6 gap-y-2 text-sm text-[#CAD4CF]">

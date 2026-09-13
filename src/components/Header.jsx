@@ -62,10 +62,10 @@ export default function Header({
           {/* Logo (Standalone Image) */}
           <button 
             onClick={() => handleNavClick('home')}
-            className="flex items-center text-left group py-1"
+            className="flex items-center text-left group py-0.5"
             aria-label="슬반생 홈"
           >
-            <LogoEmblem className="h-8 sm:h-9 w-auto group-hover:scale-105 transition-transform" />
+            <LogoEmblem className="h-11 sm:h-12 w-auto group-hover:scale-105 transition-transform" />
           </button>
 
           {/* Desktop Navigation Menus */}
