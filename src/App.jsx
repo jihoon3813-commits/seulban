@@ -124,7 +124,7 @@ export default function App() {
   };
 
   return (
-    <div className="min-h-screen flex flex-col bg-[#FBF9F5] text-[#1D2522]">
+    <div className="min-h-screen flex flex-col bg-[#F4F0E8] text-[#1D2522]">
       
       {/* Toast Notification */}
       {toast && (
