@@ -347,7 +347,7 @@ export default function Home({
               <div className="pt-3">
                 <button
                   onClick={onOpenMembershipModal}
-                  className="px-7 py-3.5 bg-[#EFECE6] text-[#144A42] font-bold text-xs sm:text-sm hover:bg-white transition shadow-md flex items-center gap-2"
+                  className="px-7 py-3.5 bg-[#EEE7DC] text-[#144A42] font-bold text-xs sm:text-sm hover:bg-white transition shadow-md flex items-center gap-2"
                 >
                   <span>멤버십 알아보기</span>
                   <ArrowRight className="w-4 h-4" />

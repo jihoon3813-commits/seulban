@@ -108,7 +108,7 @@ export const MEMBERSHIP_PERKS = [
     tag: "02 의료",
     title: "제휴 동물병원 10~20% 할인",
     desc: "전국 슬반생 인증 동물병원 건강검진, 백신, 일반진료 상시 할인",
-    bg: "bg-[#EFECE6] text-[#1D2522]",
+    bg: "bg-[#EEE7DC] text-[#1D2522]",
     tagBg: "bg-[#DFDACF] text-[#144A42]",
   },
   {
@@ -116,7 +116,7 @@ export const MEMBERSHIP_PERKS = [
     tag: "03 여행",
     title: "반려 숙소 회원 전용 우대",
     desc: "전국 인기 애견 펜션·리조트 주중 최대 30% 할인 및 웰컴 어메니티",
-    bg: "bg-[#EFECE6] text-[#1D2522]",
+    bg: "bg-[#EEE7DC] text-[#1D2522]",
     tagBg: "bg-[#DFDACF] text-[#144A42]",
   },
   {
