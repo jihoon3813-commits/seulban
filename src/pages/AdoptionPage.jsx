@@ -63,9 +63,11 @@ export default function AdoptionPage({ adoptionList = ADOPTION_LIST }) {
                 <div className="relative aspect-[16/10] sm:aspect-[4/3] bg-gray-100 overflow-hidden">
                   <img 
                     src={
-                      pet.id === 'a1' ? 'https://images.unsplash.com/photo-1543466835-00a7907e9de1?w=700&auto=format&fit=crop&q=80' :
-                      pet.id === 'a2' ? 'https://images.unsplash.com/photo-1587300003388-59208cc962cb?w=700&auto=format&fit=crop&q=80' :
-                      'https://images.unsplash.com/photo-1514888286974-6c03e2ca1dba?w=700&auto=format&fit=crop&q=80'
+                      pet.photoUrl || (
+                        pet.id === 'a1' ? 'https://images.unsplash.com/photo-1543466835-00a7907e9de1?w=700&auto=format&fit=crop&q=80' :
+                        pet.id === 'a2' ? 'https://images.unsplash.com/photo-1587300003388-59208cc962cb?w=700&auto=format&fit=crop&q=80' :
+                        'https://images.unsplash.com/photo-1514888286974-6c03e2ca1dba?w=700&auto=format&fit=crop&q=80'
+                      )
                     }
                     alt={pet.name}
                     className="w-full h-full object-cover transform hover:scale-105 transition-transform duration-500"

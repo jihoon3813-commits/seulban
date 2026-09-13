@@ -10,6 +10,7 @@ export default function AdminPage({
   onNavigateHome,
   applications,
   onUpdateAppStatus,
+  onUpdateApplication,
   onDeleteApplication,
   partners,
   onAddPartner,
@@ -17,9 +18,11 @@ export default function AdminPage({
   onDeletePartner,
   adoptionList,
   onAddAdoption,
+  onUpdateAdoption,
   onDeleteAdoption,
   travelList,
   onAddTravel,
+  onUpdateTravel,
   onDeleteTravel,
   popups = [],
   onAddPopup,
@@ -107,7 +110,13 @@ export default function AdminPage({
     reader.readAsDataURL(file);
   };
 
+  // Application edit modal state
+  const [isEditAppOpen, setIsEditAppOpen] = useState(false);
+  const [editingApp, setEditingApp] = useState(null);
+
+  // Adoption modal state with image upload
   const [isAddAdoptionOpen, setIsAddAdoptionOpen] = useState(false);
+  const [adoptionImageMode, setAdoptionImageMode] = useState('upload'); // 'upload' | 'url'
   const [newAdoption, setNewAdoption] = useState({
     name: '',
     breed: '믹스견',
@@ -117,9 +126,43 @@ export default function AdminPage({
     center: '한국 동물사랑나눔 보호센터',
     story: '애교가 많고 온순하여 가족을 기다리는 착한 친구입니다.',
     tags: '애교만점, 사회성 우수',
-    status: '입양 상담 가능'
+    status: '입양 상담 가능',
+    photoUrl: ''
   });
 
+  const handleAdoptionImageUpload = (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (file.size > 5 * 1024 * 1024) {
+      alert('이미지 파일 용량은 최대 5MB 이하만 업로드 가능합니다.');
+      return;
+    }
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      setNewAdoption(prev => ({ ...prev, photoUrl: event.target.result }));
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const [isEditAdoptionOpen, setIsEditAdoptionOpen] = useState(false);
+  const [editingAdoption, setEditingAdoption] = useState(null);
+  const [editAdoptionImageMode, setEditAdoptionImageMode] = useState('upload');
+
+  const handleEditAdoptionImageUpload = (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (file.size > 5 * 1024 * 1024) {
+      alert('이미지 파일 용량은 최대 5MB 이하만 업로드 가능합니다.');
+      return;
+    }
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      setEditingAdoption(prev => ({ ...prev, photoUrl: event.target.result }));
+    };
+    reader.readAsDataURL(file);
+  };
+
+  // Travel edit modal state
   const [isAddTravelOpen, setIsAddTravelOpen] = useState(false);
   const [travelImageMode, setTravelImageMode] = useState('upload'); // 'upload' | 'url'
   const [newTravel, setNewTravel] = useState({
@@ -144,6 +187,24 @@ export default function AdminPage({
     const reader = new FileReader();
     reader.onload = (event) => {
       setNewTravel(prev => ({ ...prev, imageUrl: event.target.result }));
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const [isEditTravelOpen, setIsEditTravelOpen] = useState(false);
+  const [editingTravel, setEditingTravel] = useState(null);
+  const [editTravelImageMode, setEditTravelImageMode] = useState('upload');
+
+  const handleEditTravelImageUpload = (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (file.size > 5 * 1024 * 1024) {
+      alert('이미지 파일 용량은 최대 5MB 이하만 업로드 가능합니다.');
+      return;
+    }
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      setEditingTravel(prev => ({ ...prev, imageUrl: event.target.result }));
     };
     reader.readAsDataURL(file);
   };
@@ -771,6 +832,21 @@ export default function AdminPage({
                                   <option key={s.code} value={s.code}>{s.label}</option>
                                 ))}
                               </select>
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  setEditingApp({
+                                    ...app,
+                                    address: app.address || '',
+                                    shippingAddress: app.shippingAddress || '',
+                                    trackingNumber: app.trackingNumber || '',
+                                  });
+                                  setIsEditAppOpen(true);
+                                }}
+                                className="text-xs text-[#144A42] font-bold hover:text-[#0D3832] underline px-1.5 py-1"
+                              >
+                                수정
+                              </button>
                               {onDeleteApplication && (
                                 <button
                                   type="button"
@@ -793,6 +869,195 @@ export default function AdminPage({
                 </table>
               </div>
             </div>
+
+            {/* Modal: 동물등록 신청서 상세 수정 */}
+            {isEditAppOpen && editingApp && (
+              <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fade-in">
+                <div className="bg-white w-full max-w-lg shadow-2xl p-6 border border-[#ECE5D8] max-h-[90vh] overflow-y-auto">
+                  <div className="flex justify-between items-center mb-5 pb-3 border-b border-gray-100">
+                    <div>
+                      <h3 className="font-bold text-base text-[#144A42]">동물등록 신청서 정보 수정</h3>
+                      <p className="text-[11px] text-gray-500 mt-0.5">접수번호: <span className="font-mono font-bold text-[#144A42]">{editingApp.id}</span></p>
+                    </div>
+                    <button onClick={() => { setIsEditAppOpen(false); setEditingApp(null); }} className="p-1 text-gray-400 hover:text-gray-700">
+                      <XIcon className="w-5 h-5" />
+                    </button>
+                  </div>
+
+                  <form onSubmit={(e) => {
+                    e.preventDefault();
+                    if (onUpdateApplication) {
+                      onUpdateApplication(editingApp);
+                    }
+                    setIsEditAppOpen(false);
+                    setEditingApp(null);
+                  }} className="space-y-3 text-xs">
+                    
+                    {/* 보호자 정보 */}
+                    <div className="p-3 bg-[#FAF8F5] border border-[#EAE3D6] space-y-2">
+                      <span className="font-bold text-[#144A42] block">보호자 정보</span>
+                      <div className="grid grid-cols-2 gap-3">
+                        <div>
+                          <label className="block font-medium text-gray-600 mb-1">보호자 이름</label>
+                          <input
+                            type="text"
+                            value={editingApp.ownerName || ''}
+                            onChange={(e) => setEditingApp({ ...editingApp, ownerName: e.target.value })}
+                            className="w-full px-3 py-2 border border-gray-300 focus:border-[#144A42] focus:outline-none"
+                            required
+                          />
+                        </div>
+                        <div>
+                          <label className="block font-medium text-gray-600 mb-1">연락처</label>
+                          <input
+                            type="text"
+                            value={editingApp.phone || ''}
+                            onChange={(e) => setEditingApp({ ...editingApp, phone: e.target.value })}
+                            className="w-full px-3 py-2 border border-gray-300 focus:border-[#144A42] focus:outline-none"
+                            required
+                          />
+                        </div>
+                      </div>
+                      <div>
+                        <label className="block font-medium text-gray-600 mb-1">등록 주소</label>
+                        <input
+                          type="text"
+                          value={editingApp.address || ''}
+                          onChange={(e) => setEditingApp({ ...editingApp, address: e.target.value })}
+                          className="w-full px-3 py-2 border border-gray-300 focus:border-[#144A42] focus:outline-none"
+                        />
+                      </div>
+                      <div>
+                        <label className="block font-medium text-gray-600 mb-1">인식표 배송 주소</label>
+                        <input
+                          type="text"
+                          value={editingApp.shippingAddress || ''}
+                          onChange={(e) => setEditingApp({ ...editingApp, shippingAddress: e.target.value })}
+                          className="w-full px-3 py-2 border border-gray-300 focus:border-[#144A42] focus:outline-none"
+                        />
+                      </div>
+                    </div>
+
+                    {/* 반려동물 정보 */}
+                    <div className="p-3 bg-[#FAF8F5] border border-[#EAE3D6] space-y-2">
+                      <span className="font-bold text-[#144A42] block">반려동물 정보</span>
+                      <div className="grid grid-cols-2 gap-3">
+                        <div>
+                          <label className="block font-medium text-gray-600 mb-1">반려동물 이름</label>
+                          <input
+                            type="text"
+                            value={editingApp.petName || ''}
+                            onChange={(e) => setEditingApp({ ...editingApp, petName: e.target.value })}
+                            className="w-full px-3 py-2 border border-gray-300 focus:border-[#144A42] focus:outline-none"
+                            required
+                          />
+                        </div>
+                        <div>
+                          <label className="block font-medium text-gray-600 mb-1">품종</label>
+                          <input
+                            type="text"
+                            value={editingApp.petBreed || ''}
+                            onChange={(e) => setEditingApp({ ...editingApp, petBreed: e.target.value })}
+                            className="w-full px-3 py-2 border border-gray-300 focus:border-[#144A42] focus:outline-none"
+                          />
+                        </div>
+                      </div>
+
+                      <div className="grid grid-cols-3 gap-2">
+                        <div>
+                          <label className="block font-medium text-gray-600 mb-1">성별</label>
+                          <input
+                            type="text"
+                            value={editingApp.petGender || ''}
+                            onChange={(e) => setEditingApp({ ...editingApp, petGender: e.target.value })}
+                            className="w-full px-2.5 py-2 border border-gray-300 focus:border-[#144A42] focus:outline-none"
+                          />
+                        </div>
+                        <div>
+                          <label className="block font-medium text-gray-600 mb-1">생년월일</label>
+                          <input
+                            type="text"
+                            value={editingApp.petBirth || ''}
+                            onChange={(e) => setEditingApp({ ...editingApp, petBirth: e.target.value })}
+                            className="w-full px-2.5 py-2 border border-gray-300 focus:border-[#144A42] focus:outline-none"
+                          />
+                        </div>
+                        <div>
+                          <label className="block font-medium text-gray-600 mb-1">체중</label>
+                          <input
+                            type="text"
+                            value={editingApp.petWeight || ''}
+                            onChange={(e) => setEditingApp({ ...editingApp, petWeight: e.target.value })}
+                            className="w-full px-2.5 py-2 border border-gray-300 focus:border-[#144A42] focus:outline-none"
+                          />
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* 등록 유형 및 배송 상태 */}
+                    <div className="p-3 bg-white border border-gray-200 space-y-2">
+                      <div className="grid grid-cols-2 gap-3">
+                        <div>
+                          <label className="block font-bold mb-1">등록 유형</label>
+                          <input
+                            type="text"
+                            value={editingApp.type || ''}
+                            onChange={(e) => setEditingApp({ ...editingApp, type: e.target.value })}
+                            className="w-full px-3 py-2 border border-gray-300 focus:border-[#144A42] focus:outline-none"
+                          />
+                        </div>
+                        <div>
+                          <label className="block font-bold mb-1">진행 상태</label>
+                          <select
+                            value={editingApp.statusCode}
+                            onChange={(e) => {
+                              const found = statuses.find(s => s.code === e.target.value);
+                              setEditingApp({
+                                ...editingApp,
+                                statusCode: e.target.value,
+                                statusLabel: found ? found.label : editingApp.statusLabel
+                              });
+                            }}
+                            className="w-full px-3 py-2 border border-gray-300 focus:border-[#144A42] focus:outline-none font-bold"
+                          >
+                            {statuses.map((s) => (
+                              <option key={s.code} value={s.code}>{s.label}</option>
+                            ))}
+                          </select>
+                        </div>
+                      </div>
+
+                      <div>
+                        <label className="block font-bold mb-1">운송장 번호 (택배)</label>
+                        <input
+                          type="text"
+                          value={editingApp.trackingNumber || ''}
+                          onChange={(e) => setEditingApp({ ...editingApp, trackingNumber: e.target.value })}
+                          placeholder="예: 우체국택배 6089-1234-5678"
+                          className="w-full px-3 py-2 border border-gray-300 focus:border-[#144A42] focus:outline-none"
+                        />
+                      </div>
+                    </div>
+
+                    <div className="pt-3 flex justify-end gap-2 border-t border-gray-100">
+                      <button
+                        type="button"
+                        onClick={() => { setIsEditAppOpen(false); setEditingApp(null); }}
+                        className="px-4 py-2 border border-gray-300 text-gray-600 hover:bg-gray-50 font-bold"
+                      >
+                        취소
+                      </button>
+                      <button
+                        type="submit"
+                        className="px-5 py-2 bg-[#144A42] text-white font-bold hover:bg-[#0D3832]"
+                      >
+                        신청 정보 저장
+                      </button>
+                    </div>
+                  </form>
+                </div>
+              </div>
+            )}
           </div>
         )}
 
@@ -1798,34 +2063,78 @@ export default function AdminPage({
             {/* Adoption Grid */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
               {adoptionList.map((animal) => (
-                <div key={animal.id} className="bg-white border border-[#E2DDD3] p-5 shadow-xs flex flex-col justify-between">
-                  <div className="space-y-2.5">
-                    <div className="flex justify-between items-start">
-                      <span className="text-[11px] font-bold text-emerald-800 bg-emerald-50 border border-emerald-200 px-2 py-0.5">
-                        {animal.status}
-                      </span>
-                      <button
-                        onClick={() => {
-                          if (confirm(`[${animal.name}] 정보를 정말 삭제하시겠습니까?`)) {
-                            onDeleteAdoption(animal.id);
-                          }
-                        }}
-                        className="text-xs text-red-500 hover:text-red-700 underline"
-                      >
-                        삭제
-                      </button>
-                    </div>
+                <div key={animal.id} className="bg-white border border-[#E2DDD3] overflow-hidden shadow-xs flex flex-col justify-between">
+                  <div>
+                    {animal.photoUrl ? (
+                      <div className="relative w-full h-44 bg-gray-100 overflow-hidden border-b border-[#ECE5D8]">
+                        <img
+                          src={animal.photoUrl}
+                          alt={animal.name}
+                          className="w-full h-full object-cover"
+                        />
+                        <span className="absolute top-2.5 left-2.5 text-[11px] font-bold text-white bg-black/60 backdrop-blur-xs px-2 py-0.5">
+                          {animal.status}
+                        </span>
+                      </div>
+                    ) : (
+                      <div className="p-3.5 bg-[#FAF8F5] border-b border-[#ECE5D8] flex items-center justify-between">
+                        <span className="text-[11px] font-bold text-emerald-800 bg-emerald-50 border border-emerald-200 px-2 py-0.5">
+                          {animal.status}
+                        </span>
+                      </div>
+                    )}
 
-                    <h4 className="font-bold text-lg text-[#142C27]">{animal.name}</h4>
-                    <p className="text-xs text-gray-500 font-semibold">{animal.breed} • {animal.gender}</p>
-                    <p className="text-xs text-gray-500">나이: {animal.age} | 몸무게: {animal.weight}</p>
+                    <div className="p-5 space-y-2.5">
+                      <div className="flex justify-between items-start">
+                        <div>
+                          <h4 className="font-bold text-lg text-[#142C27]">{animal.name}</h4>
+                          <p className="text-xs text-gray-500 font-semibold mt-0.5">{animal.breed} • {animal.gender}</p>
+                          <p className="text-xs text-gray-500">나이: {animal.age} | 몸무게: {animal.weight}</p>
+                        </div>
+                        <div className="flex items-center gap-2 shrink-0 ml-2">
+                          <button
+                            onClick={() => {
+                              setEditingAdoption({
+                                ...animal,
+                                photoUrl: animal.photoUrl || '',
+                                tags: Array.isArray(animal.tags) ? animal.tags.join(', ') : (animal.tags || '')
+                              });
+                              setEditAdoptionImageMode(animal.photoUrl && animal.photoUrl.startsWith('http') && !animal.photoUrl.startsWith('data:') ? 'url' : 'upload');
+                              setIsEditAdoptionOpen(true);
+                            }}
+                            className="text-xs text-[#144A42] font-semibold hover:text-[#0D3832] underline"
+                          >
+                            수정
+                          </button>
+                          <span className="text-gray-300">|</span>
+                          <button
+                            onClick={() => {
+                              if (confirm(`[${animal.name}] 정보를 정말 삭제하시겠습니까?`)) {
+                                onDeleteAdoption(animal._id || animal.id);
+                              }
+                            }}
+                            className="text-xs text-red-500 hover:text-red-700 underline"
+                          >
+                            삭제
+                          </button>
+                        </div>
+                      </div>
 
-                    <div className="p-3 bg-[#FAF8F5] border border-[#EAE3D6] text-xs text-[#52605A] leading-relaxed">
-                      {animal.story}
+                      <div className="p-3 bg-[#FAF8F5] border border-[#EAE3D6] text-xs text-[#52605A] leading-relaxed">
+                        {animal.story}
+                      </div>
+
+                      <div className="flex flex-wrap gap-1 pt-1">
+                        {(Array.isArray(animal.tags) ? animal.tags : (animal.tags ? animal.tags.split(',') : [])).map((t, idx) => (
+                          <span key={idx} className="text-[10px] bg-gray-100 text-gray-600 px-1.5 py-0.5 border border-gray-200">
+                            #{typeof t === 'string' ? t.trim() : t}
+                          </span>
+                        ))}
+                      </div>
                     </div>
                   </div>
 
-                  <div className="pt-3 border-t border-gray-100 text-[11px] text-gray-400 mt-4">
+                  <div className="px-5 py-3 border-t border-gray-100 text-[11px] text-gray-400 bg-[#FAF9F7]">
                     보호기관: {animal.center}
                   </div>
                 </div>
@@ -1945,6 +2254,70 @@ export default function AdminPage({
                       />
                     </div>
 
+                    {/* Adoption Photo Upload / URL Mode */}
+                    <div className="p-3 bg-[#FAF8F5] border border-[#EAE3D6] space-y-2">
+                      <div className="flex items-center justify-between">
+                        <label className="block font-bold text-[#144A42]">
+                          입양 동물 대표 사진 <span className="text-[11px] font-normal text-gray-500">(선택)</span>
+                        </label>
+                        <div className="flex gap-1 text-[11px]">
+                          <button
+                            type="button"
+                            onClick={() => setAdoptionImageMode('upload')}
+                            className={`px-2 py-0.5 font-bold transition ${adoptionImageMode === 'upload' ? 'bg-[#144A42] text-white' : 'bg-gray-200 text-gray-600'}`}
+                          >
+                            직접 업로드
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => setAdoptionImageMode('url')}
+                            className={`px-2 py-0.5 font-bold transition ${adoptionImageMode === 'url' ? 'bg-[#144A42] text-white' : 'bg-gray-200 text-gray-600'}`}
+                          >
+                            이미지 URL
+                          </button>
+                        </div>
+                      </div>
+
+                      {adoptionImageMode === 'upload' ? (
+                        <div>
+                          <input
+                            type="file"
+                            accept="image/*"
+                            onChange={handleAdoptionImageUpload}
+                            className="w-full text-xs text-gray-500 file:mr-3 file:py-1.5 file:px-3 file:border-0 file:text-xs file:font-semibold file:bg-[#144A42] file:text-white hover:file:bg-[#0D3832] cursor-pointer"
+                          />
+                          <p className="text-[10px] text-gray-400 mt-1">권장 비율: 4:3 또는 16:9 (최대 5MB, JPG/PNG/WebP)</p>
+                        </div>
+                      ) : (
+                        <div>
+                          <input
+                            type="url"
+                            value={newAdoption.photoUrl}
+                            onChange={(e) => setNewAdoption({ ...newAdoption, photoUrl: e.target.value })}
+                            placeholder="https://images.unsplash.com/... 또는 웹 이미지 URL"
+                            className="w-full px-3 py-2 border border-gray-300 focus:border-[#144A42] focus:outline-none text-xs"
+                          />
+                        </div>
+                      )}
+
+                      {newAdoption.photoUrl && (
+                        <div className="mt-2 relative w-full h-32 bg-gray-100 overflow-hidden border border-gray-200">
+                          <img
+                            src={newAdoption.photoUrl}
+                            alt="미리보기"
+                            className="w-full h-full object-cover"
+                          />
+                          <button
+                            type="button"
+                            onClick={() => setNewAdoption({ ...newAdoption, photoUrl: '' })}
+                            className="absolute top-1.5 right-1.5 bg-black/70 text-white text-[10px] px-1.5 py-0.5 hover:bg-black"
+                          >
+                            제거
+                          </button>
+                        </div>
+                      )}
+                    </div>
+
                     <div className="pt-3 flex justify-end gap-2">
                       <button
                         type="button"
@@ -1958,6 +2331,215 @@ export default function AdminPage({
                         className="px-5 py-2 bg-[#144A42] text-white font-bold hover:bg-[#0D3832]"
                       >
                         등록 완료
+                      </button>
+                    </div>
+                  </form>
+                </div>
+              </div>
+            )}
+
+            {/* Modal: 입양 동물 정보 수정 */}
+            {isEditAdoptionOpen && editingAdoption && (
+              <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fade-in">
+                <div className="bg-white w-full max-w-lg shadow-2xl p-6 border border-[#ECE5D8] max-h-[90vh] overflow-y-auto">
+                  <div className="flex justify-between items-center mb-5 pb-3 border-b border-gray-100">
+                    <div>
+                      <h3 className="font-bold text-base text-[#144A42]">입양 동물 정보 수정</h3>
+                      <p className="text-[11px] text-gray-500 mt-0.5">아이의 프로필 및 대표 사진을 수정합니다.</p>
+                    </div>
+                    <button onClick={() => { setIsEditAdoptionOpen(false); setEditingAdoption(null); }} className="p-1 text-gray-400 hover:text-gray-700">
+                      <XIcon className="w-5 h-5" />
+                    </button>
+                  </div>
+
+                  <form onSubmit={(e) => {
+                    e.preventDefault();
+                    if (onUpdateAdoption) {
+                      onUpdateAdoption({
+                        ...editingAdoption,
+                        tags: typeof editingAdoption.tags === 'string'
+                          ? editingAdoption.tags.split(',').map(t => t.trim())
+                          : editingAdoption.tags
+                      });
+                    }
+                    setIsEditAdoptionOpen(false);
+                    setEditingAdoption(null);
+                  }} className="space-y-3 text-xs">
+                    <div className="grid grid-cols-2 gap-3">
+                      <div>
+                        <label className="block font-bold mb-1">이름</label>
+                        <input
+                          type="text"
+                          value={editingAdoption.name || ''}
+                          onChange={(e) => setEditingAdoption({ ...editingAdoption, name: e.target.value })}
+                          className="w-full px-3 py-2 border border-gray-300 focus:border-[#144A42] focus:outline-none"
+                          required
+                        />
+                      </div>
+                      <div>
+                        <label className="block font-bold mb-1">품종</label>
+                        <input
+                          type="text"
+                          value={editingAdoption.breed || ''}
+                          onChange={(e) => setEditingAdoption({ ...editingAdoption, breed: e.target.value })}
+                          className="w-full px-3 py-2 border border-gray-300 focus:border-[#144A42] focus:outline-none"
+                          required
+                        />
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-3 gap-3">
+                      <div>
+                        <label className="block font-bold mb-1">성별</label>
+                        <input
+                          type="text"
+                          value={editingAdoption.gender || ''}
+                          onChange={(e) => setEditingAdoption({ ...editingAdoption, gender: e.target.value })}
+                          className="w-full px-3 py-2 border border-gray-300 focus:border-[#144A42] focus:outline-none"
+                        />
+                      </div>
+                      <div>
+                        <label className="block font-bold mb-1">나이</label>
+                        <input
+                          type="text"
+                          value={editingAdoption.age || ''}
+                          onChange={(e) => setEditingAdoption({ ...editingAdoption, age: e.target.value })}
+                          className="w-full px-3 py-2 border border-gray-300 focus:border-[#144A42] focus:outline-none"
+                        />
+                      </div>
+                      <div>
+                        <label className="block font-bold mb-1">체중</label>
+                        <input
+                          type="text"
+                          value={editingAdoption.weight || ''}
+                          onChange={(e) => setEditingAdoption({ ...editingAdoption, weight: e.target.value })}
+                          className="w-full px-3 py-2 border border-gray-300 focus:border-[#144A42] focus:outline-none"
+                        />
+                      </div>
+                    </div>
+
+                    {/* Edit Photo Upload / URL Mode */}
+                    <div className="p-3 bg-[#FAF8F5] border border-[#EAE3D6] space-y-2">
+                      <div className="flex items-center justify-between">
+                        <label className="block font-bold text-[#144A42]">
+                          대표 사진 수정 <span className="text-[11px] font-normal text-gray-500">(선택)</span>
+                        </label>
+                        <div className="flex gap-1 text-[11px]">
+                          <button
+                            type="button"
+                            onClick={() => setEditAdoptionImageMode('upload')}
+                            className={`px-2 py-0.5 font-bold transition ${editAdoptionImageMode === 'upload' ? 'bg-[#144A42] text-white' : 'bg-gray-200 text-gray-600'}`}
+                          >
+                            직접 업로드
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => setEditAdoptionImageMode('url')}
+                            className={`px-2 py-0.5 font-bold transition ${editAdoptionImageMode === 'url' ? 'bg-[#144A42] text-white' : 'bg-gray-200 text-gray-600'}`}
+                          >
+                            이미지 URL
+                          </button>
+                        </div>
+                      </div>
+
+                      {editAdoptionImageMode === 'upload' ? (
+                        <div>
+                          <input
+                            type="file"
+                            accept="image/*"
+                            onChange={handleEditAdoptionImageUpload}
+                            className="w-full text-xs text-gray-500 file:mr-3 file:py-1.5 file:px-3 file:border-0 file:text-xs file:font-semibold file:bg-[#144A42] file:text-white hover:file:bg-[#0D3832] cursor-pointer"
+                          />
+                        </div>
+                      ) : (
+                        <div>
+                          <input
+                            type="url"
+                            value={editingAdoption.photoUrl || ''}
+                            onChange={(e) => setEditingAdoption({ ...editingAdoption, photoUrl: e.target.value })}
+                            placeholder="https://images.unsplash.com/... 또는 웹 이미지 URL"
+                            className="w-full px-3 py-2 border border-gray-300 focus:border-[#144A42] focus:outline-none text-xs"
+                          />
+                        </div>
+                      )}
+
+                      {editingAdoption.photoUrl && (
+                        <div className="mt-2 relative w-full h-32 bg-gray-100 overflow-hidden border border-gray-200">
+                          <img
+                            src={editingAdoption.photoUrl}
+                            alt="미리보기"
+                            className="w-full h-full object-cover"
+                          />
+                          <button
+                            type="button"
+                            onClick={() => setEditingAdoption({ ...editingAdoption, photoUrl: '' })}
+                            className="absolute top-1.5 right-1.5 bg-black/70 text-white text-[10px] px-1.5 py-0.5 hover:bg-black"
+                          >
+                            제거
+                          </button>
+                        </div>
+                      )}
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-3">
+                      <div>
+                        <label className="block font-bold mb-1">보호 센터명</label>
+                        <input
+                          type="text"
+                          value={editingAdoption.center || ''}
+                          onChange={(e) => setEditingAdoption({ ...editingAdoption, center: e.target.value })}
+                          className="w-full px-3 py-2 border border-gray-300 focus:border-[#144A42] focus:outline-none"
+                          required
+                        />
+                      </div>
+                      <div>
+                        <label className="block font-bold mb-1">상태 (입양 단계)</label>
+                        <select
+                          value={editingAdoption.status || '입양 상담 가능'}
+                          onChange={(e) => setEditingAdoption({ ...editingAdoption, status: e.target.value })}
+                          className="w-full px-3 py-2 border border-gray-300 focus:border-[#144A42] focus:outline-none font-bold"
+                        >
+                          <option value="입양 상담 가능">입양 상담 가능</option>
+                          <option value="상담 진행 중">상담 진행 중</option>
+                          <option value="입양 완료">입양 완료</option>
+                        </select>
+                      </div>
+                    </div>
+
+                    <div>
+                      <label className="block font-bold mb-1">아이 소개 및 스토리</label>
+                      <textarea
+                        value={editingAdoption.story || ''}
+                        onChange={(e) => setEditingAdoption({ ...editingAdoption, story: e.target.value })}
+                        rows="2"
+                        className="w-full px-3 py-2 border border-gray-300 focus:border-[#144A42] focus:outline-none"
+                        required
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block font-bold mb-1">태그 (쉼표로 구분)</label>
+                      <input
+                        type="text"
+                        value={editingAdoption.tags || ''}
+                        onChange={(e) => setEditingAdoption({ ...editingAdoption, tags: e.target.value })}
+                        className="w-full px-3 py-2 border border-gray-300 focus:border-[#144A42] focus:outline-none"
+                      />
+                    </div>
+
+                    <div className="pt-3 flex justify-end gap-2 border-t border-gray-100">
+                      <button
+                        type="button"
+                        onClick={() => { setIsEditAdoptionOpen(false); setEditingAdoption(null); }}
+                        className="px-4 py-2 border border-gray-300 text-gray-600 hover:bg-gray-50"
+                      >
+                        취소
+                      </button>
+                      <button
+                        type="submit"
+                        className="px-5 py-2 bg-[#144A42] text-white font-bold hover:bg-[#0D3832]"
+                      >
+                        수정사항 저장
                       </button>
                     </div>
                   </form>
@@ -2027,16 +2609,33 @@ export default function AdminPage({
                           <h4 className="font-bold text-base text-[#142C27]">{item.name}</h4>
                           <p className="text-xs text-gray-500 mt-0.5">{item.location}</p>
                         </div>
-                        <button
-                          onClick={() => {
-                            if (confirm(`[${item.name}] 숙소를 정말 삭제하시겠습니까?`)) {
-                              onDeleteTravel(item.id);
-                            }
-                          }}
-                          className="text-xs text-red-500 hover:text-red-700 underline shrink-0 ml-2"
-                        >
-                          삭제
-                        </button>
+                        <div className="flex items-center gap-2 shrink-0 ml-2">
+                          <button
+                            onClick={() => {
+                              setEditingTravel({
+                                ...item,
+                                imageUrl: item.imageUrl || '',
+                                features: Array.isArray(item.features) ? item.features.join(', ') : (item.features || '')
+                              });
+                              setEditTravelImageMode(item.imageUrl && item.imageUrl.startsWith('http') && !item.imageUrl.startsWith('data:') ? 'url' : 'upload');
+                              setIsEditTravelOpen(true);
+                            }}
+                            className="text-xs text-[#144A42] font-semibold hover:text-[#0D3832] underline"
+                          >
+                            수정
+                          </button>
+                          <span className="text-gray-300">|</span>
+                          <button
+                            onClick={() => {
+                              if (confirm(`[${item.name}] 숙소를 정말 삭제하시겠습니까?`)) {
+                                onDeleteTravel(item._id || item.id);
+                              }
+                            }}
+                            className="text-xs text-red-500 hover:text-red-700 underline"
+                          >
+                            삭제
+                          </button>
+                        </div>
                       </div>
 
                       <p className="text-xs text-gray-500 font-semibold">{item.weightLimit}</p>
@@ -2249,6 +2848,206 @@ export default function AdminPage({
                         className="px-5 py-2 bg-[#144A42] text-white font-bold hover:bg-[#0D3832]"
                       >
                         숙소 등록 완료
+                      </button>
+                    </div>
+                  </form>
+                </div>
+              </div>
+            )}
+
+            {/* Modal: 반려여행 숙소 정보 수정 */}
+            {isEditTravelOpen && editingTravel && (
+              <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fade-in">
+                <div className="bg-white w-full max-w-lg shadow-2xl p-6 border border-[#ECE5D8] max-h-[90vh] overflow-y-auto">
+                  <div className="flex justify-between items-center mb-5 pb-3 border-b border-gray-100">
+                    <div>
+                      <h3 className="font-bold text-base text-[#144A42]">동반 여행지 숙소 정보 수정</h3>
+                      <p className="text-[11px] text-gray-500 mt-0.5">숙소의 상세 정보 및 대표 사진을 수정합니다.</p>
+                    </div>
+                    <button onClick={() => { setIsEditTravelOpen(false); setEditingTravel(null); }} className="p-1 text-gray-400 hover:text-gray-700">
+                      <XIcon className="w-5 h-5" />
+                    </button>
+                  </div>
+
+                  <form onSubmit={(e) => {
+                    e.preventDefault();
+                    if (onUpdateTravel) {
+                      onUpdateTravel({
+                        ...editingTravel,
+                        features: typeof editingTravel.features === 'string'
+                          ? editingTravel.features.split(',').map(f => f.trim())
+                          : editingTravel.features
+                      });
+                    }
+                    setIsEditTravelOpen(false);
+                    setEditingTravel(null);
+                  }} className="space-y-3 text-xs">
+                    <div>
+                      <label className="block font-bold mb-1">숙소명</label>
+                      <input
+                        type="text"
+                        value={editingTravel.name || ''}
+                        onChange={(e) => setEditingTravel({...editingTravel, name: e.target.value})}
+                        className="w-full px-3 py-2 border border-gray-300 focus:border-[#144A42] focus:outline-none"
+                        required
+                      />
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-3">
+                      <div>
+                        <label className="block font-bold mb-1">숙소 유형</label>
+                        <select
+                          value={editingTravel.type || '리조트'}
+                          onChange={(e) => setEditingTravel({...editingTravel, type: e.target.value})}
+                          className="w-full px-3 py-2 border border-gray-300 focus:border-[#144A42] focus:outline-none"
+                        >
+                          <option value="리조트">리조트</option>
+                          <option value="독채펜션">독채펜션</option>
+                          <option value="글램핑">글램핑</option>
+                          <option value="호텔">호텔</option>
+                        </select>
+                      </div>
+                      <div>
+                        <label className="block font-bold mb-1">위치 (지역)</label>
+                        <input
+                          type="text"
+                          value={editingTravel.location || ''}
+                          onChange={(e) => setEditingTravel({...editingTravel, location: e.target.value})}
+                          className="w-full px-3 py-2 border border-gray-300 focus:border-[#144A42] focus:outline-none"
+                          required
+                        />
+                      </div>
+                    </div>
+
+                    {/* Travel Image Edit Mode */}
+                    <div className="p-3 bg-[#FAF8F5] border border-[#EAE3D6] space-y-2">
+                      <div className="flex items-center justify-between">
+                        <label className="block font-bold text-[#144A42]">
+                          숙소 대표 사진 <span className="text-[11px] font-normal text-gray-500">(선택)</span>
+                        </label>
+                        <div className="flex gap-1 text-[11px]">
+                          <button
+                            type="button"
+                            onClick={() => setEditTravelImageMode('upload')}
+                            className={`px-2 py-0.5 font-bold transition ${editTravelImageMode === 'upload' ? 'bg-[#144A42] text-white' : 'bg-gray-200 text-gray-600'}`}
+                          >
+                            직접 업로드
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => setEditTravelImageMode('url')}
+                            className={`px-2 py-0.5 font-bold transition ${editTravelImageMode === 'url' ? 'bg-[#144A42] text-white' : 'bg-gray-200 text-gray-600'}`}
+                          >
+                            이미지 URL 입력
+                          </button>
+                        </div>
+                      </div>
+
+                      {editTravelImageMode === 'upload' ? (
+                        <div>
+                          <input
+                            type="file"
+                            accept="image/*"
+                            onChange={handleEditTravelImageUpload}
+                            className="w-full text-xs text-gray-500 file:mr-3 file:py-1.5 file:px-3 file:border-0 file:text-xs file:font-semibold file:bg-[#144A42] file:text-white hover:file:bg-[#0D3832] cursor-pointer"
+                          />
+                        </div>
+                      ) : (
+                        <div>
+                          <input
+                            type="url"
+                            value={editingTravel.imageUrl || ''}
+                            onChange={(e) => setEditingTravel({ ...editingTravel, imageUrl: e.target.value })}
+                            placeholder="https://images.unsplash.com/... 또는 웹 이미지 URL"
+                            className="w-full px-3 py-2 border border-gray-300 focus:border-[#144A42] focus:outline-none text-xs"
+                          />
+                        </div>
+                      )}
+
+                      {editingTravel.imageUrl && (
+                        <div className="mt-2 relative w-full h-32 bg-gray-100 overflow-hidden border border-gray-200">
+                          <img
+                            src={editingTravel.imageUrl}
+                            alt="숙소 미리보기"
+                            className="w-full h-full object-cover"
+                          />
+                          <button
+                            type="button"
+                            onClick={() => setEditingTravel({ ...editingTravel, imageUrl: '' })}
+                            className="absolute top-1.5 right-1.5 bg-black/70 text-white text-[10px] px-1.5 py-0.5 hover:bg-black"
+                          >
+                            제거
+                          </button>
+                        </div>
+                      )}
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-3">
+                      <div>
+                        <label className="block font-bold mb-1">동반 가능 견종/체중</label>
+                        <input
+                          type="text"
+                          value={editingTravel.weightLimit || ''}
+                          onChange={(e) => setEditingTravel({...editingTravel, weightLimit: e.target.value})}
+                          className="w-full px-3 py-2 border border-gray-300 focus:border-[#144A42] focus:outline-none"
+                        />
+                      </div>
+                      <div>
+                        <label className="block font-bold mb-1">기본 가격</label>
+                        <input
+                          type="text"
+                          value={editingTravel.price || ''}
+                          onChange={(e) => setEditingTravel({...editingTravel, price: e.target.value})}
+                          className="w-full px-3 py-2 border border-gray-300 focus:border-[#144A42] focus:outline-none"
+                        />
+                      </div>
+                    </div>
+
+                    <div>
+                      <label className="block font-bold mb-1">슬반생 회원 혜택</label>
+                      <input
+                        type="text"
+                        value={editingTravel.memberBenefit || ''}
+                        onChange={(e) => setEditingTravel({...editingTravel, memberBenefit: e.target.value})}
+                        className="w-full px-3 py-2 border border-gray-300 focus:border-[#144A42] focus:outline-none"
+                        required
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block font-bold mb-1">주요 시설 (쉼표로 구분)</label>
+                      <input
+                        type="text"
+                        value={editingTravel.features || ''}
+                        onChange={(e) => setEditingTravel({...editingTravel, features: e.target.value})}
+                        className="w-full px-3 py-2 border border-gray-300 focus:border-[#144A42] focus:outline-none"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block font-bold mb-1">예약 전화번호</label>
+                      <input
+                        type="text"
+                        value={editingTravel.phone || ''}
+                        onChange={(e) => setEditingTravel({...editingTravel, phone: e.target.value})}
+                        className="w-full px-3 py-2 border border-gray-300 focus:border-[#144A42] focus:outline-none"
+                        required
+                      />
+                    </div>
+
+                    <div className="pt-3 flex justify-end gap-2 border-t border-gray-100">
+                      <button
+                        type="button"
+                        onClick={() => { setIsEditTravelOpen(false); setEditingTravel(null); }}
+                        className="px-4 py-2 border border-gray-300 text-gray-600 hover:bg-gray-50"
+                      >
+                        취소
+                      </button>
+                      <button
+                        type="submit"
+                        className="px-5 py-2 bg-[#144A42] text-white font-bold hover:bg-[#0D3832]"
+                      >
+                        수정사항 저장
                       </button>
                     </div>
                   </form>

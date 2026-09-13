@@ -8,6 +8,7 @@
  * @module
  */
 
+import type * as adoptions from "../adoptions.js";
 import type * as applications from "../applications.js";
 import type * as partners from "../partners.js";
 import type * as pets from "../pets.js";
@@ -15,6 +16,7 @@ import type * as popups from "../popups.js";
 import type * as seed from "../seed.js";
 import type * as settings from "../settings.js";
 import type * as travels from "../travels.js";
+import type * as users from "../users.js";
 
 import type {
   ApiFromModules,
@@ -23,6 +25,7 @@ import type {
 } from "convex/server";
 
 declare const fullApi: ApiFromModules<{
+  adoptions: typeof adoptions;
   applications: typeof applications;
   partners: typeof partners;
   pets: typeof pets;
@@ -30,6 +33,7 @@ declare const fullApi: ApiFromModules<{
   seed: typeof seed;
   settings: typeof settings;
   travels: typeof travels;
+  users: typeof users;
 }>;
 
 /**

@@ -5,6 +5,7 @@ import { BRAND_INFO } from '../data/mockData';
 export default function Header({ 
   user, 
   onOpenLogin, 
+  onOpenSignUp,
   onLogout, 
   onNavigate, 
   activeTab, 
@@ -101,19 +102,20 @@ export default function Header({
                 title={`${user.name}님 마이페이지`}
               >
                 <UserIcon className="w-3.5 h-3.5 text-[#1F2C27]" />
-                <span>MY</span>
+                <span className="font-bold">{user.name}님</span>
+                <span className="text-[#144A42] text-[11px] font-bold bg-[#E8E0D1] px-1.5 py-0.2">MY</span>
               </button>
             ) : (
               <div className="flex items-center text-sm font-medium text-[#4A5550] divide-x divide-gray-300">
                 <button 
                   onClick={onOpenLogin}
-                  className="px-2.5 py-1 hover:text-[#144A42] transition"
+                  className="px-2.5 py-1 hover:text-[#144A42] transition text-xs font-semibold"
                 >
                   로그인
                 </button>
                 <button 
-                  onClick={onOpenLogin}
-                  className="px-2.5 py-1 hover:text-[#144A42] transition"
+                  onClick={onOpenSignUp || onOpenLogin}
+                  className="px-2.5 py-1 text-[#144A42] hover:underline transition text-xs font-bold"
                 >
                   회원가입
                 </button>
@@ -175,12 +177,21 @@ export default function Header({
                   <button onClick={onLogout} className="text-xs text-gray-500 underline">로그아웃</button>
                 </div>
               ) : (
-                <button 
-                  onClick={() => { setMobileMenuOpen(false); onOpenLogin(); }}
-                  className="text-sm font-bold text-[#144A42]"
-                >
-                  로그인 / 회원가입
-                </button>
+                <div className="flex items-center gap-3">
+                  <button 
+                    onClick={() => { setMobileMenuOpen(false); onOpenLogin(); }}
+                    className="text-xs font-semibold text-[#144A42]"
+                  >
+                    로그인
+                  </button>
+                  <span className="text-gray-300">|</span>
+                  <button 
+                    onClick={() => { setMobileMenuOpen(false); (onOpenSignUp || onOpenLogin)(); }}
+                    className="text-xs font-bold text-[#144A42] underline"
+                  >
+                    회원가입
+                  </button>
+                </div>
               )}
 
               <button

@@ -12,9 +12,49 @@ export default function MyPage({
   bookmarks, 
   onOpenApplyModal, 
   onOpenPartnerModal,
+  onOpenLogin,
+  onOpenSignUp,
   onLogout
 }) {
   const bookmarkedItems = PARTNER_LIST.filter(p => bookmarks.includes(p.id));
+
+  // 비로그인 상태 가드: 로그인/회원가입 안내 카드 렌더링
+  if (!user) {
+    return (
+      <div className="py-12 sm:py-20 max-w-xl mx-auto px-4 sm:px-6 text-center animate-fade-in">
+        <div className="bg-white p-8 sm:p-10 border border-[#ECE5D8] shadow-lg space-y-5">
+          <div className="w-16 h-16 bg-[#F4F0E8] text-[#144A42] flex items-center justify-center mx-auto border-2 border-[#144A42]">
+            <UserIcon className="w-8 h-8" />
+          </div>
+          <div>
+            <span className="text-[11px] font-bold text-[#B48B55] tracking-widest uppercase">MEMBER ONLY</span>
+            <h1 className="text-xl sm:text-2xl font-bold text-[#142C27] mt-1">
+              로그인이 필요한 서비스입니다
+            </h1>
+            <p className="text-xs text-[#62706A] mt-2 leading-relaxed">
+              슬반생에 로그인하시거나 1초 간편 회원가입을 완료하시면<br />
+              등록된 내 반려동물 프로필, 실시간 동물등록 진행 현황, 찜한 제휴처를 한눈에 확인하실 수 있습니다.
+            </p>
+          </div>
+
+          <div className="pt-2 flex flex-col sm:flex-row gap-2.5 justify-center">
+            <button
+              onClick={onOpenLogin}
+              className="w-full sm:w-auto px-6 py-3 bg-[#144A42] text-white text-xs font-bold hover:bg-[#0D3832] transition shadow-xs"
+            >
+              로그인하기
+            </button>
+            <button
+              onClick={onOpenSignUp || onOpenLogin}
+              className="w-full sm:w-auto px-6 py-3 bg-[#FAF8F5] border border-[#DDD5C7] text-[#144A42] text-xs font-bold hover:bg-[#F3EFE6] transition shadow-xs"
+            >
+              간편 회원가입하기
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="py-6 sm:py-16 max-w-5xl mx-auto px-4 sm:px-6">

@@ -69,18 +69,22 @@ export default function App() {
     window.scrollTo(0, 0);
   }, [activeTab]);
 
-  // User State
-  const [user, setUser] = useState({
-    name: '김슬기',
-    email: 'demo@seulbanlife.com',
-    phone: '010-9876-5432',
-    isMember: true,
+  // User State (null by default for real sign-up/login, persisted in localStorage)
+  const [user, setUser] = useState(() => {
+    try {
+      const saved = localStorage.getItem('seulban_user');
+      return saved ? JSON.parse(saved) : null;
+    } catch {
+      return null;
+    }
   });
+  const [authMode, setAuthMode] = useState('login'); // 'login' | 'signup'
 
   // Convex Hooks & Queries (Reactive backend synchronization)
   const convexApps = useQuery(api.applications.list);
   const convexPet = useQuery(api.pets.getLatest);
   const convexPartners = useQuery(api.partners.list);
+  const convexAdoptions = useQuery(api.adoptions.list);
   const convexTravels = useQuery(api.travels.list);
   const convexPopups = useQuery(api.popups.list);
   const convexBrand = useQuery(api.settings.get, { key: 'brand_info' });
@@ -88,12 +92,17 @@ export default function App() {
   // Convex Mutations
   const submitAppMutation = useMutation(api.applications.submit);
   const updateAppStatusMutation = useMutation(api.applications.updateStatus);
+  const updateAppMutation = useMutation(api.applications.update);
   const removeAppMutation = useMutation(api.applications.remove);
   const savePetMutation = useMutation(api.pets.save);
   const addPartnerMutation = useMutation(api.partners.add);
   const updatePartnerMutation = useMutation(api.partners.update);
   const removePartnerMutation = useMutation(api.partners.remove);
+  const addAdoptionMutation = useMutation(api.adoptions.add);
+  const updateAdoptionMutation = useMutation(api.adoptions.update);
+  const removeAdoptionMutation = useMutation(api.adoptions.remove);
   const addTravelMutation = useMutation(api.travels.add);
+  const updateTravelMutation = useMutation(api.travels.update);
   const removeTravelMutation = useMutation(api.travels.remove);
   const addPopupMutation = useMutation(api.popups.add);
   const togglePopupMutation = useMutation(api.popups.toggleActive);
@@ -125,10 +134,11 @@ export default function App() {
   });
   const partners = (convexPartners && convexPartners.length > 0) ? convexPartners : localPartners;
 
-  const [adoptionList, setAdoptionList] = useState(() => {
+  const [localAdoptionList, setLocalAdoptionList] = useState(() => {
     const saved = localStorage.getItem('seulban_adoption');
     return saved ? JSON.parse(saved) : ADOPTION_LIST;
   });
+  const adoptionList = (convexAdoptions && convexAdoptions.length > 0) ? convexAdoptions : localAdoptionList;
 
   const [localTravelList, setLocalTravelList] = useState(() => {
     const saved = localStorage.getItem('seulban_travel');
@@ -294,7 +304,40 @@ export default function App() {
     showToast(`접수건(${appId}) 상태가 [${newStatusLabel}]로 변경되었습니다.`);
   };
 
-  // 3. 동물등록 신청 내역 삭제 (Convex DB 연동 + 로컬 백업)
+  // 3. 동물등록 신청 내역 수정 (Convex DB 연동 + 로컬 백업)
+  const handleUpdateApplication = async (updatedApp) => {
+    const appId = updatedApp.id;
+    const updated = applications.map(a => (a.id === appId ? { ...a, ...updatedApp } : a));
+    setLocalApplications(updated);
+    localStorage.setItem('seulban_applications', JSON.stringify(updated));
+
+    try {
+      await updateAppMutation({
+        id: appId,
+        ownerName: updatedApp.ownerName,
+        phone: updatedApp.phone,
+        address: updatedApp.address,
+        shippingAddress: updatedApp.shippingAddress,
+        petName: updatedApp.petName,
+        petPhoto: updatedApp.petPhoto,
+        petBreed: updatedApp.petBreed,
+        petGender: updatedApp.petGender,
+        petBirth: updatedApp.petBirth,
+        petWeight: updatedApp.petWeight,
+        type: updatedApp.type,
+        trackingNumber: updatedApp.trackingNumber,
+        statusCode: updatedApp.statusCode,
+        statusLabel: updatedApp.statusLabel,
+      });
+      console.log('✅ Convex DB 접수 내역 수정 완료:', appId);
+    } catch (err) {
+      console.warn('Convex DB updateApp error:', err);
+    }
+
+    showToast(`신청서(${appId}) 정보가 성공적으로 수정되었습니다.`);
+  };
+
+  // 4. 동물등록 신청 내역 삭제 (Convex DB 연동 + 로컬 백업)
   const handleDeleteApplication = async (appId) => {
     const updated = applications.filter(app => app.id !== appId);
     setLocalApplications(updated);
@@ -384,16 +427,70 @@ export default function App() {
     showToast('제휴처가 삭제되었습니다.');
   };
 
-  const handleAddAdoption = (newAnimal) => {
+  const handleAddAdoption = async (newAnimal) => {
     const updated = [newAnimal, ...adoptionList];
-    setAdoptionList(updated);
+    setLocalAdoptionList(updated);
     localStorage.setItem('seulban_adoption', JSON.stringify(updated));
+
+    try {
+      await addAdoptionMutation({
+        name: newAnimal.name,
+        breed: newAnimal.breed,
+        gender: newAnimal.gender,
+        age: newAnimal.age,
+        weight: newAnimal.weight || '5kg',
+        center: newAnimal.center || '한국 동물사랑나눔 보호센터',
+        story: newAnimal.story || '',
+        tags: Array.isArray(newAnimal.tags) ? newAnimal.tags : [newAnimal.tags].filter(Boolean),
+        status: newAnimal.status || '입양 상담 가능',
+        photoUrl: newAnimal.photoUrl || '',
+      });
+    } catch (e) {
+      console.warn('Convex addAdoption note:', e);
+    }
+    showToast('새로운 입양 동물이 등록되었습니다.');
   };
 
-  const handleDeleteAdoption = (id) => {
-    const updated = adoptionList.filter(a => a.id !== id);
-    setAdoptionList(updated);
+  const handleUpdateAdoption = async (updatedAnimal) => {
+    const aId = updatedAnimal._id || updatedAnimal.id;
+    const updated = adoptionList.map(a => (a._id === aId || a.id === aId ? { ...a, ...updatedAnimal } : a));
+    setLocalAdoptionList(updated);
     localStorage.setItem('seulban_adoption', JSON.stringify(updated));
+
+    try {
+      if (updatedAnimal._id) {
+        await updateAdoptionMutation({
+          id: updatedAnimal._id,
+          name: updatedAnimal.name,
+          breed: updatedAnimal.breed,
+          gender: updatedAnimal.gender,
+          age: updatedAnimal.age,
+          weight: updatedAnimal.weight,
+          center: updatedAnimal.center,
+          story: updatedAnimal.story,
+          tags: Array.isArray(updatedAnimal.tags) ? updatedAnimal.tags : [updatedAnimal.tags].filter(Boolean),
+          status: updatedAnimal.status,
+          photoUrl: updatedAnimal.photoUrl || '',
+        });
+      }
+    } catch (e) {
+      console.warn('Convex updateAdoption note:', e);
+    }
+    showToast('입양 동물 정보가 수정되었습니다.');
+  };
+
+  const handleDeleteAdoption = async (id) => {
+    const updated = adoptionList.filter(a => a.id !== id && a._id !== id);
+    setLocalAdoptionList(updated);
+    localStorage.setItem('seulban_adoption', JSON.stringify(updated));
+
+    try {
+      if (typeof id === 'string' && id.startsWith('adopt_') === false) {
+        await removeAdoptionMutation({ id });
+      }
+    } catch (e) {
+      console.warn('Convex removeAdoption note:', e);
+    }
     showToast('입양 동물이 삭제되었습니다.');
   };
 
@@ -417,6 +514,34 @@ export default function App() {
     } catch (e) {
       console.warn('Convex addTravel note:', e);
     }
+    showToast('새 동반 여행지가 등록되었습니다.');
+  };
+
+  const handleUpdateTravel = async (updatedTravel) => {
+    const tId = updatedTravel._id || updatedTravel.id;
+    const updated = travelList.map(t => (t._id === tId || t.id === tId ? { ...t, ...updatedTravel } : t));
+    setLocalTravelList(updated);
+    localStorage.setItem('seulban_travel', JSON.stringify(updated));
+
+    try {
+      if (updatedTravel._id) {
+        await updateTravelMutation({
+          id: updatedTravel._id,
+          type: updatedTravel.type,
+          name: updatedTravel.name,
+          location: updatedTravel.location,
+          weightLimit: updatedTravel.weightLimit,
+          price: updatedTravel.price,
+          features: Array.isArray(updatedTravel.features) ? updatedTravel.features : [updatedTravel.features],
+          memberBenefit: updatedTravel.memberBenefit,
+          phone: updatedTravel.phone,
+          imageUrl: updatedTravel.imageUrl || '',
+        });
+      }
+    } catch (e) {
+      console.warn('Convex updateTravel note:', e);
+    }
+    showToast('동반 여행지 정보가 성공적으로 수정되었습니다.');
   };
 
   const handleDeleteTravel = async (id) => {
@@ -432,6 +557,44 @@ export default function App() {
       console.warn('Convex removeTravel note:', e);
     }
     showToast('동반 숙소가 삭제되었습니다.');
+  };
+
+  // User Auth Handlers (Sign up / Login / Logout)
+  const registerUserMutation = useMutation(api.users.register);
+  const loginUserMutation = useMutation(api.users.login);
+
+  const handleLogin = async (userData) => {
+    setUser(userData);
+    localStorage.setItem('seulban_user', JSON.stringify(userData));
+    showToast(`${userData.name}님 환영합니다!`);
+
+    // Convex DB 비동기 계정 동기화
+    try {
+      if (userData.isNewUser || userData.provider === 'google') {
+        await registerUserMutation({
+          name: userData.name,
+          email: userData.email,
+          phone: userData.phone || '',
+          provider: userData.provider || 'email',
+          password: userData.password,
+          membershipLevel: userData.membershipLevel || 'VIP 회원',
+          isMember: userData.isMember !== false,
+        });
+      } else {
+        await loginUserMutation({
+          email: userData.email,
+          password: userData.password,
+        });
+      }
+    } catch (e) {
+      console.warn('Convex user auth note:', e);
+    }
+  };
+
+  const handleLogout = () => {
+    setUser(null);
+    localStorage.removeItem('seulban_user');
+    showToast('로그아웃 되었습니다.');
   };
 
   const handleUpdateBrandInfo = async (newBrand) => {
@@ -537,6 +700,7 @@ export default function App() {
           }}
           applications={applications}
           onUpdateAppStatus={handleUpdateAppStatus}
+          onUpdateApplication={handleUpdateApplication}
           onDeleteApplication={handleDeleteApplication}
           partners={partners}
           onAddPartner={handleAddPartner}
@@ -544,9 +708,11 @@ export default function App() {
           onDeletePartner={handleDeletePartner}
           adoptionList={adoptionList}
           onAddAdoption={handleAddAdoption}
+          onUpdateAdoption={handleUpdateAdoption}
           onDeleteAdoption={handleDeleteAdoption}
           travelList={travelList}
           onAddTravel={handleAddTravel}
+          onUpdateTravel={handleUpdateTravel}
           onDeleteTravel={handleDeleteTravel}
           popups={popups}
           onAddPopup={handleAddPopup}
@@ -574,8 +740,9 @@ export default function App() {
       {/* Header */}
       <Header 
         user={user}
-        onOpenLogin={() => setLoginModalOpen(true)}
-        onLogout={() => { setUser(null); showToast('로그아웃 되었습니다.'); }}
+        onOpenLogin={() => { setAuthMode('login'); setLoginModalOpen(true); }}
+        onOpenSignUp={() => { setAuthMode('signup'); setLoginModalOpen(true); }}
+        onLogout={handleLogout}
         onNavigate={handleNavigate}
         activeTab={activeTab}
         onOpenApplyModal={() => setApplyModalOpen(true)}
@@ -642,7 +809,9 @@ export default function App() {
             bookmarks={bookmarks}
             onOpenApplyModal={() => setApplyModalOpen(true)}
             onOpenPartnerModal={(partner) => setSelectedPartner(partner)}
-            onLogout={() => { setUser(null); setActiveTab('home'); showToast('로그아웃 되었습니다.'); }}
+            onOpenLogin={() => { setAuthMode('login'); setLoginModalOpen(true); }}
+            onOpenSignUp={() => { setAuthMode('signup'); setLoginModalOpen(true); }}
+            onLogout={() => { handleLogout(); setActiveTab('home'); }}
           />
         )}
       </main>
@@ -733,8 +902,9 @@ export default function App() {
 
       <LoginModal 
         isOpen={loginModalOpen}
+        initialMode={authMode}
         onClose={() => setLoginModalOpen(false)}
-        onLogin={(userData) => { setUser(userData); showToast(`${userData.name}님 환영합니다!`); }}
+        onLogin={handleLogin}
       />
 
       <AdminModal 

@@ -106,5 +106,17 @@ export default defineSchema({
     key: v.string(), // "brand_info" | "admin_security"
     value: v.any(),
   }).index("by_key", ["key"]),
+
+  // 회원 사용자 (Users) - 이메일 및 구글 가입
+  users: defineTable({
+    email: v.string(),
+    name: v.string(),
+    provider: v.string(), // "email" | "google"
+    phone: v.optional(v.string()),
+    passwordHash: v.optional(v.string()),
+    isMember: v.boolean(),
+    membershipLevel: v.optional(v.string()),
+    createdAt: v.string(),
+  }).index("by_email", ["email"]),
 });
 

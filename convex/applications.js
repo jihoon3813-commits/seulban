@@ -102,6 +102,41 @@ export const updateStatus = mutation({
   },
 });
 
+// 신청서 상세 정보 전체 수정 (관리자 전용)
+export const update = mutation({
+  args: {
+    id: v.string(), // 접수번호
+    ownerName: v.optional(v.string()),
+    phone: v.optional(v.string()),
+    address: v.optional(v.string()),
+    shippingAddress: v.optional(v.string()),
+    petName: v.optional(v.string()),
+    petPhoto: v.optional(v.string()),
+    petBreed: v.optional(v.string()),
+    petGender: v.optional(v.string()),
+    petBirth: v.optional(v.string()),
+    petWeight: v.optional(v.string()),
+    type: v.optional(v.string()),
+    trackingNumber: v.optional(v.string()),
+    statusCode: v.optional(v.string()),
+    statusLabel: v.optional(v.string()),
+  },
+  handler: async (ctx, args) => {
+    const { id, ...updates } = args;
+    const app = await ctx.db
+      .query("applications")
+      .withIndex("by_app_id", (q) => q.eq("id", id))
+      .first();
+
+    if (!app) {
+      throw new Error("해당 접수건을 찾을 수 없습니다.");
+    }
+
+    await ctx.db.patch(app._id, updates);
+    return true;
+  },
+});
+
 // 삭제 (관리자 전용)
 export const remove = mutation({
   args: { id: v.string() },
@@ -118,4 +153,6 @@ export const remove = mutation({
     return false;
   },
 });
+
+
 
