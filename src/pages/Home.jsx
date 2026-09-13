@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { 
-  ArrowRight, CheckIcon, ShieldCheckIcon, PawIcon, HeartIcon, 
+  ArrowRight, CheckIcon, ShieldCheckIcon, PawIcon, PawOutlineIcon, HeartIcon, 
   HomeIcon, ScissorsIcon, StethoscopeIcon, FlowerIcon, SearchIcon, 
   MapPinIcon, SparklesIcon, ChevronRight, PhoneIcon 
 } from '../components/Icons';
@@ -220,10 +220,12 @@ export default function Home({
                     {srv.badge}
                   </span>
 
-                  <div className={`w-10 h-10 flex items-center justify-center transition-transform group-hover:scale-110 ${
-                    isFirst ? 'bg-white/10 text-white' : 'bg-white text-[#144A42] shadow-xs'
+                  <div className={`w-10 h-10 rounded-full flex items-center justify-center transition-transform group-hover:scale-110 ${
+                    isFirst ? 'bg-[#22554A] text-[#ECBE81]' : 'bg-white text-[#144A42] shadow-xs'
                   }`}>
-                    {srv.icon === 'paw' && <PawIcon className="w-5 h-5" />}
+                    {srv.icon === 'paw' && (
+                      isFirst ? <PawOutlineIcon className="w-5 h-5 text-[#ECBE81]" /> : <PawIcon className="w-5 h-5" />
+                    )}
                     {srv.icon === 'heart' && <HeartIcon className="w-5 h-5" />}
                     {srv.icon === 'home' && <HomeIcon className="w-5 h-5" />}
                     {srv.icon === 'scissors' && <ScissorsIcon className="w-5 h-5" />}
