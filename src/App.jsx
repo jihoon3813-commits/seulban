@@ -17,7 +17,8 @@ import {
   MembershipModal, 
   PartnerModal, 
   LoginModal, 
-  AdminModal 
+  AdminModal,
+  MainPopupModal
 } from './components/Modals';
 
 import { PhoneIcon, SparklesIcon, PawIcon, MessageSquare } from './components/Icons';
@@ -27,7 +28,8 @@ import {
   BRAND_INFO, 
   PARTNER_LIST, 
   ADOPTION_LIST, 
-  TRAVEL_LIST 
+  TRAVEL_LIST,
+  INITIAL_POPUPS
 } from './data/mockData';
 export default function App() {
   // URL Parameter based initial tab check (?page=admin, #admin, /admin, etc.)
@@ -101,6 +103,12 @@ export default function App() {
   const [brandInfo, setBrandInfo] = useState(() => {
     const saved = localStorage.getItem('seulban_brand');
     return saved ? JSON.parse(saved) : BRAND_INFO;
+  });
+
+  // Popups State (Controlled by Admin)
+  const [popups, setPopups] = useState(() => {
+    const saved = localStorage.getItem('seulban_popups');
+    return saved ? JSON.parse(saved) : INITIAL_POPUPS;
   });
 
   // Modals
@@ -222,6 +230,27 @@ export default function App() {
     localStorage.setItem('seulban_brand', JSON.stringify(newBrand));
   };
 
+  const handleAddPopup = (newPopup) => {
+    const updated = [newPopup, ...popups];
+    setPopups(updated);
+    localStorage.setItem('seulban_popups', JSON.stringify(updated));
+    showToast('새로운 팝업이 등록되었습니다.');
+  };
+
+  const handleDeletePopup = (id) => {
+    const updated = popups.filter(p => p.id !== id);
+    setPopups(updated);
+    localStorage.setItem('seulban_popups', JSON.stringify(updated));
+    showToast('팝업이 삭제되었습니다.');
+  };
+
+  const handleTogglePopup = (id) => {
+    const updated = popups.map(p => p.id === id ? { ...p, active: !p.active } : p);
+    setPopups(updated);
+    localStorage.setItem('seulban_popups', JSON.stringify(updated));
+    showToast('팝업 노출 상태가 변경되었습니다.');
+  };
+
   const handleNavigate = (tabId) => {
     setActiveTab(tabId);
     window.scrollTo(0, 0);
@@ -273,6 +302,10 @@ export default function App() {
           travelList={travelList}
           onAddTravel={handleAddTravel}
           onDeleteTravel={handleDeleteTravel}
+          popups={popups}
+          onAddPopup={handleAddPopup}
+          onDeletePopup={handleDeletePopup}
+          onTogglePopup={handleTogglePopup}
           brandInfo={brandInfo}
           onUpdateBrandInfo={handleUpdateBrandInfo}
           showToast={showToast}
@@ -463,6 +496,12 @@ export default function App() {
         onClose={() => setAdminModalOpen(false)}
         applications={applications}
         onUpdateAppStatus={handleUpdateAppStatus}
+      />
+
+      {/* 메인 3:4 팝업 (관리자에서 설정한 활성 팝업, 7일간 숨김 및 다크 백드롭 지원) */}
+      <MainPopupModal 
+        popups={popups}
+        onNavigate={handleNavigate}
       />
 
     </div>

@@ -19,6 +19,10 @@ export default function AdminPage({
   travelList,
   onAddTravel,
   onDeleteTravel,
+  popups = [],
+  onAddPopup,
+  onDeletePopup,
+  onTogglePopup,
   brandInfo,
   onUpdateBrandInfo,
   showToast
@@ -90,6 +94,41 @@ export default function AdminPage({
     memberBenefit: '주중 20% 특별 우대',
     phone: '033-000-0000'
   });
+
+  // Popup Management State (3:4 Ratio Popups)
+  const [isAddPopupOpen, setIsAddPopupOpen] = useState(false);
+  const [popupImageMode, setPopupImageMode] = useState('upload'); // 'upload' | 'url'
+  const [newPopup, setNewPopup] = useState({
+    title: '',
+    imageUrl: '',
+    linkType: 'none', // 'none' | 'url' | 'internal'
+    linkUrl: '',
+    internalTab: 'registration',
+    active: true,
+  });
+
+  const handlePopupImageUpload = (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (file.size > 5 * 1024 * 1024) {
+      alert('이미지 파일 용량은 최대 5MB 이하만 업로드 가능합니다.');
+      return;
+    }
+    const reader = new FileReader();
+    reader.onload = (uploadEvent) => {
+      setNewPopup(prev => ({ ...prev, imageUrl: uploadEvent.target.result }));
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const handleResetPopupHide7Days = () => {
+    localStorage.removeItem('seulban_hide_popup_until');
+    if (showToast) {
+      showToast('7일간 보지 않기 설정이 초기화되어 팝업이 다시 메인에 노출됩니다.');
+    } else {
+      alert('7일간 보지 않기 설정이 초기화되었습니다.');
+    }
+  };
 
   // Password change settings state
   const [pwdForm, setPwdForm] = useState({
@@ -295,6 +334,7 @@ export default function AdminPage({
               {[
                 { id: 'dashboard', label: '대시보드 요약' },
                 { id: 'applications', label: `동물등록 관리 (${applications.length})` },
+                { id: 'popups', label: `팝업 관리 (${popups.length})` },
                 { id: 'partners', label: `제휴처 관리 (${partners.length})` },
                 { id: 'adoption', label: `안심입양 관리 (${adoptionList.length})` },
                 { id: 'travel', label: `반려여행 관리 (${travelList.length})` },
@@ -340,6 +380,7 @@ export default function AdminPage({
           {[
             { id: 'dashboard', label: '대시보드' },
             { id: 'applications', label: '동물등록' },
+            { id: 'popups', label: '팝업관리' },
             { id: 'partners', label: '제휴처' },
             { id: 'adoption', label: '안심입양' },
             { id: 'travel', label: '반려여행' },
@@ -376,10 +417,17 @@ export default function AdminPage({
                   운영 현황 대시보드
                 </h2>
               </div>
-              <div className="flex gap-2">
+              <div className="flex flex-wrap gap-2">
+                <button
+                  onClick={() => setCurrentTab('popups')}
+                  className="px-4 py-2 bg-white border border-[#D5CDBD] text-[#144A42] text-xs font-bold hover:bg-[#F3EFE6] transition flex items-center gap-1.5 shadow-xs"
+                >
+                  <SparklesIcon className="w-4 h-4 text-[#C5A880]" />
+                  <span>팝업 관리</span>
+                </button>
                 <button
                   onClick={() => setCurrentTab('applications')}
-                  className="px-4 py-2 bg-[#144A42] text-white text-xs font-bold hover:bg-[#0D3832] transition flex items-center gap-1.5"
+                  className="px-4 py-2 bg-[#144A42] text-white text-xs font-bold hover:bg-[#0D3832] transition flex items-center gap-1.5 shadow-xs"
                 >
                   <PawIcon className="w-4 h-4 text-[#C5A880]" />
                   <span>동물등록 신청 바로보기</span>
@@ -388,31 +436,42 @@ export default function AdminPage({
             </div>
 
             {/* KPI Cards */}
-            <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4">
               <div className="bg-white p-6 border border-[#E2DDD3] shadow-xs">
                 <span className="text-xs text-gray-500 font-medium">동물등록 접수 총계</span>
                 <p className="text-3xl font-black text-[#144A42] mt-2">{applications.length}건</p>
                 <div className="mt-3 flex items-center gap-1.5 text-[11px] text-amber-700 bg-amber-50 px-2 py-1 w-fit">
-                  <span>검수/승인 대기: {applications.filter(a => a.statusCode === 'SUBMITTED' || a.statusCode === 'REVIEWING').length}건</span>
+                  <span>검수 대기: {applications.filter(a => a.statusCode === 'SUBMITTED' || a.statusCode === 'REVIEWING').length}건</span>
+                </div>
+              </div>
+
+              <div 
+                onClick={() => setCurrentTab('popups')}
+                className="bg-white p-6 border border-[#E2DDD3] shadow-xs cursor-pointer hover:border-[#144A42] transition"
+              >
+                <span className="text-xs text-gray-500 font-medium">메인 팝업 관리</span>
+                <p className="text-3xl font-black text-[#144A42] mt-2">{popups.length}개</p>
+                <div className="mt-3 flex items-center gap-1.5 text-[11px] text-emerald-800 bg-emerald-50 px-2 py-1 w-fit">
+                  <span>노출 활성: {popups.filter(p => p.active !== false).length}개 (3:4)</span>
                 </div>
               </div>
 
               <div className="bg-white p-6 border border-[#E2DDD3] shadow-xs">
                 <span className="text-xs text-gray-500 font-medium">등록 제휴처</span>
                 <p className="text-3xl font-black text-[#144A42] mt-2">{partners.length}곳</p>
-                <p className="text-[11px] text-gray-500 mt-3">병원, 미용, 스파 등 엄선 제휴</p>
+                <p className="text-[11px] text-gray-500 mt-3">병원, 미용, 스파 제휴</p>
               </div>
 
               <div className="bg-white p-6 border border-[#E2DDD3] shadow-xs">
-                <span className="text-xs text-gray-500 font-medium">안심 입양 등록 아이들</span>
+                <span className="text-xs text-gray-500 font-medium">안심 입양 등록</span>
                 <p className="text-3xl font-black text-[#144A42] mt-2">{adoptionList.length}마리</p>
-                <p className="text-[11px] text-gray-500 mt-3">지자체 공인 센터 연계</p>
+                <p className="text-[11px] text-gray-500 mt-3">공인 보호센터 연계</p>
               </div>
 
               <div className="bg-white p-6 border border-[#E2DDD3] shadow-xs">
                 <span className="text-xs text-gray-500 font-medium">엄선 동반 여행지</span>
                 <p className="text-3xl font-black text-[#144A42] mt-2">{travelList.length}곳</p>
-                <p className="text-[11px] text-gray-500 mt-3">리조트, 독채펜션, 글램핑</p>
+                <p className="text-[11px] text-gray-500 mt-3">리조트, 독채펜션</p>
               </div>
             </div>
 
@@ -670,7 +729,443 @@ export default function AdminPage({
         )}
 
         {/* ========================================================
-            TAB 3: 제휴처 관리 (PARTNERS)
+            TAB: 팝업 관리 (POPUPS) - 3:4 비율, 다크 백드롭, 복수 지원, 7일 숨김, 업로드/URL, 링크 설정
+            ======================================================== */}
+        {currentTab === 'popups' && (
+          <div className="space-y-6 animate-fade-in">
+            <div className="flex flex-col sm:flex-row justify-between sm:items-center gap-4">
+              <div>
+                <span className="text-xs font-bold tracking-widest text-[#B48B55] uppercase">MODAL & PROMOTION</span>
+                <h2 className="text-2xl sm:text-3xl font-extrabold text-[#142C27] tracking-tight">
+                  메인 팝업 관리 ({popups.length}개 등록)
+                </h2>
+                <p className="text-xs text-[#6B7973] mt-1">
+                  메인 화면에 3:4 비율로 노출되는 팝업을 등록하고 관리합니다. 파일 직접 업로드 또는 URL 입력이 가능하며, 링크가 없으면 순수 이미지 팝업으로 동작합니다.
+                </p>
+              </div>
+
+              <div className="flex flex-wrap items-center gap-2">
+                <button
+                  onClick={handleResetPopupHide7Days}
+                  className="px-3.5 py-2.5 bg-white border border-[#D5CDBD] text-[#55635D] text-xs font-bold hover:bg-[#F3EFE6] transition shadow-xs"
+                  title="브라우저에 저장된 7일 숨김 쿠키를 삭제하여 즉시 팝업을 다시 확인할 수 있습니다."
+                >
+                  ↺ 7일 숨김 초기화 (테스트)
+                </button>
+                <button
+                  onClick={() => {
+                    setNewPopup({
+                      title: '',
+                      imageUrl: '',
+                      linkType: 'none',
+                      linkUrl: '',
+                      internalTab: 'registration',
+                      active: true,
+                    });
+                    setPopupImageMode('upload');
+                    setIsAddPopupOpen(true);
+                  }}
+                  className="px-5 py-2.5 bg-[#144A42] text-white text-xs font-bold hover:bg-[#0D3832] transition flex items-center gap-1.5 shadow-xs"
+                >
+                  <span>+ 신규 팝업 등록</span>
+                </button>
+              </div>
+            </div>
+
+            {/* Feature Spec Guide Alert */}
+            <div className="bg-[#FAF8F5] p-4 sm:p-5 border border-[#E7DFD1] text-xs space-y-2">
+              <div className="flex items-center gap-2 text-[#144A42] font-bold">
+                <SparklesIcon className="w-4 h-4 text-[#C5A880]" />
+                <span>슬반생 팝업 운영 가이드</span>
+              </div>
+              <ul className="grid grid-cols-1 md:grid-cols-2 gap-2 text-[#5A6862] text-[11px] leading-relaxed list-disc list-inside">
+                <li><strong className="text-[#144A42]">3:4 비율 최적화:</strong> 팝업은 3:4 세로 이미지 비율에 맞춰 왜곡 없이 깔끔하게 표시됩니다. (권장: 600×800px, 900×1200px)</li>
+                <li><strong className="text-[#144A42]">다크 백드롭:</strong> 팝업 오픈 시 주변 배경이 짙은 어두운 톤(bg-black/80)으로 집중도 높게 처리됩니다.</li>
+                <li><strong className="text-[#144A42]">복수 팝업 지원:</strong> 2개, 3개, 4개 등 여러 개 등록 시 좌우 넘김 화살표와 하단 점형 페이지네이션이 자동 활성화됩니다.</li>
+                <li><strong className="text-[#144A42]">7일 동안 보이지 않기:</strong> 사용자가 하단 버튼을 클릭하면 브라우저에 저장되어 7일간 팝업이 노출되지 않습니다.</li>
+                <li><strong className="text-[#144A42]">업로드 및 URL 지원:</strong> 내 컴퓨터의 이미지 파일을 직접 업로드하거나 외부 이미지 URL을 입력할 수 있습니다.</li>
+                <li><strong className="text-[#144A42]">연결 링크 유무 처리:</strong> 링크를 넣으면 클릭 시 해당 페이지로 이동하며, 링크가 없으면 순수 이미지 팝업으로 인식하여 에러 없이 이미지로만 노출됩니다.</li>
+              </ul>
+            </div>
+
+            {/* Popups Grid */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+              {popups.map((popup, idx) => (
+                <div key={popup.id} className="bg-white border border-[#E2DDD3] shadow-xs flex flex-col justify-between overflow-hidden">
+                  
+                  {/* Card Header: 순번 & 노출 상태 토글 */}
+                  <div className="p-3 bg-[#FAF8F5] border-b border-[#EAE4D7] flex items-center justify-between text-xs">
+                    <span className="font-bold text-[#144A42] bg-white px-2 py-0.5 border border-[#DDD5C7] text-[11px]">
+                      순번 #{idx + 1}
+                    </span>
+                    <button
+                      onClick={() => onTogglePopup(popup.id)}
+                      className={`px-2 py-0.5 text-[11px] font-bold border transition ${
+                        popup.active !== false
+                          ? 'bg-emerald-50 text-emerald-800 border-emerald-300 hover:bg-emerald-100'
+                          : 'bg-gray-100 text-gray-500 border-gray-300 hover:bg-gray-200'
+                      }`}
+                      title="클릭하여 노출/숨김 상태를 전환합니다"
+                    >
+                      {popup.active !== false ? '● 노출 활성' : '○ 숨김 비활성'}
+                    </button>
+                  </div>
+
+                  {/* 3:4 Aspect Ratio Image Preview */}
+                  <div className="relative aspect-[3/4] bg-[#111716] overflow-hidden group">
+                    <img
+                      src={popup.imageUrl}
+                      alt={popup.title || '팝업 이미지'}
+                      className="w-full h-full object-cover group-hover:scale-105 transition duration-300"
+                    />
+                    <div className="absolute top-2 left-2 px-1.5 py-0.5 bg-black/70 text-white text-[10px] font-mono">
+                      3:4 비율
+                    </div>
+                  </div>
+
+                  {/* Card Info */}
+                  <div className="p-4 space-y-2.5 flex-1 flex flex-col justify-between text-xs">
+                    <div className="space-y-1.5">
+                      <h4 className="font-bold text-sm text-[#142C27] line-clamp-1">{popup.title || '(제목 없음)'}</h4>
+                      
+                      {/* 링크 상태 표시 */}
+                      <div className="p-2.5 bg-[#FAF8F5] border border-[#ECE5D8] rounded-xs space-y-1 text-[11px]">
+                        <span className="font-bold text-gray-600 block">연결 링크 정보:</span>
+                        {popup.linkUrl ? (
+                          <a
+                            href={popup.linkUrl}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-blue-600 hover:underline flex items-center gap-1 break-all"
+                          >
+                            <ExternalLinkIcon className="w-3 h-3 shrink-0" />
+                            <span>외부 링크 ({popup.linkUrl})</span>
+                          </a>
+                        ) : popup.internalTab ? (
+                          <span className="text-[#144A42] font-semibold flex items-center gap-1">
+                            <span>내부 이동:</span>
+                            <strong className="underline">
+                              {popup.internalTab === 'registration' && '동물등록 간편신청'}
+                              {popup.internalTab === 'membership' && 'VIP 멤버십 사전신청'}
+                              {popup.internalTab === 'adoption' && '안심 입양'}
+                              {popup.internalTab === 'partners' && '반려생활 제휴처'}
+                              {popup.internalTab === 'travel' && '반려동물 동반여행'}
+                              {popup.internalTab === 'farewell' && '안심 장례 케어'}
+                            </strong>
+                          </span>
+                        ) : (
+                          <span className="text-gray-400 font-medium">
+                            🖼️ 연결 링크 없음 (순수 이미지 팝업)
+                          </span>
+                        )}
+                      </div>
+                    </div>
+
+                    {/* Card Actions */}
+                    <div className="pt-3 border-t border-gray-100 flex items-center justify-between text-gray-500 text-[11px]">
+                      <span>{popup.createdAt ? `등록: ${popup.createdAt}` : '등록됨'}</span>
+                      <button
+                        onClick={() => {
+                          if (confirm(`[${popup.title || '해당'}] 팝업을 정말 삭제하시겠습니까?`)) {
+                            onDeletePopup(popup.id);
+                          }
+                        }}
+                        className="text-red-500 hover:text-red-700 font-semibold underline"
+                      >
+                        삭제
+                      </button>
+                    </div>
+                  </div>
+
+                </div>
+              ))}
+            </div>
+
+            {popups.length === 0 && (
+              <div className="bg-white border border-[#E2DDD3] p-12 text-center text-xs text-gray-400 space-y-3">
+                <SparklesIcon className="w-8 h-8 mx-auto text-gray-300" />
+                <p className="font-bold text-gray-600 text-sm">등록된 메인 팝업이 없습니다.</p>
+                <p>신규 팝업을 등록하시면 3:4 세로 비율로 메인 화면에 띄워집니다.</p>
+                <button
+                  onClick={() => {
+                    setNewPopup({
+                      title: '',
+                      imageUrl: '',
+                      linkType: 'none',
+                      linkUrl: '',
+                      internalTab: 'registration',
+                      active: true,
+                    });
+                    setPopupImageMode('upload');
+                    setIsAddPopupOpen(true);
+                  }}
+                  className="mt-2 px-4 py-2 bg-[#144A42] text-white font-bold hover:bg-[#0D3832]"
+                >
+                  + 첫 팝업 등록하기
+                </button>
+              </div>
+            )}
+
+            {/* Modal: 신규 팝업 등록 */}
+            {isAddPopupOpen && (
+              <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fade-in">
+                <div className="bg-white w-full max-w-xl shadow-2xl p-6 border border-[#ECE5D8] max-h-[90vh] overflow-y-auto">
+                  <div className="flex justify-between items-center mb-5 pb-3 border-b border-gray-100">
+                    <div className="flex items-center gap-2">
+                      <SparklesIcon className="w-5 h-5 text-[#C5A880]" />
+                      <h3 className="font-bold text-base text-[#144A42]">3:4 메인 팝업 신규 등록</h3>
+                    </div>
+                    <button onClick={() => setIsAddPopupOpen(false)} className="p-1 text-gray-400 hover:text-gray-700">
+                      <XIcon className="w-5 h-5" />
+                    </button>
+                  </div>
+
+                  <form onSubmit={(e) => {
+                    e.preventDefault();
+                    if (!newPopup.imageUrl) {
+                      alert('팝업 이미지를 파일 업로드하거나 URL로 입력해주세요.');
+                      return;
+                    }
+                    onAddPopup({
+                      id: `pop_${Date.now()}`,
+                      title: newPopup.title || '새 프로모션 팝업',
+                      imageUrl: newPopup.imageUrl,
+                      linkType: newPopup.linkType,
+                      linkUrl: newPopup.linkType === 'url' ? newPopup.linkUrl : '',
+                      internalTab: newPopup.linkType === 'internal' ? newPopup.internalTab : '',
+                      active: newPopup.active,
+                      createdAt: new Date().toISOString().split('T')[0],
+                    });
+                    setIsAddPopupOpen(false);
+                    setNewPopup({
+                      title: '',
+                      imageUrl: '',
+                      linkType: 'none',
+                      linkUrl: '',
+                      internalTab: 'registration',
+                      active: true,
+                    });
+                  }} className="space-y-4 text-xs">
+                    
+                    {/* 팝업 제목 */}
+                    <div>
+                      <label className="block font-bold mb-1 text-[#2C3833]">관리용 팝업 제목 *</label>
+                      <input 
+                        type="text" 
+                        required 
+                        value={newPopup.title}
+                        onChange={(e) => setNewPopup({...newPopup, title: e.target.value})}
+                        placeholder="예: 2026 가을 동물등록 특별 프로모션"
+                        className="w-full px-3.5 py-2 border border-gray-300 focus:border-[#144A42] focus:outline-none"
+                      />
+                    </div>
+
+                    {/* 이미지 등록 방식 탭 (파일 업로드 vs URL) */}
+                    <div>
+                      <label className="block font-bold mb-1.5 text-[#2C3833]">팝업 이미지 등록 방식 (3:4 세로 비율) *</label>
+                      <div className="flex gap-2 mb-3">
+                        <button
+                          type="button"
+                          onClick={() => setPopupImageMode('upload')}
+                          className={`flex-1 py-2 font-bold border transition text-xs ${
+                            popupImageMode === 'upload'
+                              ? 'bg-[#144A42] text-white border-[#144A42]'
+                              : 'bg-gray-100 text-gray-600 border-gray-300 hover:bg-gray-200'
+                          }`}
+                        >
+                          📁 내 컴퓨터 파일 직접 업로드
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => setPopupImageMode('url')}
+                          className={`flex-1 py-2 font-bold border transition text-xs ${
+                            popupImageMode === 'url'
+                              ? 'bg-[#144A42] text-white border-[#144A42]'
+                              : 'bg-gray-100 text-gray-600 border-gray-300 hover:bg-gray-200'
+                          }`}
+                        >
+                          🔗 이미지 URL 주소 입력
+                        </button>
+                      </div>
+
+                      {popupImageMode === 'upload' ? (
+                        <div className="border-2 border-dashed border-[#D2C8B8] p-5 text-center bg-[#FAF8F5] space-y-2">
+                          <input
+                            type="file"
+                            accept="image/*"
+                            onChange={handlePopupImageUpload}
+                            id="popup-file-upload"
+                            className="hidden"
+                          />
+                          <label
+                            htmlFor="popup-file-upload"
+                            className="inline-block px-4 py-2 bg-[#144A42] text-white font-bold cursor-pointer hover:bg-[#0D3832] transition shadow-xs"
+                          >
+                            이미지 파일 선택 (최대 5MB)
+                          </label>
+                          <p className="text-[11px] text-gray-500">
+                            3:4 비율 권장 (JPG, PNG, WEBP 지원)
+                          </p>
+                        </div>
+                      ) : (
+                        <div>
+                          <input 
+                            type="url" 
+                            value={newPopup.imageUrl}
+                            onChange={(e) => setNewPopup({...newPopup, imageUrl: e.target.value})}
+                            placeholder="https://example.com/popup-image.jpg"
+                            className="w-full px-3.5 py-2 border border-gray-300 focus:border-[#144A42] focus:outline-none font-mono text-[11px]"
+                          />
+                          <p className="text-[11px] text-gray-400 mt-1">웹에 업로드된 3:4 비율 이미지의 공개 URL을 붙여넣으세요.</p>
+                        </div>
+                      )}
+                    </div>
+
+                    {/* 3:4 이미지 미리보기 */}
+                    {newPopup.imageUrl && (
+                      <div className="p-4 bg-[#FAF8F5] border border-[#EAE3D5] flex flex-col items-center">
+                        <span className="text-[11px] font-bold text-[#144A42] mb-2 block">
+                          3:4 실시간 미리보기 (메인 노출 시 형태)
+                        </span>
+                        <div className="w-36 aspect-[3/4] bg-neutral-900 border border-[#C5A880] shadow-md overflow-hidden relative">
+                          <img 
+                            src={newPopup.imageUrl} 
+                            alt="팝업 미리보기" 
+                            className="w-full h-full object-cover"
+                          />
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => setNewPopup({...newPopup, imageUrl: ''})}
+                          className="mt-2 text-[11px] text-red-500 hover:underline"
+                        >
+                          이미지 다시 선택
+                        </button>
+                      </div>
+                    )}
+
+                    {/* 연결 링크 설정 */}
+                    <div className="pt-2 border-t border-gray-100 space-y-3">
+                      <label className="block font-bold text-[#2C3833]">
+                        연결 링크 설정 (선택 사항)
+                      </label>
+                      <p className="text-[11px] text-gray-500">
+                        링크 값을 넣지 않으면 사용자가 팝업을 클릭해도 이동하지 않는 '순수 이미지 팝업'으로 인식됩니다.
+                      </p>
+
+                      <div className="space-y-2">
+                        <label className="flex items-center gap-2 cursor-pointer">
+                          <input
+                            type="radio"
+                            name="linkType"
+                            checked={newPopup.linkType === 'none'}
+                            onChange={() => setNewPopup({...newPopup, linkType: 'none', linkUrl: ''})}
+                            className="text-[#144A42] focus:ring-0"
+                          />
+                          <span className="font-semibold text-gray-800">
+                            연결 링크 없음 (순수 안내용 이미지 팝업)
+                          </span>
+                        </label>
+
+                        <label className="flex items-center gap-2 cursor-pointer">
+                          <input
+                            type="radio"
+                            name="linkType"
+                            checked={newPopup.linkType === 'url'}
+                            onChange={() => setNewPopup({...newPopup, linkType: 'url'})}
+                            className="text-[#144A42] focus:ring-0"
+                          />
+                          <span className="font-semibold text-gray-800">
+                            외부 웹사이트 URL 링크 연결
+                          </span>
+                        </label>
+
+                        {newPopup.linkType === 'url' && (
+                          <div className="ml-6 pl-2 border-l-2 border-[#144A42]">
+                            <input
+                              type="url"
+                              value={newPopup.linkUrl}
+                              onChange={(e) => setNewPopup({...newPopup, linkUrl: e.target.value})}
+                              placeholder="https://example.com/event"
+                              className="w-full px-3 py-1.5 border border-gray-300 focus:border-[#144A42] focus:outline-none text-[11px]"
+                            />
+                            <span className="text-[10px] text-gray-400 mt-0.5 block">클릭 시 새 탭에서 열립니다.</span>
+                          </div>
+                        )}
+
+                        <label className="flex items-center gap-2 cursor-pointer">
+                          <input
+                            type="radio"
+                            name="linkType"
+                            checked={newPopup.linkType === 'internal'}
+                            onChange={() => setNewPopup({...newPopup, linkType: 'internal'})}
+                            className="text-[#144A42] focus:ring-0"
+                          />
+                          <span className="font-semibold text-gray-800">
+                            슬반생 사이트 내 페이지로 바로 이동
+                          </span>
+                        </label>
+
+                        {newPopup.linkType === 'internal' && (
+                          <div className="ml-6 pl-2 border-l-2 border-[#144A42]">
+                            <select
+                              value={newPopup.internalTab}
+                              onChange={(e) => setNewPopup({...newPopup, internalTab: e.target.value})}
+                              className="w-full px-3 py-1.5 border border-gray-300 focus:border-[#144A42] focus:outline-none bg-white text-xs"
+                            >
+                              <option value="registration">동물등록 간편 신청 (신청서 모달/페이지)</option>
+                              <option value="membership">VIP 멤버십 사전신청 (혜택 안내)</option>
+                              <option value="adoption">새로운 만남 (안심 입양 안내)</option>
+                              <option value="partners">반려생활 제휴처 (동물병원·스파·미용)</option>
+                              <option value="travel">반려동물 동반 여행 (숙소·호텔·리조트)</option>
+                              <option value="farewell">안심 장례 동행 케어</option>
+                            </select>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+
+                    {/* 노출 여부 */}
+                    <div className="pt-2 border-t border-gray-100 flex items-center gap-2">
+                      <label className="flex items-center gap-2 cursor-pointer">
+                        <input
+                          type="checkbox"
+                          checked={newPopup.active}
+                          onChange={(e) => setNewPopup({...newPopup, active: e.target.checked})}
+                          className="w-4 h-4 text-[#144A42] focus:ring-0"
+                        />
+                        <span className="font-semibold text-gray-800">
+                          등록 즉시 메인 화면에 팝업 노출 (활성화)
+                        </span>
+                      </label>
+                    </div>
+
+                    {/* Buttons */}
+                    <div className="pt-4 border-t border-gray-200 flex justify-end gap-2">
+                      <button
+                        type="button"
+                        onClick={() => setIsAddPopupOpen(false)}
+                        className="px-4 py-2 border border-gray-300 text-gray-600 hover:bg-gray-100 transition"
+                      >
+                        취소
+                      </button>
+                      <button
+                        type="submit"
+                        className="px-6 py-2 bg-[#144A42] text-white font-bold hover:bg-[#0D3832] transition shadow-xs flex items-center gap-1"
+                      >
+                        <span>신규 팝업 등록 완료</span>
+                      </button>
+                    </div>
+
+                  </form>
+                </div>
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* ========================================================
+            TAB 4: 제휴처 관리 (PARTNERS)
             ======================================================== */}
         {currentTab === 'partners' && (
           <div className="space-y-6 animate-fade-in">

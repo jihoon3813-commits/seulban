@@ -1168,3 +1168,175 @@ export function AdminModal({ isOpen, onClose, applications, onUpdateAppStatus })
     </div>
   );
 }
+
+// 6. 메인 3:4 이미지 팝업 모달 (복수 팝업 지원, 7일간 보지 않기, 다크 백드롭, 링크 연결 지원)
+export function MainPopupModal({ popups = [], onNavigate }) {
+  const [isOpen, setIsOpen] = useState(false);
+  const [currentIndex, setCurrentIndex] = useState(0);
+
+  // 활성화된 팝업만 필터링
+  const activePopups = popups.filter(p => p.active !== false && p.imageUrl);
+
+  useEffect(() => {
+    if (activePopups.length === 0) {
+      setIsOpen(false);
+      return;
+    }
+
+    // 7일간 보지 않기 만료 시간 확인
+    const hideUntil = localStorage.getItem('seulban_hide_popup_until');
+    if (hideUntil) {
+      const now = new Date().getTime();
+      if (now < parseInt(hideUntil, 10)) {
+        setIsOpen(false);
+        return;
+      } else {
+        localStorage.removeItem('seulban_hide_popup_until');
+      }
+    }
+
+    setIsOpen(true);
+  }, [popups.length]);
+
+  if (!isOpen || activePopups.length === 0) return null;
+
+  const currentPopup = activePopups[currentIndex] || activePopups[0];
+
+  // 7일간 보지 않기 클릭 핸들러
+  const handleHide7Days = () => {
+    const sevenDaysInMs = 7 * 24 * 60 * 60 * 1000;
+    const expireTime = new Date().getTime() + sevenDaysInMs;
+    localStorage.setItem('seulban_hide_popup_until', expireTime.toString());
+    setIsOpen(false);
+  };
+
+  // 팝업 이미지 클릭 시 동작 (연결 링크가 있는 경우 이동, 없으면 순수 이미지)
+  const handlePopupClick = () => {
+    if (!currentPopup.linkUrl && !currentPopup.internalTab) {
+      // 링크 값이 없으면 그냥 이미지 팝업으로 동작
+      return;
+    }
+
+    setIsOpen(false);
+
+    if (currentPopup.linkUrl) {
+      if (currentPopup.linkUrl.startsWith('http')) {
+        window.open(currentPopup.linkUrl, '_blank', 'noopener,noreferrer');
+      } else if (currentPopup.linkUrl.startsWith('/')) {
+        window.location.href = currentPopup.linkUrl;
+      }
+    } else if (currentPopup.internalTab && onNavigate) {
+      onNavigate(currentPopup.internalTab);
+    }
+  };
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-fade-in">
+      <div className="relative w-full max-w-[340px] sm:max-w-[380px] bg-[#111716] shadow-2xl overflow-hidden flex flex-col border border-[#2E3F3B]">
+        
+        {/* 상단: 복수 팝업 인디케이터 (2개 이상인 경우) & 닫기 버튼 */}
+        <div className="px-3.5 py-2.5 bg-[#142C27] text-white flex items-center justify-between border-b border-[#23443D]">
+          <div className="flex items-center gap-1.5 text-xs font-bold text-[#E8DEC8]">
+            <SparklesIcon className="w-3.5 h-3.5 text-[#C5A880]" />
+            <span>슬반생 안내</span>
+            {activePopups.length > 1 && (
+              <span className="ml-1 text-[11px] px-1.5 py-0.2 bg-[#0C1F1B] text-[#C5A880] border border-[#2E4E46]">
+                {currentIndex + 1} / {activePopups.length}
+              </span>
+            )}
+          </div>
+          <button 
+            onClick={() => setIsOpen(false)}
+            className="p-1 text-gray-300 hover:text-white transition"
+            aria-label="팝업 닫기"
+          >
+            <XIcon className="w-4 h-4" />
+          </button>
+        </div>
+
+        {/* 3:4 비율 이미지 영역 */}
+        <div className="relative w-full aspect-[3/4] bg-[#0E1513] overflow-hidden group">
+          <img
+            src={currentPopup.imageUrl}
+            alt={currentPopup.title || "슬반생 이벤트 팝업"}
+            onClick={handlePopupClick}
+            className={`w-full h-full object-cover transition-transform duration-300 ${
+              (currentPopup.linkUrl || currentPopup.internalTab) ? 'cursor-pointer hover:scale-[1.02]' : 'cursor-default'
+            }`}
+          />
+
+          {/* 여러 개 팝업이 있을 때 좌우 이동 화살표 */}
+          {activePopups.length > 1 && (
+            <>
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setCurrentIndex((prev) => (prev > 0 ? prev - 1 : activePopups.length - 1));
+                }}
+                className="absolute left-2 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full bg-black/60 hover:bg-black/85 text-white flex items-center justify-center transition shadow-md"
+                aria-label="이전 팝업"
+              >
+                ‹
+              </button>
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setCurrentIndex((prev) => (prev < activePopups.length - 1 ? prev + 1 : 0));
+                }}
+                className="absolute right-2 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full bg-black/60 hover:bg-black/85 text-white flex items-center justify-center transition shadow-md"
+                aria-label="다음 팝업"
+              >
+                ›
+              </button>
+
+              {/* 하단 점형 페이지네이션 인디케이터 */}
+              <div className="absolute bottom-2.5 left-0 right-0 flex justify-center items-center gap-1.5 pointer-events-none">
+                {activePopups.map((_, idx) => (
+                  <span
+                    key={idx}
+                    className={`h-1.5 transition-all rounded-full ${
+                      idx === currentIndex ? 'w-5 bg-[#C5A880]' : 'w-1.5 bg-white/50'
+                    }`}
+                  />
+                ))}
+              </div>
+            </>
+          )}
+
+          {/* 링크 연결 힌트 뱃지 (링크가 있을 때만 노출) */}
+          {(currentPopup.linkUrl || currentPopup.internalTab) && (
+            <div 
+              onClick={handlePopupClick}
+              className="absolute top-2 right-2 bg-[#144A42]/90 text-white text-[10px] font-bold px-2 py-0.5 shadow-sm cursor-pointer hover:bg-[#144A42] flex items-center gap-1"
+            >
+              <span>자세히 보기</span>
+              <ArrowRight className="w-2.5 h-2.5" />
+            </div>
+          )}
+        </div>
+
+        {/* 팝업 하단: 7일간 보지 않기 & 닫기 바 */}
+        <div className="bg-[#111716] px-4 py-2.5 flex items-center justify-between text-xs text-gray-300 border-t border-[#23332E]">
+          <button
+            type="button"
+            onClick={handleHide7Days}
+            className="hover:text-white transition flex items-center gap-1 text-[11px] text-[#A6B4AF] hover:underline"
+          >
+            <span>7일 동안 보이지 않기</span>
+          </button>
+          
+          <button
+            type="button"
+            onClick={() => setIsOpen(false)}
+            className="font-bold text-white hover:text-[#C5A880] transition text-xs"
+          >
+            닫기
+          </button>
+        </div>
+
+      </div>
+    </div>
+  );
+}

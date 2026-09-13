@@ -326,3 +326,28 @@ export const INITIAL_APPLICATION = {
     { date: "09.10 14:00", title: "인식표 제작 및 배송 출발", desc: "우체국택배 6089-1234-5678" },
   ],
 };
+
+// Initial Popups List (3:4 ratio promotional popups)
+export const INITIAL_POPUPS = [
+  {
+    id: "pop_01",
+    title: "동물등록 원스톱 프로모션",
+    imageUrl: "https://res.cloudinary.com/lyjyvy54/image/upload/v1789268626/ChatGPT_Image_2026%EB%85%84_9%EC%9B%94_13%EC%9D%BC_%EC%98%A4%ED%9B%84_12_03_30_1_dxjcu5.png",
+    linkUrl: "",
+    linkType: "internal", // or external
+    internalTab: "registration",
+    active: true,
+    createdAt: "2026-09-13",
+  },
+  {
+    id: "pop_02",
+    title: "슬반생 VIP 멤버십 사전신청",
+    imageUrl: "https://res.cloudinary.com/lyjyvy54/image/upload/v1789268626/ChatGPT_Image_2026%EB%85%84_9%EC%9B%94_13%EC%9D%BC_%EC%98%A4%ED%9B%84_12_03_30_6_e9hvro.png",
+    linkUrl: "",
+    linkType: "internal",
+    internalTab: "membership",
+    active: true,
+    createdAt: "2026-09-13",
+  },
+];
+
