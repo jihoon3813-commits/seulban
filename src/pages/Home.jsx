@@ -477,11 +477,10 @@ export default function Home({
             <div className="lg:col-span-5 relative">
               <div className="relative overflow-hidden shadow-xl border-4 border-white aspect-[4/3] sm:aspect-square">
                 <img
-                  src="https://images.unsplash.com/photo-1583511655857-d19b40a7a54e?w=800&auto=format&fit=crop&q=80"
+                  src="https://res.cloudinary.com/lyjyvy54/image/upload/v1789269419/ChatGPT_Image_2026%EB%85%84_9%EC%9B%94_13%EC%9D%BC_%EC%98%A4%ED%9B%84_12_10_52_5_a4ktmv.png"
                   alt="행복한 반려생활 슬반생"
                   className="w-full h-full object-cover"
                 />
-                <div className="absolute inset-0 bg-[#144A42]/15 pointer-events-none"></div>
               </div>
               
               {/* Sharp Right-Angled Green Border Accent Frame (no rounded corners!) */}
