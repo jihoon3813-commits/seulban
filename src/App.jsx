@@ -22,6 +22,8 @@ import {
 } from './components/Modals';
 
 import { PhoneIcon, SparklesIcon, PawIcon, MessageSquare } from './components/Icons';
+import { useQuery, useMutation } from 'convex/react';
+import { api } from '../convex/_generated/api';
 import { 
   INITIAL_PET, 
   INITIAL_APPLICATION, 
@@ -75,41 +77,76 @@ export default function App() {
     isMember: true,
   });
 
-  // Pet Profile State
-  const [pet, setPet] = useState(INITIAL_PET);
+  // Convex Hooks & Queries (Reactive backend synchronization)
+  const convexApps = useQuery(api.applications.list);
+  const convexPet = useQuery(api.pets.getLatest);
+  const convexPartners = useQuery(api.partners.list);
+  const convexTravels = useQuery(api.travels.list);
+  const convexPopups = useQuery(api.popups.list);
+  const convexBrand = useQuery(api.settings.get, { key: 'brand_info' });
 
-  // Applications State (REG-004)
-  const [applications, setApplications] = useState([INITIAL_APPLICATION]);
+  // Convex Mutations
+  const submitAppMutation = useMutation(api.applications.submit);
+  const updateAppStatusMutation = useMutation(api.applications.updateStatus);
+  const removeAppMutation = useMutation(api.applications.remove);
+  const savePetMutation = useMutation(api.pets.save);
+  const addPartnerMutation = useMutation(api.partners.add);
+  const removePartnerMutation = useMutation(api.partners.remove);
+  const addTravelMutation = useMutation(api.travels.add);
+  const removeTravelMutation = useMutation(api.travels.remove);
+  const addPopupMutation = useMutation(api.popups.add);
+  const togglePopupMutation = useMutation(api.popups.toggleActive);
+  const removePopupMutation = useMutation(api.popups.remove);
+  const setSettingMutation = useMutation(api.settings.set);
+
+  // Local state as fallback & optimistic store
+  const [localPet, setLocalPet] = useState(() => {
+    const saved = localStorage.getItem('seulban_pet');
+    return saved ? JSON.parse(saved) : INITIAL_PET;
+  });
+
+  const [localApplications, setLocalApplications] = useState(() => {
+    const saved = localStorage.getItem('seulban_applications');
+    return saved ? JSON.parse(saved) : [INITIAL_APPLICATION];
+  });
+
+  // Derived effective states: Convex data is preferred once loaded; fallback to local state/mockData
+  const applications = (convexApps && convexApps.length > 0) ? convexApps : localApplications;
+  const pet = convexPet || localPet;
 
   // Bookmarks State
   const [bookmarks, setBookmarks] = useState(['p1', 'p2']);
 
-  // Dynamic Content States (Controlled by Admin)
-  const [partners, setPartners] = useState(() => {
+  // Dynamic Content States
+  const [localPartners, setLocalPartners] = useState(() => {
     const saved = localStorage.getItem('seulban_partners');
     return saved ? JSON.parse(saved) : PARTNER_LIST;
   });
+  const partners = (convexPartners && convexPartners.length > 0) ? convexPartners : localPartners;
 
   const [adoptionList, setAdoptionList] = useState(() => {
     const saved = localStorage.getItem('seulban_adoption');
     return saved ? JSON.parse(saved) : ADOPTION_LIST;
   });
 
-  const [travelList, setTravelList] = useState(() => {
+  const [localTravelList, setLocalTravelList] = useState(() => {
     const saved = localStorage.getItem('seulban_travel');
     return saved ? JSON.parse(saved) : TRAVEL_LIST;
   });
+  const travelList = (convexTravels && convexTravels.length > 0) ? convexTravels : localTravelList;
 
-  const [brandInfo, setBrandInfo] = useState(() => {
+  const [localBrandInfo, setLocalBrandInfo] = useState(() => {
     const saved = localStorage.getItem('seulban_brand');
     return saved ? JSON.parse(saved) : BRAND_INFO;
   });
+  const brandInfo = convexBrand || localBrandInfo;
 
-  // Popups State (Controlled by Admin)
-  const [popups, setPopups] = useState(() => {
+  // Popups State
+  const [localPopups, setLocalPopups] = useState(() => {
     const saved = localStorage.getItem('seulban_popups');
     return saved ? JSON.parse(saved) : INITIAL_POPUPS;
   });
+  const popups = (convexPopups && convexPopups.length > 0) ? convexPopups : localPopups;
 
   // Modals
   const [applyModalOpen, setApplyModalOpen] = useState(false);
@@ -129,15 +166,67 @@ export default function App() {
     setTimeout(() => setToast(null), 3000);
   };
 
-  const handleApplySuccess = (newApp, newPet) => {
-    setApplications([newApp, ...applications]);
+  // 1. 동물등록 신청 접수 (Convex DB 연동 + 로컬 백업)
+  const handleApplySuccess = async (newApp, newPet) => {
+    // 1) 즉시 로컬 반영 (낙관적 업데이트)
+    const updatedApps = [newApp, ...localApplications.filter(a => a.id !== newApp.id)];
+    setLocalApplications(updatedApps);
+    localStorage.setItem('seulban_applications', JSON.stringify(updatedApps));
+
+    let updatedPet = null;
     if (newPet) {
-      setPet({
+      updatedPet = {
         ...INITIAL_PET,
         ...newPet,
         id: `pet_${Date.now()}`
-      });
+      };
+      setLocalPet(updatedPet);
+      localStorage.setItem('seulban_pet', JSON.stringify(updatedPet));
     }
+
+    // 2) Convex DB 서버 동기화
+    try {
+      await submitAppMutation({
+        id: newApp.id,
+        type: newApp.type,
+        petName: newApp.petName,
+        petPhoto: newApp.petPhoto || '',
+        petBreed: newPet?.breed || '믹스/기타',
+        petGender: newPet?.gender || '남아',
+        petBirth: newPet?.birth || '2024-01-01',
+        ownerName: newApp.ownerName,
+        phone: newApp.phone,
+        address: newApp.address || '',
+        shippingAddress: newApp.shippingAddress || '',
+        statusCode: newApp.statusCode || 'SUBMITTED',
+        statusLabel: newApp.statusLabel || '접수 완료 (검수 대기)',
+        appliedDate: newApp.appliedDate || new Date().toLocaleString('ko-KR'),
+        trackingNumber: newApp.trackingNumber || '검수 후 발송 준비 예정',
+        history: newApp.history || [
+          { date: '방금 전', title: '온라인 신청서 접수', desc: '담당자 검수 대기 중입니다.' }
+        ]
+      });
+
+      if (updatedPet) {
+        await savePetMutation({
+          id: updatedPet.id,
+          name: updatedPet.name,
+          breed: updatedPet.breed,
+          gender: updatedPet.gender,
+          birth: updatedPet.birth,
+          weight: String(updatedPet.weight || '3.5'),
+          neutered: updatedPet.neutered || '완료',
+          regNumber: updatedPet.regNumber || '발급 심사 진행 중',
+          status: updatedPet.status || '등록 신청 중',
+          photoUrl: updatedPet.photoUrl || '',
+          ownerPhone: newApp.phone
+        });
+      }
+      console.log('✅ Convex DB 동물등록 신청서 및 반려동물 데이터 저장 완료:', newApp.id);
+    } catch (err) {
+      console.warn('Convex DB sync note (fallback to local):', err);
+    }
+
     showToast('동물등록 신청서가 성공적으로 접수되었습니다!');
   };
 
@@ -155,7 +244,8 @@ export default function App() {
     }
   };
 
-  const handleUpdateAppStatus = (appId, newStatusCode) => {
+  // 2. 동물등록 신청 상태 변경 (Convex DB 연동 + 로컬 백업)
+  const handleUpdateAppStatus = async (appId, newStatusCode) => {
     const statusMap = {
       SUBMITTED: '접수 완료',
       REVIEWING: '서류 검수 중',
@@ -164,38 +254,100 @@ export default function App() {
       SHIPPING: '인식표 배송 출발 (우체국)',
       COMPLETED: '처리 완료',
     };
+    const newStatusLabel = statusMap[newStatusCode] || newStatusCode;
 
-    setApplications(applications.map(app => {
+    // 1) 로컬 상태 업데이트
+    const updated = applications.map(app => {
       if (app.id === appId) {
         return {
           ...app,
           statusCode: newStatusCode,
-          statusLabel: statusMap[newStatusCode] || newStatusCode,
+          statusLabel: newStatusLabel,
           history: [
             { 
               date: '방금 전', 
-              title: `상태 변경: ${statusMap[newStatusCode]}`, 
+              title: `상태 변경: ${newStatusLabel}`, 
               desc: '관리자 콘솔에서 변경 처리되었습니다.' 
             },
-            ...app.history
+            ...(app.history || [])
           ]
         };
       }
       return app;
-    }));
-    showToast(`접수건(${appId}) 상태가 [${statusMap[newStatusCode]}]로 변경되었습니다.`);
+    });
+    setLocalApplications(updated);
+    localStorage.setItem('seulban_applications', JSON.stringify(updated));
+
+    // 2) Convex DB 업데이트
+    try {
+      await updateAppStatusMutation({
+        id: appId,
+        statusCode: newStatusCode,
+        statusLabel: newStatusLabel
+      });
+      console.log('✅ Convex DB 접수 상태 업데이트 완료:', appId, newStatusCode);
+    } catch (err) {
+      console.warn('Convex DB status update error:', err);
+    }
+
+    showToast(`접수건(${appId}) 상태가 [${newStatusLabel}]로 변경되었습니다.`);
   };
 
-  const handleAddPartner = (newPartner) => {
+  // 3. 동물등록 신청 내역 삭제 (Convex DB 연동 + 로컬 백업)
+  const handleDeleteApplication = async (appId) => {
+    const updated = applications.filter(app => app.id !== appId);
+    setLocalApplications(updated);
+    localStorage.setItem('seulban_applications', JSON.stringify(updated));
+
+    try {
+      await removeAppMutation({ id: appId });
+      console.log('✅ Convex DB 접수 내역 삭제 완료:', appId);
+    } catch (err) {
+      console.warn('Convex DB removeApp error:', err);
+    }
+
+    showToast(`신청 내역(${appId})이 삭제되었습니다.`);
+  };
+
+  const handleAddPartner = async (newPartner) => {
     const updated = [newPartner, ...partners];
-    setPartners(updated);
+    setLocalPartners(updated);
     localStorage.setItem('seulban_partners', JSON.stringify(updated));
+
+    try {
+      await addPartnerMutation({
+        name: newPartner.name,
+        category: newPartner.category,
+        categoryName: newPartner.categoryName,
+        tag: newPartner.tag,
+        location: newPartner.location,
+        benefit: newPartner.benefit,
+        desc: newPartner.desc,
+        rating: Number(newPartner.rating) || 4.9,
+        reviews: Number(newPartner.reviews) || 50,
+        phone: newPartner.phone,
+        color: newPartner.color || 'bg-[#EBF3FB] text-[#2563EB]',
+        icon: newPartner.icon || 'stethoscope',
+        imageUrl: newPartner.imageUrl || '',
+        featured: !!newPartner.featured,
+      });
+    } catch (e) {
+      console.warn('Convex addPartner note:', e);
+    }
   };
 
-  const handleDeletePartner = (id) => {
-    const updated = partners.filter(p => p.id !== id);
-    setPartners(updated);
+  const handleDeletePartner = async (id) => {
+    const updated = partners.filter(p => p.id !== id && p._id !== id);
+    setLocalPartners(updated);
     localStorage.setItem('seulban_partners', JSON.stringify(updated));
+
+    try {
+      if (typeof id === 'string' && id.startsWith('p_') === false) {
+        await removePartnerMutation({ id });
+      }
+    } catch (e) {
+      console.warn('Convex removePartner note:', e);
+    }
     showToast('제휴처가 삭제되었습니다.');
   };
 
@@ -212,42 +364,101 @@ export default function App() {
     showToast('입양 동물이 삭제되었습니다.');
   };
 
-  const handleAddTravel = (newTravel) => {
+  const handleAddTravel = async (newTravel) => {
     const updated = [newTravel, ...travelList];
-    setTravelList(updated);
+    setLocalTravelList(updated);
     localStorage.setItem('seulban_travel', JSON.stringify(updated));
+
+    try {
+      await addTravelMutation({
+        type: newTravel.type,
+        name: newTravel.name,
+        location: newTravel.location,
+        weightLimit: newTravel.weightLimit,
+        price: newTravel.price,
+        features: Array.isArray(newTravel.features) ? newTravel.features : [newTravel.features],
+        memberBenefit: newTravel.memberBenefit,
+        phone: newTravel.phone,
+        imageUrl: newTravel.imageUrl || '',
+      });
+    } catch (e) {
+      console.warn('Convex addTravel note:', e);
+    }
   };
 
-  const handleDeleteTravel = (id) => {
-    const updated = travelList.filter(t => t.id !== id);
-    setTravelList(updated);
+  const handleDeleteTravel = async (id) => {
+    const updated = travelList.filter(t => t.id !== id && t._id !== id);
+    setLocalTravelList(updated);
     localStorage.setItem('seulban_travel', JSON.stringify(updated));
+
+    try {
+      if (typeof id === 'string' && id.startsWith('t_') === false) {
+        await removeTravelMutation({ id });
+      }
+    } catch (e) {
+      console.warn('Convex removeTravel note:', e);
+    }
     showToast('동반 숙소가 삭제되었습니다.');
   };
 
-  const handleUpdateBrandInfo = (newBrand) => {
-    setBrandInfo(newBrand);
+  const handleUpdateBrandInfo = async (newBrand) => {
+    setLocalBrandInfo(newBrand);
     localStorage.setItem('seulban_brand', JSON.stringify(newBrand));
+
+    try {
+      await setSettingMutation({ key: 'brand_info', value: newBrand });
+    } catch (e) {
+      console.warn('Convex setSetting note:', e);
+    }
   };
 
-  const handleAddPopup = (newPopup) => {
+  const handleAddPopup = async (newPopup) => {
     const updated = [newPopup, ...popups];
-    setPopups(updated);
+    setLocalPopups(updated);
     localStorage.setItem('seulban_popups', JSON.stringify(updated));
+
+    try {
+      await addPopupMutation({
+        title: newPopup.title,
+        imageUrl: newPopup.imageUrl,
+        linkType: newPopup.linkType || 'none',
+        linkUrl: newPopup.linkUrl || '',
+        internalTab: newPopup.internalTab || 'registration',
+        active: newPopup.active !== false,
+      });
+    } catch (e) {
+      console.warn('Convex addPopup note:', e);
+    }
     showToast('새로운 팝업이 등록되었습니다.');
   };
 
-  const handleDeletePopup = (id) => {
-    const updated = popups.filter(p => p.id !== id);
-    setPopups(updated);
+  const handleDeletePopup = async (id) => {
+    const updated = popups.filter(p => p.id !== id && p._id !== id);
+    setLocalPopups(updated);
     localStorage.setItem('seulban_popups', JSON.stringify(updated));
+
+    try {
+      if (typeof id === 'string' && id.startsWith('pop_') === false) {
+        await removePopupMutation({ id });
+      }
+    } catch (e) {
+      console.warn('Convex removePopup note:', e);
+    }
     showToast('팝업이 삭제되었습니다.');
   };
 
-  const handleTogglePopup = (id) => {
-    const updated = popups.map(p => p.id === id ? { ...p, active: !p.active } : p);
-    setPopups(updated);
+  const handleTogglePopup = async (id) => {
+    const updated = popups.map(p => (p.id === id || p._id === id) ? { ...p, active: !p.active } : p);
+    setLocalPopups(updated);
     localStorage.setItem('seulban_popups', JSON.stringify(updated));
+
+    try {
+      if (typeof id === 'string' && id.startsWith('pop_') === false) {
+        await togglePopupMutation({ id });
+      }
+    } catch (e) {
+      console.warn('Convex togglePopup note:', e);
+    }
     showToast('팝업 노출 상태가 변경되었습니다.');
   };
 
@@ -293,6 +504,7 @@ export default function App() {
           }}
           applications={applications}
           onUpdateAppStatus={handleUpdateAppStatus}
+          onDeleteApplication={handleDeleteApplication}
           partners={partners}
           onAddPartner={handleAddPartner}
           onDeletePartner={handleDeletePartner}

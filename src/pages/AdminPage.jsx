@@ -10,6 +10,7 @@ export default function AdminPage({
   onNavigateHome,
   applications,
   onUpdateAppStatus,
+  onDeleteApplication,
   partners,
   onAddPartner,
   onDeletePartner,
@@ -739,16 +740,31 @@ export default function AdminPage({
                               {app.statusLabel}
                             </span>
                           </td>
-                          <td className="p-3.5 text-right">
-                            <select
-                              value={app.statusCode}
-                              onChange={(e) => onUpdateAppStatus(app.id, e.target.value)}
-                              className="text-xs font-bold px-2.5 py-1.5 border border-[#D0C9BD] bg-white focus:outline-none focus:border-[#144A42] text-[#144A42]"
-                            >
-                              {statuses.map((s) => (
-                                <option key={s.code} value={s.code}>{s.label}</option>
-                              ))}
-                            </select>
+                          <td className="p-3.5 text-right whitespace-nowrap">
+                            <div className="flex items-center justify-end gap-2">
+                              <select
+                                value={app.statusCode}
+                                onChange={(e) => onUpdateAppStatus(app.id, e.target.value)}
+                                className="text-xs font-bold px-2.5 py-1.5 border border-[#D0C9BD] bg-white focus:outline-none focus:border-[#144A42] text-[#144A42]"
+                              >
+                                {statuses.map((s) => (
+                                  <option key={s.code} value={s.code}>{s.label}</option>
+                                ))}
+                              </select>
+                              {onDeleteApplication && (
+                                <button
+                                  type="button"
+                                  onClick={() => {
+                                    if (confirm(`[${app.id} / ${app.petName}] 신청 내역을 정말 삭제하시겠습니까?`)) {
+                                      onDeleteApplication(app.id);
+                                    }
+                                  }}
+                                  className="text-xs text-red-500 hover:text-red-700 underline px-1.5 py-1"
+                                >
+                                  삭제
+                                </button>
+                              )}
+                            </div>
                           </td>
                         </tr>
                       ))

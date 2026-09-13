@@ -4,9 +4,10 @@ import { v } from "convex/values";
 export default defineSchema({
   // 동물등록 신청서 (Applications)
   applications: defineTable({
-    id: v.string(), // 접수번호 (예: SB-20260909-0821)
-    type: v.string(), // 외장형 무선식별장치 등
+    id: v.string(), // 접수번호 (예: REG-20260913-1234)
+    type: v.string(), // 외장형 안심 목걸이 칩, 내장형 마이크로칩 시술권 등
     petName: v.string(),
+    petPhoto: v.optional(v.string()),
     petBreed: v.optional(v.string()),
     petGender: v.optional(v.string()),
     petBirth: v.optional(v.string()),
@@ -14,9 +15,11 @@ export default defineSchema({
     ownerName: v.string(),
     phone: v.string(),
     address: v.optional(v.string()),
+    shippingAddress: v.optional(v.string()),
     statusCode: v.string(), // SUBMITTED, REVIEWING, ACCEPTED, REGISTERED, SHIPPING, COMPLETED
     statusLabel: v.string(),
     appliedDate: v.string(),
+    trackingNumber: v.optional(v.string()),
     history: v.optional(v.array(v.object({
       date: v.string(),
       title: v.string(),
@@ -26,6 +29,21 @@ export default defineSchema({
     .index("by_app_id", ["id"])
     .index("by_phone", ["phone"])
     .index("by_status", ["statusCode"]),
+
+  // 등록 반려동물 프로필 (Pets)
+  pets: defineTable({
+    id: v.string(),
+    name: v.string(),
+    breed: v.string(),
+    gender: v.string(),
+    birth: v.string(),
+    weight: v.optional(v.string()),
+    neutered: v.optional(v.string()),
+    regNumber: v.string(),
+    status: v.string(),
+    photoUrl: v.optional(v.string()),
+    ownerPhone: v.optional(v.string()),
+  }).index("by_reg_number", ["regNumber"]),
 
   // 제휴처 (Partners)
   partners: defineTable({
@@ -41,6 +59,7 @@ export default defineSchema({
     phone: v.string(),
     color: v.string(),
     icon: v.string(),
+    imageUrl: v.optional(v.string()),
     featured: v.boolean(),
   }).index("by_category", ["category"]),
 
@@ -68,6 +87,18 @@ export default defineSchema({
     features: v.array(v.string()),
     memberBenefit: v.string(),
     phone: v.string(),
+    imageUrl: v.optional(v.string()),
+  }),
+
+  // 팝업 관리 (Popups - 3:4 비율)
+  popups: defineTable({
+    title: v.string(),
+    imageUrl: v.string(),
+    linkType: v.string(), // none, url, internal
+    linkUrl: v.optional(v.string()),
+    internalTab: v.optional(v.string()),
+    active: v.boolean(),
+    createdAt: v.optional(v.string()),
   }),
 
   // 브랜드 및 관리자 설정 (Settings)
@@ -76,3 +107,4 @@ export default defineSchema({
     value: v.any(),
   }).index("by_key", ["key"]),
 });
+

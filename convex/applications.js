@@ -27,6 +27,7 @@ export const submit = mutation({
     id: v.string(),
     type: v.string(),
     petName: v.string(),
+    petPhoto: v.optional(v.string()),
     petBreed: v.optional(v.string()),
     petGender: v.optional(v.string()),
     petBirth: v.optional(v.string()),
@@ -34,18 +35,29 @@ export const submit = mutation({
     ownerName: v.string(),
     phone: v.string(),
     address: v.optional(v.string()),
+    shippingAddress: v.optional(v.string()),
+    statusCode: v.optional(v.string()),
+    statusLabel: v.optional(v.string()),
+    appliedDate: v.optional(v.string()),
+    trackingNumber: v.optional(v.string()),
+    history: v.optional(v.array(v.object({
+      date: v.string(),
+      title: v.string(),
+      desc: v.string(),
+    }))),
   },
   handler: async (ctx, args) => {
     const newApp = {
       ...args,
-      statusCode: "SUBMITTED",
-      statusLabel: "접수 완료",
-      appliedDate: new Date().toISOString().slice(0, 10).replace(/-/g, "."),
-      history: [
+      statusCode: args.statusCode || "SUBMITTED",
+      statusLabel: args.statusLabel || "접수 완료 (검수 대기)",
+      appliedDate: args.appliedDate || new Date().toLocaleString("ko-KR"),
+      trackingNumber: args.trackingNumber || "검수 후 발송 준비 예정",
+      history: args.history || [
         {
           date: "방금 전",
-          title: "접수 완료",
-          desc: "온라인 동물등록 신청서가 정상 접수되었습니다.",
+          title: "온라인 신청서 접수",
+          desc: "담당자 검수 대기 중입니다.",
         },
       ],
     };
@@ -89,3 +101,21 @@ export const updateStatus = mutation({
     return true;
   },
 });
+
+// 삭제 (관리자 전용)
+export const remove = mutation({
+  args: { id: v.string() },
+  handler: async (ctx, args) => {
+    const app = await ctx.db
+      .query("applications")
+      .withIndex("by_app_id", (q) => q.eq("id", args.id))
+      .first();
+
+    if (app) {
+      await ctx.db.delete(app._id);
+      return true;
+    }
+    return false;
+  },
+});
+
