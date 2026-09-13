@@ -16,7 +16,7 @@ export const getById = query({
   handler: async (ctx, args) => {
     return await ctx.db
       .query("applications")
-      .withIndex("by_id", (q) => q.eq("id", args.id))
+      .withIndex("by_app_id", (q) => q.eq("id", args.id))
       .first();
   },
 });
@@ -64,7 +64,7 @@ export const updateStatus = mutation({
   handler: async (ctx, args) => {
     const app = await ctx.db
       .query("applications")
-      .withIndex("by_id", (q) => q.eq("id", args.id))
+      .withIndex("by_app_id", (q) => q.eq("id", args.id))
       .first();
 
     if (!app) {

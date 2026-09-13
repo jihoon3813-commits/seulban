@@ -23,7 +23,7 @@ export default defineSchema({
       desc: v.string(),
     }))),
   })
-    .index("by_id", ["id"])
+    .index("by_app_id", ["id"])
     .index("by_phone", ["phone"])
     .index("by_status", ["statusCode"]),
 
