@@ -37,3 +37,29 @@ export const remove = mutation({
     return true;
   },
 });
+
+export const update = mutation({
+  args: {
+    id: v.id("partners"),
+    name: v.optional(v.string()),
+    category: v.optional(v.string()),
+    categoryName: v.optional(v.string()),
+    tag: v.optional(v.string()),
+    location: v.optional(v.string()),
+    benefit: v.optional(v.string()),
+    desc: v.optional(v.string()),
+    rating: v.optional(v.number()),
+    reviews: v.optional(v.number()),
+    phone: v.optional(v.string()),
+    color: v.optional(v.string()),
+    icon: v.optional(v.string()),
+    imageUrl: v.optional(v.string()),
+    featured: v.optional(v.boolean()),
+  },
+  handler: async (ctx, args) => {
+    const { id, ...updates } = args;
+    await ctx.db.patch(id, updates);
+    return true;
+  },
+});
+

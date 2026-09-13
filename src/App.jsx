@@ -91,6 +91,7 @@ export default function App() {
   const removeAppMutation = useMutation(api.applications.remove);
   const savePetMutation = useMutation(api.pets.save);
   const addPartnerMutation = useMutation(api.partners.add);
+  const updatePartnerMutation = useMutation(api.partners.update);
   const removePartnerMutation = useMutation(api.partners.remove);
   const addTravelMutation = useMutation(api.travels.add);
   const removeTravelMutation = useMutation(api.travels.remove);
@@ -336,6 +337,38 @@ export default function App() {
     }
   };
 
+  const handleUpdatePartner = async (updatedPartner) => {
+    const pId = updatedPartner._id || updatedPartner.id;
+    const updated = partners.map(p => (p._id === pId || p.id === pId) ? { ...p, ...updatedPartner } : p);
+    setLocalPartners(updated);
+    localStorage.setItem('seulban_partners', JSON.stringify(updated));
+
+    try {
+      if (updatedPartner._id) {
+        await updatePartnerMutation({
+          id: updatedPartner._id,
+          name: updatedPartner.name,
+          category: updatedPartner.category,
+          categoryName: updatedPartner.categoryName,
+          tag: updatedPartner.tag,
+          location: updatedPartner.location,
+          benefit: updatedPartner.benefit,
+          desc: updatedPartner.desc,
+          rating: Number(updatedPartner.rating) || 4.9,
+          reviews: Number(updatedPartner.reviews) || 50,
+          phone: updatedPartner.phone,
+          color: updatedPartner.color,
+          icon: updatedPartner.icon,
+          imageUrl: updatedPartner.imageUrl || '',
+          featured: !!updatedPartner.featured,
+        });
+      }
+    } catch (e) {
+      console.warn('Convex updatePartner note:', e);
+    }
+    showToast('제휴처 정보가 성공적으로 수정되었습니다.');
+  };
+
   const handleDeletePartner = async (id) => {
     const updated = partners.filter(p => p.id !== id && p._id !== id);
     setLocalPartners(updated);
@@ -507,6 +540,7 @@ export default function App() {
           onDeleteApplication={handleDeleteApplication}
           partners={partners}
           onAddPartner={handleAddPartner}
+          onUpdatePartner={handleUpdatePartner}
           onDeletePartner={handleDeletePartner}
           adoptionList={adoptionList}
           onAddAdoption={handleAddAdoption}

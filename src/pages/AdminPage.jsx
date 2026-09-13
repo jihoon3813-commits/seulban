@@ -13,6 +13,7 @@ export default function AdminPage({
   onDeleteApplication,
   partners,
   onAddPartner,
+  onUpdatePartner,
   onDeletePartner,
   adoptionList,
   onAddAdoption,
@@ -83,6 +84,25 @@ export default function AdminPage({
     const reader = new FileReader();
     reader.onload = (event) => {
       setNewPartner(prev => ({ ...prev, imageUrl: event.target.result }));
+    };
+    reader.readAsDataURL(file);
+  };
+
+  // Modals for editing partner
+  const [isEditPartnerOpen, setIsEditPartnerOpen] = useState(false);
+  const [editingPartner, setEditingPartner] = useState(null);
+  const [editPartnerImageMode, setEditPartnerImageMode] = useState('upload'); // 'upload' | 'url'
+
+  const handleEditPartnerImageUpload = (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (file.size > 5 * 1024 * 1024) {
+      alert('이미지 파일 용량은 최대 5MB 이하만 업로드 가능합니다.');
+      return;
+    }
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      setEditingPartner(prev => ({ ...prev, imageUrl: event.target.result }));
     };
     reader.readAsDataURL(file);
   };
@@ -1269,16 +1289,32 @@ export default function AdminPage({
                             {partner.location}
                           </p>
                         </div>
-                        <button
-                          onClick={() => {
-                            if (confirm(`[${partner.name}] 제휴처를 정말 삭제하시겠습니까?`)) {
-                              onDeletePartner(partner.id);
-                            }
-                          }}
-                          className="text-xs text-red-500 hover:text-red-700 underline shrink-0 ml-2"
-                        >
-                          삭제
-                        </button>
+                        <div className="flex items-center gap-2 shrink-0 ml-2">
+                          <button
+                            onClick={() => {
+                              setEditingPartner({
+                                ...partner,
+                                imageUrl: partner.imageUrl || '',
+                              });
+                              setEditPartnerImageMode(partner.imageUrl && partner.imageUrl.startsWith('http') && !partner.imageUrl.startsWith('data:') ? 'url' : 'upload');
+                              setIsEditPartnerOpen(true);
+                            }}
+                            className="text-xs text-[#144A42] font-semibold hover:text-[#0D3832] underline"
+                          >
+                            수정
+                          </button>
+                          <span className="text-gray-300">|</span>
+                          <button
+                            onClick={() => {
+                              if (confirm(`[${partner.name}] 제휴처를 정말 삭제하시겠습니까?`)) {
+                                onDeletePartner(partner._id || partner.id);
+                              }
+                            }}
+                            className="text-xs text-red-500 hover:text-red-700 underline"
+                          >
+                            삭제
+                          </button>
+                        </div>
                       </div>
 
                       <div className="p-3 bg-[#FAF8F5] border border-[#EAE3D6] text-xs space-y-1">
@@ -1499,6 +1535,233 @@ export default function AdminPage({
                         className="px-5 py-2 bg-[#144A42] text-white font-bold hover:bg-[#0D3832]"
                       >
                         제휴처 등록 완료
+                      </button>
+                    </div>
+                  </form>
+                </div>
+              </div>
+            )}
+
+            {/* Modal: 제휴처 정보 수정 */}
+            {isEditPartnerOpen && editingPartner && (
+              <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fade-in">
+                <div className="bg-white w-full max-w-lg shadow-2xl p-6 border border-[#ECE5D8] max-h-[90vh] overflow-y-auto">
+                  <div className="flex justify-between items-center mb-5 pb-3 border-b border-gray-100">
+                    <div>
+                      <h3 className="font-bold text-base text-[#144A42]">제휴처 정보 수정</h3>
+                      <p className="text-[11px] text-gray-500 mt-0.5">제휴처의 상세 내용 및 대표 이미지를 수정합니다.</p>
+                    </div>
+                    <button onClick={() => { setIsEditPartnerOpen(false); setEditingPartner(null); }} className="p-1 text-gray-400 hover:text-gray-700">
+                      <XIcon className="w-5 h-5" />
+                    </button>
+                  </div>
+
+                  <form onSubmit={(e) => {
+                    e.preventDefault();
+                    if (onUpdatePartner) {
+                      onUpdatePartner(editingPartner);
+                    }
+                    setIsEditPartnerOpen(false);
+                    setEditingPartner(null);
+                  }} className="space-y-3.5 text-xs">
+                    <div>
+                      <label className="block font-bold mb-1">제휴처 이름</label>
+                      <input
+                        type="text"
+                        value={editingPartner.name || ''}
+                        onChange={(e) => setEditingPartner({ ...editingPartner, name: e.target.value })}
+                        placeholder="예: 강남 스마일 동물병원"
+                        className="w-full px-3 py-2 border border-gray-300 focus:border-[#144A42] focus:outline-none"
+                        required
+                      />
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-3">
+                      <div>
+                        <label className="block font-bold mb-1">업종 분류</label>
+                        <select
+                          value={editingPartner.category || 'hospital'}
+                          onChange={(e) => {
+                            const catNames = {
+                              hospital: '동물병원',
+                              grooming: '미용/스파',
+                              kindergarten: '유치원/호텔',
+                              funeral: '장례케어'
+                            };
+                            const catColors = {
+                              hospital: 'bg-[#EBF3FB] text-[#2563EB]',
+                              grooming: 'bg-[#FDF2F4] text-[#E11D48]',
+                              kindergarten: 'bg-[#FEF9EE] text-[#D97706]',
+                              funeral: 'bg-[#F3F4F6] text-[#4B5563]'
+                            };
+                            setEditingPartner({
+                              ...editingPartner,
+                              category: e.target.value,
+                              categoryName: catNames[e.target.value] || '기타',
+                              color: catColors[e.target.value] || editingPartner.color
+                            });
+                          }}
+                          className="w-full px-3 py-2 border border-gray-300 focus:border-[#144A42] focus:outline-none"
+                        >
+                          <option value="hospital">동물병원</option>
+                          <option value="grooming">미용/스파</option>
+                          <option value="kindergarten">유치원/호텔</option>
+                          <option value="funeral">장례케어</option>
+                        </select>
+                      </div>
+
+                      <div>
+                        <label className="block font-bold mb-1">특징 태그</label>
+                        <input
+                          type="text"
+                          value={editingPartner.tag || ''}
+                          onChange={(e) => setEditingPartner({ ...editingPartner, tag: e.target.value })}
+                          placeholder="예: 24시 응급진료"
+                          className="w-full px-3 py-2 border border-gray-300 focus:border-[#144A42] focus:outline-none"
+                          required
+                        />
+                      </div>
+                    </div>
+
+                    {/* Image Upload / URL Mode */}
+                    <div className="p-3 bg-[#FAF8F5] border border-[#EAE3D6] space-y-2">
+                      <div className="flex items-center justify-between">
+                        <label className="block font-bold text-[#144A42]">
+                          제휴처 대표 이미지 <span className="text-[11px] font-normal text-gray-500">(선택)</span>
+                        </label>
+                        <div className="flex gap-1 text-[11px]">
+                          <button
+                            type="button"
+                            onClick={() => setEditPartnerImageMode('upload')}
+                            className={`px-2 py-0.5 font-bold transition ${editPartnerImageMode === 'upload' ? 'bg-[#144A42] text-white' : 'bg-gray-200 text-gray-600'}`}
+                          >
+                            직접 업로드
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => setEditPartnerImageMode('url')}
+                            className={`px-2 py-0.5 font-bold transition ${editPartnerImageMode === 'url' ? 'bg-[#144A42] text-white' : 'bg-gray-200 text-gray-600'}`}
+                          >
+                            이미지 URL 입력
+                          </button>
+                        </div>
+                      </div>
+
+                      {editPartnerImageMode === 'upload' ? (
+                        <div>
+                          <input
+                            type="file"
+                            accept="image/*"
+                            onChange={handleEditPartnerImageUpload}
+                            className="w-full text-xs text-gray-500 file:mr-3 file:py-1.5 file:px-3 file:border-0 file:text-xs file:font-semibold file:bg-[#144A42] file:text-white hover:file:bg-[#0D3832] cursor-pointer"
+                          />
+                          <p className="text-[10px] text-gray-400 mt-1">권장 비율: 16:9 또는 4:3 (최대 5MB, JPG/PNG/WebP)</p>
+                        </div>
+                      ) : (
+                        <div>
+                          <input
+                            type="url"
+                            value={editingPartner.imageUrl || ''}
+                            onChange={(e) => setEditingPartner({ ...editingPartner, imageUrl: e.target.value })}
+                            placeholder="https://images.unsplash.com/... 또는 웹 이미지 URL"
+                            className="w-full px-3 py-2 border border-gray-300 focus:border-[#144A42] focus:outline-none text-xs"
+                          />
+                        </div>
+                      )}
+
+                      {editingPartner.imageUrl && (
+                        <div className="mt-2 relative w-full h-32 bg-gray-100 overflow-hidden border border-gray-200">
+                          <img
+                            src={editingPartner.imageUrl}
+                            alt="제휴처 미리보기"
+                            className="w-full h-full object-cover"
+                          />
+                          <button
+                            type="button"
+                            onClick={() => setEditingPartner({ ...editingPartner, imageUrl: '' })}
+                            className="absolute top-1.5 right-1.5 bg-black/70 text-white text-[10px] px-1.5 py-0.5 hover:bg-black"
+                          >
+                            제거
+                          </button>
+                        </div>
+                      )}
+                    </div>
+
+                    <div>
+                      <label className="block font-bold mb-1">위치 (지역)</label>
+                      <input
+                        type="text"
+                        value={editingPartner.location || ''}
+                        onChange={(e) => setEditingPartner({ ...editingPartner, location: e.target.value })}
+                        placeholder="예: 서울 강남구 역삼동"
+                        className="w-full px-3 py-2 border border-gray-300 focus:border-[#144A42] focus:outline-none"
+                        required
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block font-bold mb-1">슬반생 회원 단독 혜택</label>
+                      <input
+                        type="text"
+                        value={editingPartner.benefit || ''}
+                        onChange={(e) => setEditingPartner({ ...editingPartner, benefit: e.target.value })}
+                        placeholder="예: 진료비 15% 현장 즉시할인"
+                        className="w-full px-3 py-2 border border-gray-300 focus:border-[#144A42] focus:outline-none"
+                        required
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block font-bold mb-1">상세 소개 문구</label>
+                      <textarea
+                        value={editingPartner.desc || ''}
+                        onChange={(e) => setEditingPartner({ ...editingPartner, desc: e.target.value })}
+                        rows="2"
+                        className="w-full px-3 py-2 border border-gray-300 focus:border-[#144A42] focus:outline-none"
+                        required
+                      />
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-3">
+                      <div>
+                        <label className="block font-bold mb-1">연락처</label>
+                        <input
+                          type="text"
+                          value={editingPartner.phone || ''}
+                          onChange={(e) => setEditingPartner({ ...editingPartner, phone: e.target.value })}
+                          placeholder="02-1234-5678"
+                          className="w-full px-3 py-2 border border-gray-300 focus:border-[#144A42] focus:outline-none"
+                          required
+                        />
+                      </div>
+                      <div>
+                        <label className="block font-bold mb-1">평점 (별점)</label>
+                        <input
+                          type="number"
+                          step="0.1"
+                          min="1"
+                          max="5"
+                          value={editingPartner.rating || 4.9}
+                          onChange={(e) => setEditingPartner({ ...editingPartner, rating: parseFloat(e.target.value) || 4.9 })}
+                          className="w-full px-3 py-2 border border-gray-300 focus:border-[#144A42] focus:outline-none"
+                          required
+                        />
+                      </div>
+                    </div>
+
+                    <div className="pt-3 flex justify-end gap-2 border-t border-gray-100">
+                      <button
+                        type="button"
+                        onClick={() => { setIsEditPartnerOpen(false); setEditingPartner(null); }}
+                        className="px-4 py-2 border border-gray-300 text-gray-600 hover:bg-gray-50"
+                      >
+                        취소
+                      </button>
+                      <button
+                        type="submit"
+                        className="px-5 py-2 bg-[#144A42] text-white font-bold hover:bg-[#0D3832]"
+                      >
+                        수정사항 저장
                       </button>
                     </div>
                   </form>
