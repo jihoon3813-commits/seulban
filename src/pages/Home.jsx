@@ -2,7 +2,8 @@ import React, { useState } from 'react';
 import { 
   ArrowRight, CheckIcon, ShieldCheckIcon, PawIcon, PawOutlineIcon, HeartIcon, 
   HomeIcon, ScissorsIcon, StethoscopeIcon, FlowerIcon, SearchIcon, 
-  MapPinIcon, SparklesIcon, ChevronRight, PhoneIcon, PlaneIcon, HandHeartIcon 
+  MapPinIcon, SparklesIcon, ChevronRight, PhoneIcon, PlaneIcon, HandHeartIcon,
+  HospitalBuildingIcon, HotelBuildingIcon 
 } from '../components/Icons';
 import { 
   CORE_SERVICES, MEMBERSHIP_PERKS, PARTNER_LIST, BRAND_INFO 
@@ -379,129 +380,91 @@ export default function Home({
         </div>
       </section>
 
-      {/* 5. SECTION: 믿고 찾을 수 있는 우리 동네 반려생활 (PARTNERS) - Rectangles */}
-      <section className="py-24 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      {/* 5. SECTION: 믿고 찾을 수 있는 우리 동네 반려생활 (PARTNERS) - Clean Minimal matching image 2 */}
+      <section className="py-20 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         
         {/* Section Header */}
-        <div className="flex flex-col md:flex-row md:items-end justify-between mb-10 gap-4">
-          <div>
-            <span className="text-xs font-bold tracking-widest text-[#B48B55] uppercase">
-              VERIFIED PARTNERS
-            </span>
-            <h2 className="text-2xl sm:text-4xl font-extrabold text-[#142C27] tracking-tight mt-1">
-              믿고 찾을 수 있는<br />
-              <span className="text-[#B48B55]">우리 동네 반려생활</span>
-            </h2>
-            <p className="text-xs sm:text-sm text-[#6C7A74] mt-2">
-              슬반생이 깐깐하게 검증한 안심 제휴 파트너를 만나보세요.
-            </p>
-          </div>
-
-          <button
-            onClick={() => onNavigate('partners')}
-            className="text-xs font-bold text-[#144A42] hover:underline flex items-center gap-1 self-start md:self-auto"
-          >
-            <span>제휴처 전체보기</span>
-            <ChevronRight className="w-4 h-4" />
-          </button>
+        <div className="space-y-2">
+          <span className="text-[11px] font-bold tracking-[0.2em] text-[#937748] uppercase">
+            PARTNER
+          </span>
+          <h2 className="text-2xl sm:text-4xl font-extrabold text-[#142C27] tracking-tight leading-tight">
+            믿고 찾을 수 있는<br />
+            우리 동네 반려생활
+          </h2>
+          <p className="text-xs sm:text-sm text-[#6C7A74] mt-2 font-normal">
+            지역과 서비스별로 검증된 슬반생 제휴처를 찾아보세요.
+          </p>
         </div>
 
-        {/* Filter and Search Bar - Clean Rectangles */}
-        <div className="flex flex-col sm:flex-row gap-3 mb-8">
-          <div className="relative flex-1">
-            <SearchIcon className="w-4 h-4 text-gray-400 absolute left-4 top-1/2 -translate-y-1/2" />
+        {/* Thin Divider Line under header */}
+        <div className="border-b border-[#DDD7CB] mt-8 mb-6" />
+
+        {/* Search Input and View All Link */}
+        <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 mb-8">
+          <div className="relative flex items-center gap-2.5 pb-2 border-b border-[#C8C1B4] w-full sm:max-w-sm">
+            <SearchIcon className="w-4 h-4 text-[#8C9892] flex-shrink-0" />
             <input
               type="text"
               value={searchKeyword}
               onChange={(e) => setSearchKeyword(e.target.value)}
-              placeholder="병원, 미용실, 동네 이름을 검색해 보세요 (예: 강남, 분당, 스파)"
-              className="w-full pl-11 pr-4 py-3 bg-white border border-[#E2DDD3] text-xs focus:outline-none focus:border-[#144A42] shadow-xs"
+              placeholder="지역이나 업체명을 검색해보세요"
+              className="w-full bg-transparent text-xs sm:text-sm text-[#1F2C27] placeholder:text-[#8C9892] focus:outline-none"
             />
           </div>
 
-          <div className="flex gap-1.5 overflow-x-auto no-scrollbar pb-1">
-            {[
-              { id: 'all', label: '전체' },
-              { id: 'hospital', label: '동물병원' },
-              { id: 'grooming', label: '미용/스파' },
-              { id: 'hotel', label: '호텔/유치원' },
-            ].map((tab) => (
-              <button
-                key={tab.id}
-                onClick={() => setPartnerCategory(tab.id)}
-                className={`px-5 py-2.5 text-xs font-semibold whitespace-nowrap transition ${
-                  partnerCategory === tab.id
-                    ? 'bg-[#144A42] text-white shadow-xs font-bold'
-                    : 'bg-[#EFECE6] text-[#4F5B55] hover:bg-[#E3DFD6]'
-                }`}
-              >
-                {tab.label}
-              </button>
-            ))}
-          </div>
+          <button
+            onClick={() => onNavigate('partners')}
+            className="text-xs sm:text-sm font-semibold text-[#1F2C27] hover:text-[#144A42] flex items-center gap-1 self-end sm:self-auto transition pb-1"
+          >
+            <span>전체 제휴처 보기</span>
+            <ArrowRight className="w-3.5 h-3.5" />
+          </button>
         </div>
 
-        {/* Partner Cards (Rectangular with pastel header blocks) */}
+        {/* Partner Cards (Pastel blocks + Clean bottom info) */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          {filteredPartners.map((item) => {
-            const isBookmarked = bookmarks.includes(item.id);
-            return (
-              <div
-                key={item.id}
-                onClick={() => onOpenPartnerModal(item)}
-                className="bg-white overflow-hidden border border-[#EAE5D9] shadow-xs hover:shadow-xl transition-all duration-300 cursor-pointer group flex flex-col"
-              >
-                {/* Pastel Top Visual Block */}
-                <div className={`h-36 flex flex-col items-center justify-center relative ${item.color}`}>
-                  <button
-                    type="button"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      onToggleBookmark(item.id);
-                    }}
-                    className="absolute top-3.5 right-3.5 w-8 h-8 bg-white/90 flex items-center justify-center text-gray-400 hover:text-red-500 shadow-xs"
-                  >
-                    <HeartIcon className="w-4 h-4" filled={isBookmarked} />
-                  </button>
-
-                  <div className="w-12 h-12 bg-white shadow-sm flex items-center justify-center mb-1 text-current">
-                    {item.icon === 'stethoscope' && <StethoscopeIcon className="w-6 h-6" />}
-                    {item.icon === 'scissors' && <ScissorsIcon className="w-6 h-6" />}
-                    {item.icon === 'home' && <HomeIcon className="w-6 h-6" />}
-                  </div>
-                  <span className="text-[11px] font-extrabold tracking-wider uppercase opacity-80">
-                    {item.categoryName}
-                  </span>
+          {filteredPartners.slice(0, 3).map((item) => (
+            <div
+              key={item.id}
+              onClick={() => onOpenPartnerModal(item)}
+              className="group cursor-pointer transition-all duration-300"
+            >
+              {/* Top Pastel Visual Block */}
+              <div className={`w-full aspect-[16/10] sm:h-52 flex flex-col items-center justify-center transition-transform duration-300 group-hover:-translate-y-1 ${item.color}`}>
+                <div className="w-12 h-12 flex items-center justify-center mb-2 text-current">
+                  {item.icon === 'hospital' && <HospitalBuildingIcon className="w-8 h-8 stroke-[1.8]" />}
+                  {item.icon === 'hotel' && <HotelBuildingIcon className="w-8 h-8 stroke-[1.8]" />}
+                  {item.icon === 'scissors' && <ScissorsIcon className="w-7 h-7 stroke-[1.8]" />}
+                  {item.icon === 'stethoscope' && <HospitalBuildingIcon className="w-8 h-8 stroke-[1.8]" />}
+                  {item.icon === 'home' && <HotelBuildingIcon className="w-8 h-8 stroke-[1.8]" />}
                 </div>
+                <span className="text-xs font-semibold tracking-tight opacity-90">
+                  {item.categoryName}
+                </span>
+              </div>
 
-                {/* Bottom Content */}
-                <div className="p-6 flex-1 flex flex-col justify-between space-y-4">
-                  <div>
-                    <div className="flex items-center gap-1.5 text-xs text-[#808E88] mb-1">
-                      <MapPinIcon className="w-3.5 h-3.5" />
-                      <span>{item.location}</span>
-                    </div>
-                    <h3 className="text-lg font-bold text-[#142C27] group-hover:text-[#144A42] transition">
-                      {item.name}
-                    </h3>
-                    <p className="text-xs text-[#63726C] line-clamp-2 mt-1.5 leading-relaxed">
-                      {item.desc}
-                    </p>
-                  </div>
-
-                  <div className="pt-3 border-t border-[#F2EEE6] flex items-center justify-between">
-                    <span className="text-xs font-bold text-[#144A42] bg-[#EAF5F2] px-2.5 py-1">
-                      {item.benefit}
-                    </span>
-                    <span className="text-xs font-semibold text-gray-500 group-hover:text-[#144A42] flex items-center gap-0.5">
-                      상세보기 →
-                    </span>
-                  </div>
+              {/* Bottom Information (Directly on page background) */}
+              <div className="pt-4 pb-2 space-y-1">
+                <span className="text-[11px] sm:text-xs text-[#7A8781] block font-medium">
+                  {item.categoryName} · {item.location}
+                </span>
+                <h3 className="text-base sm:text-lg font-bold text-[#142C27] tracking-tight group-hover:text-[#144A42] transition">
+                  {item.name}
+                </h3>
+                <div className="flex items-center gap-1.5 text-xs text-[#4F635B] font-medium pt-1">
+                  <span className="w-3.5 h-3.5 rounded-full border border-[#4F635B] flex items-center justify-center text-[9px] leading-none">
+                    ✓
+                  </span>
+                  <span>{item.benefit}</span>
                 </div>
               </div>
-            );
-          })}
+            </div>
+          ))}
         </div>
+
+        {/* Bottom Full-width Divider Line */}
+        <div className="border-b border-[#DDD7CB] mt-12" />
 
       </section>
 
