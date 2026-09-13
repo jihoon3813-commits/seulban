@@ -469,7 +469,7 @@ export default function Home({
       </section>
 
       {/* 6. SECTION: ABOUT US (Sharp Geometric Right-Angled Frame matching screenshot) */}
-      <section className="py-20 bg-[#F4F1EA] border-t border-[#EAE5D9]">
+      <section className="py-20 bg-[#E5DFD4] border-t border-[#D5CFC3]">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
             
