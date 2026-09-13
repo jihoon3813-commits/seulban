@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { 
   XIcon, CheckIcon, ShieldCheckIcon, PawIcon, ArrowRight, 
   PhoneIcon, MapPinIcon, HeartIcon, SparklesIcon, FileTextIcon, 
-  ClockIcon, StethoscopeIcon, UserIcon, CameraIcon, SearchIcon, GoogleIcon 
+  ClockIcon, StethoscopeIcon, UserIcon, CameraIcon, SearchIcon 
 } from './Icons';
 import { BRAND_INFO, MEMBERSHIP_PERKS, REG_FAQS } from '../data/mockData';
 import { compressImage } from '../utils/imageCompressor';
@@ -1241,7 +1241,7 @@ export function PartnerModal({ partner, isOpen, onClose, onToggleBookmark, isBoo
   );
 }
 
-// 4. 회원가입/로그인 모달 (이메일 & 구글 가입)
+// 4. 회원가입/로그인 모달 (이메일 가입/로그인 전용)
 export function LoginModal({ isOpen, onClose, onLogin, initialMode = 'login' }) {
   const [isSignUp, setIsSignUp] = useState(initialMode === 'signup');
   const [email, setEmail] = useState('');
@@ -1251,10 +1251,6 @@ export function LoginModal({ isOpen, onClose, onLogin, initialMode = 'login' }) 
   const [phone, setPhone] = useState('');
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  const [showGoogleConfig, setShowGoogleConfig] = useState(false);
-  const [customClientId, setCustomClientId] = useState(() => {
-    return localStorage.getItem('seulban_google_client_id') || '';
-  });
 
   useEffect(() => {
     if (isOpen) {
@@ -1265,109 +1261,12 @@ export function LoginModal({ isOpen, onClose, onLogin, initialMode = 'login' }) 
       setName('');
       setPhone('');
       setError('');
-      setShowGoogleConfig(false);
-
-      const clientId = import.meta.env.VITE_GOOGLE_CLIENT_ID || localStorage.getItem('seulban_google_client_id') || '';
-
-      if (clientId && window.google?.accounts?.id) {
-        try {
-          window.google.accounts.id.initialize({
-            client_id: clientId,
-            callback: (response) => {
-              try {
-                const base64Url = response.credential.split('.')[1];
-                const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
-                const payload = JSON.parse(decodeURIComponent(escape(window.atob(base64))));
-                
-                const userData = {
-                  name: payload.name || payload.email.split('@')[0],
-                  email: payload.email.toLowerCase(),
-                  picture: payload.picture || '',
-                  phone: '',
-                  provider: 'google',
-                  isNewUser: true,
-                  isMember: true,
-                  membershipLevel: 'VIP 회원',
-                };
-                onLogin(userData);
-                onClose();
-              } catch (err) {
-                console.error('Google token parse error:', err);
-                setError('구글 계정 정보를 파싱하는 데 실패했습니다.');
-              }
-            },
-            auto_select: false,
-            cancel_on_tap_outside: true,
-          });
-
-          // Prompt Google One Tap
-          window.google.accounts.id.prompt();
-        } catch (e) {
-          console.warn('Google One Tap init notice:', e);
-        }
-      }
     }
   }, [isOpen, initialMode]);
 
   if (!isOpen) return null;
 
-  // 1. 구글 실제 팝업창 연동 핸들러 (Google Identity Services OAuth 2.0)
-  const handleGoogleAuth = () => {
-    setError('');
-    const clientId = import.meta.env.VITE_GOOGLE_CLIENT_ID || localStorage.getItem('seulban_google_client_id') || customClientId.trim() || '';
-
-    // 실제 구글 OAuth 2.0 팝업 실행
-    if (clientId && window.google?.accounts?.oauth2) {
-      try {
-        const tokenClient = window.google.accounts.oauth2.initTokenClient({
-          client_id: clientId,
-          scope: 'email profile openid',
-          callback: async (tokenResponse) => {
-            if (tokenResponse && tokenResponse.access_token) {
-              try {
-                // 구글 공식 userinfo API에서 실제 로그인된 사용자 프로필 실시간 수신
-                const res = await fetch('https://www.googleapis.com/oauth2/v3/userinfo', {
-                  headers: { Authorization: `Bearer ${tokenResponse.access_token}` }
-                });
-                const googleUser = await res.json();
-                if (googleUser && googleUser.email) {
-                  const userData = {
-                    name: googleUser.name || googleUser.email.split('@')[0],
-                    email: googleUser.email.toLowerCase(),
-                    picture: googleUser.picture || '',
-                    phone: '',
-                    provider: 'google',
-                    isNewUser: true,
-                    isMember: true,
-                    membershipLevel: 'VIP 회원',
-                  };
-                  onLogin(userData);
-                  onClose();
-                  return;
-                }
-              } catch (err) {
-                console.error('Google userinfo fetch failed:', err);
-                setError('구글 계정 정보를 가져오는 중 오류가 발생했습니다.');
-              }
-            }
-          },
-          error_callback: (err) => {
-            console.warn('Google OAuth popup error:', err);
-            setShowGoogleConfig(true);
-          }
-        });
-        tokenClient.requestAccessToken({ prompt: 'select_account' });
-        return;
-      } catch (e) {
-        console.warn('Google OAuth initTokenClient error:', e);
-      }
-    }
-
-    // 클라이언트 ID가 아직 등록되지 않은 경우 연동 설정 및 즉시 체험 모달 노출
-    setShowGoogleConfig(true);
-  };
-
-  // 2. 이메일 회원가입 / 로그인 처리
+  // 이메일 회원가입 / 로그인 처리
   const handleSubmit = (e) => {
     e.preventDefault();
     setError('');
@@ -1406,7 +1305,7 @@ export function LoginModal({ isOpen, onClose, onLogin, initialMode = 'login' }) 
         setIsLoading(false);
         onLogin(userData);
         onClose();
-      }, 300);
+      }, 200);
     } else {
       if (!email.trim()) {
         setError('이메일을 입력해 주세요.');
@@ -1433,7 +1332,7 @@ export function LoginModal({ isOpen, onClose, onLogin, initialMode = 'login' }) 
         setIsLoading(false);
         onLogin(userData);
         onClose();
-      }, 300);
+      }, 200);
     }
   };
 
@@ -1447,16 +1346,16 @@ export function LoginModal({ isOpen, onClose, onLogin, initialMode = 'login' }) 
             <div className="flex items-center gap-2">
               <span className="text-xl font-black text-[#144A42] tracking-tight">슬반생</span>
               <span className="text-[11px] font-bold px-2 py-0.5 bg-[#FAF8F5] border border-[#DDD6C8] text-[#144A42]">
-                {isSignUp ? '회원가입' : '로그인'}
+                {isSignUp ? '이메일 회원가입' : '이메일 로그인'}
               </span>
             </div>
             <p className="text-xs text-gray-500 mt-1">
               {isSignUp 
-                ? '슬반생 회원이 되시면 동물등록 및 제휴 우대 혜택을 받으실 수 있습니다.' 
-                : '등록하신 계정으로 로그인하여 마이페이지를 이용하세요.'}
+                ? '이메일로 간편 가입하시고 실시간 동물등록 및 멤버십 혜택을 이용하세요.' 
+                : '가입하신 이메일 계정으로 로그인하여 마이페이지를 이용하세요.'}
             </p>
           </div>
-          <button onClick={onClose} className="p-1 text-gray-400 hover:text-gray-700 transition">
+          <button onClick={onClose} className="p-1 text-gray-400 hover:text-gray-700 transition cursor-pointer">
             <XIcon className="w-5 h-5" />
           </button>
         </div>
@@ -1469,222 +1368,119 @@ export function LoginModal({ isOpen, onClose, onLogin, initialMode = 'login' }) 
           </div>
         )}
 
-        {/* Google Authentication Dialog Mode */}
-        {showGoogleConfig ? (
-          <div className="space-y-4 text-xs animate-fade-in">
-            <div className="p-4 bg-emerald-50/80 border border-emerald-200 space-y-1.5">
-              <div className="flex items-center gap-2 text-[#144A42] font-bold">
-                <GoogleIcon className="w-4 h-4" />
-                <span>Google 계정 자동 연동 및 클라이언트 설정</span>
-              </div>
-              <p className="text-[11px] text-gray-600 leading-relaxed">
-                다른 웹사이트처럼 브라우저의 실제 <strong>Google 계정 선택 팝업창</strong>을 띄우려면 Google Cloud Console의 <strong>OAuth 2.0 클라이언트 ID</strong>가 필요합니다.
-              </p>
-            </div>
-
-            {/* Quick 1-click test for user */}
-            <div className="p-3.5 bg-[#FAF8F5] border border-[#EAE3D6] space-y-2">
-              <span className="font-bold text-[#144A42] block">① 테스트용 구글 계정 즉시 연동</span>
-              <p className="text-[11px] text-gray-500">
-                아직 구글 클라우드 콘솔 설정을 마치지 않으셨다면, 브라우저 계정으로 1초 만에 즉시 가입/로그인하실 수 있습니다.
-              </p>
-              <button
-                type="button"
-                onClick={() => {
-                  const userData = {
-                    name: '김지훈',
-                    email: 'jihoon3813@gmail.com',
-                    phone: '',
-                    provider: 'google',
-                    isNewUser: true,
-                    isMember: true,
-                    membershipLevel: 'VIP 회원',
-                  };
-                  onLogin(userData);
-                  onClose();
-                }}
-                className="w-full py-2.5 bg-[#144A42] text-white font-bold text-center hover:bg-[#0D3832] transition flex items-center justify-center gap-2 shadow-xs"
-              >
-                <GoogleIcon className="w-4 h-4" />
-                <span>김지훈 (jihoon3813@gmail.com) 구글 계정으로 바로 가입</span>
-              </button>
-            </div>
-
-            {/* Real Client ID Input & Launch */}
-            <div className="p-3.5 bg-[#FAF8F5] border border-[#EAE3D6] space-y-2">
-              <span className="font-bold text-[#144A42] block">② 실제 Google Cloud 클라이언트 ID 등록</span>
-              <p className="text-[11px] text-gray-500">
-                Google Cloud Console에서 발급받은 클라이언트 ID를 입력하시면 실제 Google 팝업창이 바로 열립니다.
-              </p>
-              <input
-                type="text"
-                value={customClientId}
-                onChange={(e) => setCustomClientId(e.target.value)}
-                placeholder="예: 123456789-abcdef.apps.googleusercontent.com"
-                className="w-full px-3 py-2 border border-gray-300 focus:border-[#144A42] focus:outline-none text-[11px] font-mono bg-white"
+        {/* Email Sign Up / Sign In Form */}
+        <form onSubmit={handleSubmit} className="space-y-3.5 text-xs">
+          {isSignUp && (
+            <div>
+              <label className="block font-bold mb-1 text-gray-700">이름 (보호자 실명) <span className="text-red-500">*</span></label>
+              <input 
+                type="text" 
+                value={name} 
+                onChange={(e) => setName(e.target.value)}
+                placeholder="예: 홍길동"
+                className="w-full px-3.5 py-2.5 border border-gray-300 focus:border-[#144A42] focus:outline-none"
+                required
+                autoFocus
               />
-              <button
-                type="button"
-                onClick={() => {
-                  if (!customClientId.trim()) {
-                    setError('구글 클라이언트 ID를 입력해 주세요.');
-                    return;
-                  }
-                  localStorage.setItem('seulban_google_client_id', customClientId.trim());
-                  setShowGoogleConfig(false);
-                  setTimeout(() => handleGoogleAuth(), 150);
-                }}
-                className="w-full py-2 bg-white border border-[#144A42] text-[#144A42] font-bold text-center hover:bg-gray-50 transition"
-              >
-                클라이언트 ID 저장 및 실제 Google 팝업창 실행
-              </button>
             </div>
+          )}
 
-            <div className="flex justify-end pt-1">
-              <button
-                type="button"
-                onClick={() => setShowGoogleConfig(false)}
-                className="px-4 py-2 border border-gray-300 text-gray-600 font-bold hover:bg-gray-50"
-              >
-                ← 이전으로
-              </button>
-            </div>
+          <div>
+            <label className="block font-bold mb-1 text-gray-700">이메일 주소 <span className="text-red-500">*</span></label>
+            <input 
+              type="email" 
+              value={email} 
+              onChange={(e) => setEmail(e.target.value)}
+              placeholder="example@email.com"
+              className="w-full px-3.5 py-2.5 border border-gray-300 focus:border-[#144A42] focus:outline-none"
+              required
+              {...(!isSignUp ? { autoFocus: true } : {})}
+            />
           </div>
-        ) : (
-          <>
-            {/* 1. Google 1-Click Button */}
-            <button
-              type="button"
-              onClick={handleGoogleAuth}
-              className="w-full py-3 px-4 bg-white border border-[#D5D0C5] hover:bg-gray-50 transition flex items-center justify-center gap-3 shadow-xs text-xs font-bold text-[#1F2C27] mb-4"
-            >
-              <GoogleIcon className="w-5 h-5 shrink-0" />
-              <span>{isSignUp ? 'Google 계정으로 1초 회원가입' : 'Google 계정으로 로그인'}</span>
-            </button>
 
-            {/* Divider */}
-            <div className="relative my-4">
-              <div className="absolute inset-0 flex items-center">
-                <div className="w-full border-t border-gray-200"></div>
-              </div>
-              <div className="relative flex justify-center text-[11px] text-gray-400 uppercase">
-                <span className="bg-white px-3">또는 이메일로 {isSignUp ? '가입' : '로그인'}</span>
-              </div>
+          {isSignUp && (
+            <div>
+              <label className="block font-bold mb-1 text-gray-700">휴대폰 번호 <span className="font-normal text-gray-400">(선택)</span></label>
+              <input 
+                type="tel" 
+                value={phone} 
+                onChange={(e) => setPhone(formatPhoneNumber(e.target.value))}
+                placeholder="010-0000-0000"
+                maxLength={13}
+                className="w-full px-3.5 py-2.5 border border-gray-300 focus:border-[#144A42] focus:outline-none"
+              />
             </div>
+          )}
 
-            {/* 2. Email Sign Up / Sign In Form */}
-            <form onSubmit={handleSubmit} className="space-y-3 text-xs">
-              {isSignUp && (
-                <div>
-                  <label className="block font-bold mb-1 text-gray-700">이름 (보호자 실명)</label>
-                  <input 
-                    type="text" 
-                    value={name} 
-                    onChange={(e) => setName(e.target.value)}
-                    placeholder="예: 김슬기"
-                    className="w-full px-3.5 py-2.5 border border-gray-300 focus:border-[#144A42] focus:outline-none"
-                    required
-                  />
-                </div>
-              )}
+          <div>
+            <label className="block font-bold mb-1 text-gray-700">비밀번호 {isSignUp && <span className="font-normal text-gray-400">(6자 이상)</span>} <span className="text-red-500">*</span></label>
+            <input 
+              type="password" 
+              value={password} 
+              onChange={(e) => setPassword(e.target.value)}
+              placeholder="••••••••"
+              className="w-full px-3.5 py-2.5 border border-gray-300 focus:border-[#144A42] focus:outline-none"
+              required
+            />
+          </div>
 
-              <div>
-                <label className="block font-bold mb-1 text-gray-700">이메일 주소</label>
-                <input 
-                  type="email" 
-                  value={email} 
-                  onChange={(e) => setEmail(e.target.value)}
-                  placeholder="name@example.com"
-                  className="w-full px-3.5 py-2.5 border border-gray-300 focus:border-[#144A42] focus:outline-none"
-                  required
-                />
-              </div>
-
-              {isSignUp && (
-                <div>
-                  <label className="block font-bold mb-1 text-gray-700">휴대폰 번호 <span className="font-normal text-gray-400">(선택)</span></label>
-                  <input 
-                    type="tel" 
-                    value={phone} 
-                    onChange={(e) => setPhone(formatPhoneNumber(e.target.value))}
-                    placeholder="010-1234-5678"
-                    maxLength={13}
-                    className="w-full px-3.5 py-2.5 border border-gray-300 focus:border-[#144A42] focus:outline-none"
-                  />
-                </div>
-              )}
-
-              <div>
-                <label className="block font-bold mb-1 text-gray-700">비밀번호 {isSignUp && <span className="font-normal text-gray-400">(6자 이상)</span>}</label>
-                <input 
-                  type="password" 
-                  value={password} 
-                  onChange={(e) => setPassword(e.target.value)}
-                  placeholder="••••••••"
-                  className="w-full px-3.5 py-2.5 border border-gray-300 focus:border-[#144A42] focus:outline-none"
-                  required
-                />
-              </div>
-
-              {isSignUp && (
-                <div>
-                  <label className="block font-bold mb-1 text-gray-700">비밀번호 확인</label>
-                  <input 
-                    type="password" 
-                    value={passwordConfirm} 
-                    onChange={(e) => setPasswordConfirm(e.target.value)}
-                    placeholder="••••••••"
-                    className="w-full px-3.5 py-2.5 border border-gray-300 focus:border-[#144A42] focus:outline-none"
-                    required
-                  />
-                </div>
-              )}
-
-              <button
-                type="submit"
-                disabled={isLoading}
-                className="w-full py-3 bg-[#144A42] text-white font-bold hover:bg-[#0D3832] transition shadow-md mt-3 flex items-center justify-center gap-2"
-              >
-                {isLoading ? (
-                  <span>처리 중...</span>
-                ) : (
-                  <span>{isSignUp ? '이메일 회원가입 완료' : '이메일 로그인'}</span>
-                )}
-              </button>
-            </form>
-
-            {/* Toggle Mode Footer */}
-            <div className="mt-5 pt-4 border-t border-gray-100 flex items-center justify-between text-xs text-gray-500">
-              <button 
-                type="button"
-                onClick={() => {
-                  setIsSignUp(!isSignUp);
-                  setError('');
-                }} 
-                className="text-[#144A42] font-bold underline hover:text-[#0D3832]"
-              >
-                {isSignUp ? '이미 계정이 있으신가요? 로그인' : '아직 계정이 없으신가요? 회원가입'}
-              </button>
-              <button
-                type="button"
-                onClick={() => {
-                  onLogin({
-                    name: '체험 보호자',
-                    email: 'guest@seulbanlife.com',
-                    phone: '010-0000-0000',
-                    provider: 'demo',
-                    isMember: true,
-                    membershipLevel: '일반 회원'
-                  });
-                  onClose();
-                }}
-                className="text-[11px] text-gray-400 hover:text-gray-600 underline"
-              >
-                체험 계정 둘러보기
-              </button>
+          {isSignUp && (
+            <div>
+              <label className="block font-bold mb-1 text-gray-700">비밀번호 확인 <span className="text-red-500">*</span></label>
+              <input 
+                type="password" 
+                value={passwordConfirm} 
+                onChange={(e) => setPasswordConfirm(e.target.value)}
+                placeholder="••••••••"
+                className="w-full px-3.5 py-2.5 border border-gray-300 focus:border-[#144A42] focus:outline-none"
+                required
+              />
             </div>
-          </>
-        )}
+          )}
+
+          <button
+            type="submit"
+            disabled={isLoading}
+            className="w-full py-3 bg-[#144A42] text-white font-bold hover:bg-[#0D3832] transition shadow-sm mt-3 flex items-center justify-center gap-2 cursor-pointer"
+          >
+            {isLoading ? (
+              <span>처리 중...</span>
+            ) : (
+              <span>{isSignUp ? '이메일 회원가입 완료' : '이메일 로그인'}</span>
+            )}
+          </button>
+        </form>
+
+        {/* Toggle Mode Footer */}
+        <div className="mt-5 pt-4 border-t border-gray-100 flex items-center justify-between text-xs text-gray-500">
+          <button 
+            type="button"
+            onClick={() => {
+              setIsSignUp(!isSignUp);
+              setError('');
+            }} 
+            className="text-[#144A42] font-bold underline hover:text-[#0D3832] cursor-pointer"
+          >
+            {isSignUp ? '이미 계정이 있으신가요? 이메일 로그인' : '아직 계정이 없으신가요? 이메일 회원가입'}
+          </button>
+          <button
+            type="button"
+            onClick={() => {
+              onLogin({
+                name: '체험 보호자',
+                email: 'guest@seulbanlife.com',
+                phone: '010-0000-0000',
+                provider: 'demo',
+                isMember: true,
+                membershipLevel: '일반 회원'
+              });
+              onClose();
+            }}
+            className="text-[11px] text-gray-400 hover:text-gray-600 underline cursor-pointer"
+          >
+            체험 계정 둘러보기
+          </button>
+        </div>
 
       </div>
     </div>
