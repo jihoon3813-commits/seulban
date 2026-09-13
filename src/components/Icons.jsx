@@ -31,8 +31,8 @@ export const PawOutlineIcon = ({ className = "w-7 h-7", ...props }) => (
   </svg>
 );
 
-export const LogoEmblem = ({ className = "w-8 h-8", imgClassName = "w-full h-full object-contain" }) => (
-  <div className={`flex items-center justify-center shrink-0 overflow-hidden ${className}`}>
+export const LogoEmblem = ({ className = "h-9 w-auto", imgClassName = "h-full w-auto object-contain" }) => (
+  <div className={`flex items-center justify-center shrink-0 ${className}`}>
     <img 
       src="https://res.cloudinary.com/lyjyvy54/image/upload/v1789272326/Group_3_3_gtg1wf.png" 
       alt="슬반생 로고" 
