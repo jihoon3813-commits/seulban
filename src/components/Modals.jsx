@@ -1,8 +1,8 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { 
   XIcon, CheckIcon, ShieldCheckIcon, PawIcon, ArrowRight, 
   PhoneIcon, MapPinIcon, HeartIcon, SparklesIcon, FileTextIcon, 
-  ClockIcon, StethoscopeIcon, UserIcon, CameraIcon 
+  ClockIcon, StethoscopeIcon, UserIcon, CameraIcon, SearchIcon 
 } from './Icons';
 import { BRAND_INFO, MEMBERSHIP_PERKS, REG_FAQS } from '../data/mockData';
 
@@ -29,6 +29,7 @@ export function ApplyRegistrationModal({ isOpen, onClose, onApplySuccess }) {
     birthDate: '',
     phone: '',
     address: '',
+    addressDetail: '',
     postalCode: '',
     petName: '',
     petPhoto: '',
@@ -40,14 +41,24 @@ export function ApplyRegistrationModal({ isOpen, onClose, onApplySuccess }) {
     regType: 'external',
     tagColor: '베이지 골드',
     recipient: '',
+    shippingPostalCode: '',
+    shippingAddress: '',
+    shippingAddressDetail: '',
     shippingMemo: '',
     agreeTerms: true,
     agreeAgency: true,
   });
 
   const [submittedNumber, setSubmittedNumber] = useState('');
+  const [isPostcodeModalOpen, setIsPostcodeModalOpen] = useState(false);
+  const [postcodeTarget, setPostcodeTarget] = useState('owner'); // 'owner' | 'shipping'
+  const [isSameAsOwnerAddress, setIsSameAsOwnerAddress] = useState(true);
 
-  // 모달이 열릴 때마다 폼을 깨끗하게 초기화 (기존 더미 데이터 노출 방지)
+  const postcodeContainerRef = useRef(null);
+  const addressDetailRef = useRef(null);
+  const shippingAddressDetailRef = useRef(null);
+
+  // 모달이 열릴 때마다 폼을 깨끗하게 초기화
   useEffect(() => {
     if (isOpen) {
       setStep(1);
@@ -56,6 +67,7 @@ export function ApplyRegistrationModal({ isOpen, onClose, onApplySuccess }) {
         birthDate: '',
         phone: '',
         address: '',
+        addressDetail: '',
         postalCode: '',
         petName: '',
         petPhoto: '',
@@ -67,13 +79,94 @@ export function ApplyRegistrationModal({ isOpen, onClose, onApplySuccess }) {
         regType: 'external',
         tagColor: '베이지 골드',
         recipient: '',
+        shippingPostalCode: '',
+        shippingAddress: '',
+        shippingAddressDetail: '',
         shippingMemo: '',
         agreeTerms: true,
         agreeAgency: true,
       });
       setSubmittedNumber('');
+      setIsPostcodeModalOpen(false);
+      setIsSameAsOwnerAddress(true);
     }
   }, [isOpen]);
+
+  // 카카오 우편번호 검색 열기
+  const handleOpenPostcode = (target = 'owner') => {
+    setPostcodeTarget(target);
+    if (window.daum && window.daum.Postcode) {
+      setIsPostcodeModalOpen(true);
+    } else {
+      const script = document.createElement('script');
+      script.src = 'https://t1.daumcdn.net/mapjsapi/bundle/postcode/prod/postcode.v2.js';
+      script.onload = () => {
+        setIsPostcodeModalOpen(true);
+      };
+      script.onerror = () => {
+        alert('우편번호 검색 서비스를 불러오는 데 실패했습니다. 주소를 직접 입력해 주세요.');
+      };
+      document.head.appendChild(script);
+    }
+  };
+
+  // 카카오 우편번호 레이어 임베딩
+  useEffect(() => {
+    if (!isPostcodeModalOpen) return;
+
+    const timer = setTimeout(() => {
+      if (window.daum && window.daum.Postcode && postcodeContainerRef.current) {
+        postcodeContainerRef.current.innerHTML = '';
+        new window.daum.Postcode({
+          oncomplete: function(data) {
+            let fullAddr = data.roadAddress || data.jibunAddress;
+            let extraAddr = '';
+
+            if (data.addressType === 'R') {
+              if (data.bname !== '' && /[동|로|가]$/g.test(data.bname)) {
+                extraAddr += data.bname;
+              }
+              if (data.buildingName !== '') {
+                extraAddr += (extraAddr !== '' ? `, ${data.buildingName}` : data.buildingName);
+              }
+              if (extraAddr !== '') {
+                extraAddr = ` (${extraAddr})`;
+              }
+            }
+
+            const completeAddress = fullAddr + extraAddr;
+            const zonecode = data.zonecode;
+
+            if (postcodeTarget === 'owner') {
+              setFormData(prev => ({
+                ...prev,
+                postalCode: zonecode,
+                address: completeAddress,
+              }));
+              setIsPostcodeModalOpen(false);
+              setTimeout(() => {
+                addressDetailRef.current?.focus();
+              }, 150);
+            } else {
+              setFormData(prev => ({
+                ...prev,
+                shippingPostalCode: zonecode,
+                shippingAddress: completeAddress,
+              }));
+              setIsPostcodeModalOpen(false);
+              setTimeout(() => {
+                shippingAddressDetailRef.current?.focus();
+              }, 150);
+            }
+          },
+          width: '100%',
+          height: '100%'
+        }).embed(postcodeContainerRef.current);
+      }
+    }, 60);
+
+    return () => clearTimeout(timer);
+  }, [isPostcodeModalOpen, postcodeTarget]);
 
   // 반려동물 사진 업로드 핸들러
   const handlePhotoUpload = (e) => {
@@ -122,7 +215,7 @@ export function ApplyRegistrationModal({ isOpen, onClose, onApplySuccess }) {
     }
     if (step === 2) {
       if (!formData.address.trim()) {
-        alert('보호자 주민등록상 주소지를 입력해 주세요.');
+        alert('보호자 주민등록상 주소지를 입력해 주세요 (우편번호 검색을 이용해 주세요).');
         return;
       }
     }
@@ -131,23 +224,40 @@ export function ApplyRegistrationModal({ isOpen, onClose, onApplySuccess }) {
       return;
     }
     if (step === 4) {
-      // 5단계(수령 정보) 진입 시 받는 사람과 주소가 비어있으면 앞서 입력한 보호자 정보로 연동
+      // 5단계(수령 정보) 진입 시 배송지 정보가 비어있으면 앞서 입력한 보호자 정보로 연동
       setFormData(prev => ({
         ...prev,
         recipient: prev.recipient || prev.ownerName,
-        address: prev.address || ''
+        shippingPostalCode: prev.shippingPostalCode || prev.postalCode,
+        shippingAddress: prev.shippingAddress || prev.address,
+        shippingAddressDetail: prev.shippingAddressDetail || prev.addressDetail,
       }));
+    }
+    if (step === 5 && formData.regType === 'external') {
+      if (!formData.recipient.trim()) {
+        alert('인식표를 수령하실 분의 성명을 입력해 주세요.');
+        return;
+      }
+      if (!formData.shippingAddress.trim() && !formData.address.trim()) {
+        alert('배송받으실 주소를 입력해 주세요.');
+        return;
+      }
     }
     if (step === 6) {
       const newRegId = `REG-${new Date().getFullYear()}${String(new Date().getMonth() + 1).padStart(2, '0')}${String(new Date().getDate()).padStart(2, '0')}-${Math.floor(1000 + Math.random() * 9000)}`;
       setSubmittedNumber(newRegId);
       
+      const fullOwnerAddress = `${formData.postalCode ? `(${formData.postalCode}) ` : ''}${formData.address}${formData.addressDetail ? ` ${formData.addressDetail}` : ''}`.trim();
+      const fullShippingAddress = `${formData.shippingPostalCode ? `(${formData.shippingPostalCode}) ` : (formData.postalCode ? `(${formData.postalCode}) ` : '')}${formData.shippingAddress || formData.address}${formData.shippingAddressDetail ? ` ${formData.shippingAddressDetail}` : (formData.addressDetail ? ` ${formData.addressDetail}` : '')}`.trim();
+
       const newApp = {
         id: newRegId,
         petName: formData.petName || '우리 아이',
         petPhoto: formData.petPhoto || '',
         ownerName: formData.ownerName,
         phone: formData.phone,
+        address: fullOwnerAddress,
+        shippingAddress: fullShippingAddress,
         type: formData.regType === 'external' ? '외장형 안심 목걸이 칩' : '내장형 마이크로칩 시술권',
         appliedDate: new Date().toLocaleString('ko-KR'),
         statusCode: 'SUBMITTED',
@@ -280,48 +390,81 @@ export function ApplyRegistrationModal({ isOpen, onClose, onApplySuccess }) {
           {/* Step 2: 보호자 상세 주소 */}
           {step === 2 && (
             <div className="space-y-4">
+              {/* 우편번호 */}
               <div>
-                <label className="block font-semibold mb-1">우편번호</label>
+                <label className="block font-semibold mb-1 text-xs text-[#2C3833]">
+                  우편번호 <span className="text-red-500">*</span>
+                </label>
                 <div className="flex gap-2">
                   <input 
                     type="text" 
-                    inputMode="numeric"
-                    pattern="[0-9]*"
-                    maxLength={5}
+                    readOnly
                     value={formData.postalCode} 
-                    onChange={(e) => setFormData({...formData, postalCode: e.target.value.replace(/[^0-9]/g, '').slice(0, 5)})}
+                    onClick={() => handleOpenPostcode('owner')}
                     placeholder="우편번호 5자리"
-                    className="w-36 px-4 py-2.5 border border-gray-300 focus:outline-none focus:border-[#144A42]"
+                    className="w-36 px-4 py-2.5 border border-gray-300 bg-gray-50 focus:outline-none focus:border-[#144A42] font-mono text-sm cursor-pointer"
                   />
                   <button 
                     type="button" 
-                    onClick={() => {
-                      setFormData(prev => ({ 
-                        ...prev, 
-                        address: prev.address || '서울특별시 강남구 테헤란로 123', 
-                        postalCode: prev.postalCode || '06234' 
-                      }));
-                    }}
-                    className="px-4 py-2 bg-[#144A42] text-white text-xs font-semibold hover:bg-[#0D3832] transition"
+                    onClick={() => handleOpenPostcode('owner')}
+                    className="px-4 py-2.5 bg-[#144A42] text-white text-xs font-bold hover:bg-[#0D3832] transition flex items-center gap-1.5 shadow-xs shrink-0 cursor-pointer"
                   >
-                    우편번호 검색
+                    <SearchIcon className="w-3.5 h-3.5" />
+                    <span>우편번호 검색</span>
                   </button>
                 </div>
               </div>
 
+              {/* 기본 주소 (조회 시 도로명 + 건물명 + 동 전체 자동 입력) */}
               <div>
-                <label className="block font-semibold mb-1">보호자 주민등록상 주소지</label>
+                <label className="block font-semibold mb-1 text-xs text-[#2C3833]">
+                  보호자 주민등록상 기본 주소지 <span className="text-red-500">*</span>
+                </label>
                 <input 
                   type="text" 
                   value={formData.address} 
                   onChange={(e) => setFormData({...formData, address: e.target.value})}
-                  placeholder="도로명 주소 및 상세 주소를 입력해 주세요"
-                  className="w-full px-4 py-2.5 border border-gray-300 focus:outline-none focus:border-[#144A42]"
+                  onClick={() => {
+                    if (!formData.address) handleOpenPostcode('owner');
+                  }}
+                  placeholder="우편번호 검색 시 도로명/지번 및 건물 상세 주소가 자동 입력됩니다"
+                  className="w-full px-4 py-2.5 border border-gray-300 focus:outline-none focus:border-[#144A42] text-xs sm:text-sm"
                 />
-                <p className="text-[11px] text-[#7A8580] mt-1">
-                  * 동물등록증 및 관할 지자체 등록을 위한 공식 주소지입니다.
+              </div>
+
+              {/* 추가 상세 주소 (동, 호수, 층수 등) */}
+              <div>
+                <label className="block font-semibold mb-1 text-xs text-[#2C3833] flex items-center justify-between">
+                  <span>추가 상세 주소 (동, 호수 등)</span>
+                  <span className="text-[11px] text-gray-400 font-normal">직접 입력</span>
+                </label>
+                <input 
+                  ref={addressDetailRef}
+                  type="text" 
+                  value={formData.addressDetail || ''} 
+                  onChange={(e) => setFormData({...formData, addressDetail: e.target.value})}
+                  placeholder="예: 101동 1204호, 2층, 상가 B01호 등"
+                  className="w-full px-4 py-2.5 border border-gray-300 focus:outline-none focus:border-[#144A42] text-xs sm:text-sm font-medium"
+                />
+                <p className="text-[11px] text-[#7A8580] mt-1.5 leading-relaxed">
+                  * 동물등록증 발급 및 관할 지자체 행정 전산망 등록을 위한 공식 법정 주소지입니다.
                 </p>
               </div>
+
+              {/* 주소 전체 조합 실시간 미리보기 카드 */}
+              {(formData.address || formData.postalCode) && (
+                <div className="p-3.5 bg-[#FAF8F5] border border-[#E7DFD1] text-xs space-y-1">
+                  <span className="font-bold text-[#144A42] block text-[11px] flex items-center gap-1">
+                    <MapPinIcon className="w-3.5 h-3.5 text-[#144A42]" />
+                    <span>등록될 전체 주소 미리보기:</span>
+                  </span>
+                  <p className="text-[#2C3B35] font-semibold text-xs leading-relaxed break-all">
+                    {formData.postalCode ? `[${formData.postalCode}] ` : ''}
+                    {formData.address}
+                    {formData.addressDetail ? ` ${formData.addressDetail}` : ''}
+                  </p>
+                </div>
+              )}
             </div>
           )}
 
@@ -523,35 +666,97 @@ export function ApplyRegistrationModal({ isOpen, onClose, onApplySuccess }) {
           {step === 5 && (
             <div className="space-y-4">
               <div>
-                <label className="block font-semibold mb-1">받는 사람 성명</label>
+                <label className="block font-semibold mb-1 text-xs text-[#2C3833]">
+                  받는 사람 성명 <span className="text-red-500">*</span>
+                </label>
                 <input 
                   type="text" 
                   value={formData.recipient || formData.ownerName} 
                   onChange={(e) => setFormData({...formData, recipient: e.target.value})}
                   placeholder="수령인 성명"
-                  className="w-full px-4 py-2.5 border border-gray-300 focus:outline-none focus:border-[#144A42]"
+                  className="w-full px-4 py-2.5 border border-gray-300 focus:outline-none focus:border-[#144A42] text-xs sm:text-sm"
                 />
               </div>
 
-              <div>
-                <label className="block font-semibold mb-1">배송지 주소</label>
+              {/* 배송지 주소 섹션 */}
+              <div className="space-y-2.5">
+                <div className="flex items-center justify-between">
+                  <label className="block font-semibold text-xs text-[#2C3833]">
+                    인식표 배송지 주소 <span className="text-red-500">*</span>
+                  </label>
+                  <label className="flex items-center gap-1.5 text-xs text-[#144A42] font-semibold cursor-pointer">
+                    <input 
+                      type="checkbox"
+                      checked={isSameAsOwnerAddress}
+                      onChange={(e) => {
+                        const checked = e.target.checked;
+                        setIsSameAsOwnerAddress(checked);
+                        if (checked) {
+                          setFormData(prev => ({
+                            ...prev,
+                            shippingPostalCode: prev.postalCode,
+                            shippingAddress: prev.address,
+                            shippingAddressDetail: prev.addressDetail || ''
+                          }));
+                        }
+                      }}
+                      className="w-3.5 h-3.5 text-[#144A42] focus:ring-0"
+                    />
+                    <span>보호자 등록 주소와 동일</span>
+                  </label>
+                </div>
+
+                {/* 배송지 우편번호 & 검색 */}
+                <div className="flex gap-2">
+                  <input 
+                    type="text" 
+                    readOnly
+                    value={formData.shippingPostalCode || ''} 
+                    onClick={() => handleOpenPostcode('shipping')}
+                    placeholder="우편번호"
+                    className="w-32 px-3 py-2 border border-gray-300 bg-gray-50 text-xs font-mono cursor-pointer"
+                  />
+                  <button 
+                    type="button" 
+                    onClick={() => handleOpenPostcode('shipping')}
+                    className="px-3.5 py-2 bg-[#144A42] text-white text-xs font-bold hover:bg-[#0D3832] transition flex items-center gap-1 shrink-0 shadow-xs"
+                  >
+                    <SearchIcon className="w-3 h-3" />
+                    <span>우편번호 검색</span>
+                  </button>
+                </div>
+
+                {/* 배송지 기본 주소 */}
                 <input 
                   type="text" 
-                  value={formData.address} 
-                  onChange={(e) => setFormData({...formData, address: e.target.value})}
-                  placeholder="배송받으실 주소"
-                  className="w-full px-4 py-2.5 border border-gray-300 focus:outline-none focus:border-[#144A42]"
+                  value={formData.shippingAddress || ''} 
+                  onChange={(e) => setFormData({...formData, shippingAddress: e.target.value})}
+                  onClick={() => {
+                    if (!formData.shippingAddress) handleOpenPostcode('shipping');
+                  }}
+                  placeholder="도로명 주소 (우편번호 검색 시 자동 입력)"
+                  className="w-full px-4 py-2.5 border border-gray-300 focus:outline-none focus:border-[#144A42] text-xs sm:text-sm"
+                />
+
+                {/* 배송지 추가 상세 주소 */}
+                <input 
+                  ref={shippingAddressDetailRef}
+                  type="text" 
+                  value={formData.shippingAddressDetail || ''} 
+                  onChange={(e) => setFormData({...formData, shippingAddressDetail: e.target.value})}
+                  placeholder="추가 상세 주소 (동, 호수, 층수 등 직접 입력)"
+                  className="w-full px-4 py-2.5 border border-gray-300 focus:outline-none focus:border-[#144A42] text-xs sm:text-sm"
                 />
               </div>
 
               <div>
-                <label className="block font-semibold mb-1">배송 메모</label>
+                <label className="block font-semibold mb-1 text-xs text-[#2C3833]">배송 메모</label>
                 <input 
                   type="text" 
                   value={formData.shippingMemo} 
                   onChange={(e) => setFormData({...formData, shippingMemo: e.target.value})}
-                  className="w-full px-4 py-2.5 border border-gray-300 focus:outline-none focus:border-[#144A42]"
-                  placeholder="예: 부재 시 문 앞 보관"
+                  className="w-full px-4 py-2.5 border border-gray-300 focus:outline-none focus:border-[#144A42] text-xs sm:text-sm"
+                  placeholder="예: 부재 시 경비실 또는 문 앞 보관 부탁드립니다"
                 />
               </div>
             </div>
@@ -565,6 +770,12 @@ export function ApplyRegistrationModal({ isOpen, onClose, onApplySuccess }) {
                 <div className="flex justify-between py-1 border-b border-[#EFECE6]">
                   <span className="text-gray-500">보호자 / 연락처</span>
                   <span className="font-semibold">{formData.ownerName} ({formData.phone})</span>
+                </div>
+                <div className="flex justify-between py-1.5 border-b border-[#EFECE6]">
+                  <span className="text-gray-500 shrink-0">주민등록상 주소지</span>
+                  <span className="font-semibold text-right break-all max-w-[280px]">
+                    {formData.postalCode ? `(${formData.postalCode}) ` : ''}{formData.address} {formData.addressDetail || ''}
+                  </span>
                 </div>
                 <div className="flex justify-between items-center py-1.5 border-b border-[#EFECE6]">
                   <span className="text-gray-500">반려동물</span>
@@ -587,6 +798,14 @@ export function ApplyRegistrationModal({ isOpen, onClose, onApplySuccess }) {
                   <span className="text-gray-500">등록 방식</span>
                   <span className="font-semibold">{formData.regType === 'external' ? '외장형 목걸이 인식표 패키지' : '내장형 마이크로칩 시술권'}</span>
                 </div>
+                {formData.regType === 'external' && (
+                  <div className="flex justify-between py-1 border-b border-[#EFECE6]">
+                    <span className="text-gray-500 shrink-0">배송 수령지</span>
+                    <span className="font-semibold text-right break-all max-w-[280px]">
+                      {formData.recipient || formData.ownerName} / {formData.shippingPostalCode ? `(${formData.shippingPostalCode}) ` : ''}{formData.shippingAddress || formData.address} {formData.shippingAddressDetail || formData.addressDetail || ''}
+                    </span>
+                  </div>
+                )}
                 <div className="flex justify-between py-1">
                   <span className="text-gray-500">신청 수수료</span>
                   <span className="font-bold text-[#144A42]">0원 (슬반생 대행 지원)</span>
@@ -691,6 +910,47 @@ export function ApplyRegistrationModal({ isOpen, onClose, onApplySuccess }) {
         </div>
 
       </div>
+
+      {/* 카카오 우편번호 검색 레이어 모달 */}
+      {isPostcodeModalOpen && (
+        <div className="fixed inset-0 z-[70] flex items-center justify-center p-3 sm:p-4 bg-black/70 backdrop-blur-xs animate-fade-in">
+          <div className="bg-white w-full max-w-lg shadow-2xl overflow-hidden flex flex-col border border-[#144A42]">
+            <div className="bg-[#144A42] text-white px-4 py-3 flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <SearchIcon className="w-4 h-4 text-[#C5A880]" />
+                <span className="font-bold text-sm">
+                  {postcodeTarget === 'owner' ? '보호자 주소지 우편번호 검색' : '배송지 주소 우편번호 검색'}
+                </span>
+              </div>
+              <button 
+                type="button" 
+                onClick={() => setIsPostcodeModalOpen(false)}
+                className="p-1 text-white/80 hover:text-white hover:bg-white/10"
+                aria-label="우편번호 검색창 닫기"
+              >
+                <XIcon className="w-5 h-5" />
+              </button>
+            </div>
+            
+            {/* Daum Postcode Embed Container */}
+            <div 
+              ref={postcodeContainerRef} 
+              className="w-full h-[450px] relative bg-white"
+            />
+            
+            <div className="p-3 bg-[#FAF8F5] border-t border-gray-200 flex items-center justify-between text-[11px] text-gray-500">
+              <span>도로명 주소, 건물명, 지번을 검색 후 주소를 클릭하세요.</span>
+              <button
+                type="button"
+                onClick={() => setIsPostcodeModalOpen(false)}
+                className="font-bold text-[#144A42] hover:underline"
+              >
+                닫기
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

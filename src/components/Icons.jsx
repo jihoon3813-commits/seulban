@@ -264,3 +264,4 @@ export const HotelBuildingIcon = ({ className = "w-6 h-6", ...props }) => (
     <circle cx="15" cy="12" r="0.9" fill="currentColor" />
   </svg>
 );
+
