@@ -26,10 +26,22 @@ export default function AdoptionPage({ adoptionList = ADOPTION_LIST }) {
   };
 
   return (
-    <div className="py-12 md:py-16 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-      
-      {/* Title */}
-      <div className="text-center max-w-2xl mx-auto mb-12 space-y-3">
+    <div className="w-full">
+      {/* Top Banner Image (Width matching Header: logo to mall button) */}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-6 sm:pt-8">
+        <div className="w-full overflow-hidden shadow-xs border border-[#E5DFD1]">
+          <img
+            src="https://res.cloudinary.com/lyjyvy54/image/upload/v1789268626/ChatGPT_Image_2026%EB%85%84_9%EC%9B%94_13%EC%9D%BC_%EC%98%A4%ED%9B%84_12_03_30_2_qclzso.png"
+            alt="새로운 만남 안심 입양 배너"
+            className="w-full h-auto object-cover max-h-[340px] sm:max-h-[400px]"
+          />
+        </div>
+      </div>
+
+      <div className="py-12 md:py-16 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        
+        {/* Title */}
+        <div className="text-center max-w-2xl mx-auto mb-12 space-y-3">
         <span className="text-xs font-bold tracking-widest text-[#B48B55] uppercase">
           WARM ADOPTION (ADP-001)
         </span>
@@ -219,6 +231,7 @@ export default function AdoptionPage({ adoptionList = ADOPTION_LIST }) {
         </div>
       )}
 
+    </div>
     </div>
   );
 }
