@@ -60,6 +60,11 @@ export default function App() {
     return () => window.removeEventListener('popstate', handlePopState);
   }, []);
 
+  // 메뉴/페이지 전환 시 스크롤 애니메이션 없이 즉시 맨 상단 표시
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, [activeTab]);
+
   // User State
   const [user, setUser] = useState({
     name: '김슬기',
@@ -219,7 +224,7 @@ export default function App() {
 
   const handleNavigate = (tabId) => {
     setActiveTab(tabId);
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+    window.scrollTo(0, 0);
     try {
       const url = new URL(window.location.href);
       if (tabId === 'home') {
