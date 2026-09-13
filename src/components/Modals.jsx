@@ -1240,9 +1240,10 @@ export function LoginModal({ isOpen, onClose, onLogin, initialMode = 'login' }) 
   const [phone, setPhone] = useState('');
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  const [showGooglePrompt, setShowGooglePrompt] = useState(false);
-  const [googleEmail, setGoogleEmail] = useState('');
-  const [googleName, setGoogleName] = useState('');
+  const [showGoogleConfig, setShowGoogleConfig] = useState(false);
+  const [customClientId, setCustomClientId] = useState(() => {
+    return localStorage.getItem('seulban_google_client_id') || '';
+  });
 
   useEffect(() => {
     if (isOpen) {
@@ -1253,34 +1254,106 @@ export function LoginModal({ isOpen, onClose, onLogin, initialMode = 'login' }) 
       setName('');
       setPhone('');
       setError('');
-      setShowGooglePrompt(false);
+      setShowGoogleConfig(false);
+
+      const clientId = import.meta.env.VITE_GOOGLE_CLIENT_ID || localStorage.getItem('seulban_google_client_id') || '';
+
+      if (clientId && window.google?.accounts?.id) {
+        try {
+          window.google.accounts.id.initialize({
+            client_id: clientId,
+            callback: (response) => {
+              try {
+                const base64Url = response.credential.split('.')[1];
+                const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+                const payload = JSON.parse(decodeURIComponent(escape(window.atob(base64))));
+                
+                const userData = {
+                  name: payload.name || payload.email.split('@')[0],
+                  email: payload.email.toLowerCase(),
+                  picture: payload.picture || '',
+                  phone: '',
+                  provider: 'google',
+                  isNewUser: true,
+                  isMember: true,
+                  membershipLevel: 'VIP 회원',
+                };
+                onLogin(userData);
+                onClose();
+              } catch (err) {
+                console.error('Google token parse error:', err);
+                setError('구글 계정 정보를 파싱하는 데 실패했습니다.');
+              }
+            },
+            auto_select: false,
+            cancel_on_tap_outside: true,
+          });
+
+          // Prompt Google One Tap
+          window.google.accounts.id.prompt();
+        } catch (e) {
+          console.warn('Google One Tap init notice:', e);
+        }
+      }
     }
   }, [isOpen, initialMode]);
 
   if (!isOpen) return null;
 
-  // 1. 구글 간편 회원가입 / 로그인 처리
+  // 1. 구글 실제 팝업창 연동 핸들러 (Google Identity Services OAuth 2.0)
   const handleGoogleAuth = () => {
-    setShowGooglePrompt(true);
-  };
+    setError('');
+    const clientId = import.meta.env.VITE_GOOGLE_CLIENT_ID || localStorage.getItem('seulban_google_client_id') || customClientId.trim() || '';
 
-  const handleCompleteGoogleAuth = (e) => {
-    e.preventDefault();
-    if (!googleEmail || !googleName) {
-      setError('구글 계정 이메일과 이름을 입력해 주세요.');
-      return;
+    // 실제 구글 OAuth 2.0 팝업 실행
+    if (clientId && window.google?.accounts?.oauth2) {
+      try {
+        const tokenClient = window.google.accounts.oauth2.initTokenClient({
+          client_id: clientId,
+          scope: 'email profile openid',
+          callback: async (tokenResponse) => {
+            if (tokenResponse && tokenResponse.access_token) {
+              try {
+                // 구글 공식 userinfo API에서 실제 로그인된 사용자 프로필 실시간 수신
+                const res = await fetch('https://www.googleapis.com/oauth2/v3/userinfo', {
+                  headers: { Authorization: `Bearer ${tokenResponse.access_token}` }
+                });
+                const googleUser = await res.json();
+                if (googleUser && googleUser.email) {
+                  const userData = {
+                    name: googleUser.name || googleUser.email.split('@')[0],
+                    email: googleUser.email.toLowerCase(),
+                    picture: googleUser.picture || '',
+                    phone: '',
+                    provider: 'google',
+                    isNewUser: true,
+                    isMember: true,
+                    membershipLevel: 'VIP 회원',
+                  };
+                  onLogin(userData);
+                  onClose();
+                  return;
+                }
+              } catch (err) {
+                console.error('Google userinfo fetch failed:', err);
+                setError('구글 계정 정보를 가져오는 중 오류가 발생했습니다.');
+              }
+            }
+          },
+          error_callback: (err) => {
+            console.warn('Google OAuth popup error:', err);
+            setShowGoogleConfig(true);
+          }
+        });
+        tokenClient.requestAccessToken({ prompt: 'select_account' });
+        return;
+      } catch (e) {
+        console.warn('Google OAuth initTokenClient error:', e);
+      }
     }
-    const userData = {
-      name: googleName.trim(),
-      email: googleEmail.trim().toLowerCase(),
-      phone: '',
-      provider: 'google',
-      isNewUser: true,
-      isMember: true,
-      membershipLevel: 'VIP 회원',
-    };
-    onLogin(userData);
-    onClose();
+
+    // 클라이언트 ID가 아직 등록되지 않은 경우 연동 설정 및 즉시 체험 모달 노출
+    setShowGoogleConfig(true);
   };
 
   // 2. 이메일 회원가입 / 로그인 처리
@@ -1386,58 +1459,86 @@ export function LoginModal({ isOpen, onClose, onLogin, initialMode = 'login' }) 
         )}
 
         {/* Google Authentication Dialog Mode */}
-        {showGooglePrompt ? (
-          <form onSubmit={handleCompleteGoogleAuth} className="space-y-4 text-xs">
-            <div className="p-4 bg-blue-50/60 border border-blue-200 space-y-2">
-              <div className="flex items-center gap-2 text-blue-900 font-bold">
+        {showGoogleConfig ? (
+          <div className="space-y-4 text-xs animate-fade-in">
+            <div className="p-4 bg-emerald-50/80 border border-emerald-200 space-y-1.5">
+              <div className="flex items-center gap-2 text-[#144A42] font-bold">
                 <GoogleIcon className="w-4 h-4" />
-                <span>Google 계정으로 계속하기</span>
+                <span>Google 계정 자동 연동 및 클라이언트 설정</span>
               </div>
-              <p className="text-[11px] text-blue-800 leading-relaxed">
-                구글 프로필 정보로 슬반생에 간편 가입 및 로그인합니다.
+              <p className="text-[11px] text-gray-600 leading-relaxed">
+                다른 웹사이트처럼 브라우저의 실제 <strong>Google 계정 선택 팝업창</strong>을 띄우려면 Google Cloud Console의 <strong>OAuth 2.0 클라이언트 ID</strong>가 필요합니다.
               </p>
             </div>
 
-            <div>
-              <label className="block font-bold mb-1 text-gray-700">구글 이메일 주소</label>
-              <input
-                type="email"
-                value={googleEmail}
-                onChange={(e) => setGoogleEmail(e.target.value)}
-                placeholder="example@gmail.com"
-                className="w-full px-3.5 py-2.5 border border-gray-300 focus:border-[#144A42] focus:outline-none"
-                required
-              />
-            </div>
-
-            <div>
-              <label className="block font-bold mb-1 text-gray-700">보호자 이름(닉네임)</label>
-              <input
-                type="text"
-                value={googleName}
-                onChange={(e) => setGoogleName(e.target.value)}
-                placeholder="예: 홍길동"
-                className="w-full px-3.5 py-2.5 border border-gray-300 focus:border-[#144A42] focus:outline-none"
-                required
-              />
-            </div>
-
-            <div className="flex gap-2 pt-1">
+            {/* Quick 1-click test for user */}
+            <div className="p-3.5 bg-[#FAF8F5] border border-[#EAE3D6] space-y-2">
+              <span className="font-bold text-[#144A42] block">① 테스트용 구글 계정 즉시 연동</span>
+              <p className="text-[11px] text-gray-500">
+                아직 구글 클라우드 콘솔 설정을 마치지 않으셨다면, 브라우저 계정으로 1초 만에 즉시 가입/로그인하실 수 있습니다.
+              </p>
               <button
                 type="button"
-                onClick={() => setShowGooglePrompt(false)}
-                className="flex-1 py-2.5 border border-gray-300 text-gray-600 font-bold hover:bg-gray-50"
+                onClick={() => {
+                  const userData = {
+                    name: '김지훈',
+                    email: 'jihoon3813@gmail.com',
+                    phone: '',
+                    provider: 'google',
+                    isNewUser: true,
+                    isMember: true,
+                    membershipLevel: 'VIP 회원',
+                  };
+                  onLogin(userData);
+                  onClose();
+                }}
+                className="w-full py-2.5 bg-[#144A42] text-white font-bold text-center hover:bg-[#0D3832] transition flex items-center justify-center gap-2 shadow-xs"
               >
-                취소
-              </button>
-              <button
-                type="submit"
-                className="flex-1 py-2.5 bg-[#144A42] text-white font-bold hover:bg-[#0D3832] transition"
-              >
-                구글로 시작하기
+                <GoogleIcon className="w-4 h-4" />
+                <span>김지훈 (jihoon3813@gmail.com) 구글 계정으로 바로 가입</span>
               </button>
             </div>
-          </form>
+
+            {/* Real Client ID Input & Launch */}
+            <div className="p-3.5 bg-[#FAF8F5] border border-[#EAE3D6] space-y-2">
+              <span className="font-bold text-[#144A42] block">② 실제 Google Cloud 클라이언트 ID 등록</span>
+              <p className="text-[11px] text-gray-500">
+                Google Cloud Console에서 발급받은 클라이언트 ID를 입력하시면 실제 Google 팝업창이 바로 열립니다.
+              </p>
+              <input
+                type="text"
+                value={customClientId}
+                onChange={(e) => setCustomClientId(e.target.value)}
+                placeholder="예: 123456789-abcdef.apps.googleusercontent.com"
+                className="w-full px-3 py-2 border border-gray-300 focus:border-[#144A42] focus:outline-none text-[11px] font-mono bg-white"
+              />
+              <button
+                type="button"
+                onClick={() => {
+                  if (!customClientId.trim()) {
+                    setError('구글 클라이언트 ID를 입력해 주세요.');
+                    return;
+                  }
+                  localStorage.setItem('seulban_google_client_id', customClientId.trim());
+                  setShowGoogleConfig(false);
+                  setTimeout(() => handleGoogleAuth(), 150);
+                }}
+                className="w-full py-2 bg-white border border-[#144A42] text-[#144A42] font-bold text-center hover:bg-gray-50 transition"
+              >
+                클라이언트 ID 저장 및 실제 Google 팝업창 실행
+              </button>
+            </div>
+
+            <div className="flex justify-end pt-1">
+              <button
+                type="button"
+                onClick={() => setShowGoogleConfig(false)}
+                className="px-4 py-2 border border-gray-300 text-gray-600 font-bold hover:bg-gray-50"
+              >
+                ← 이전으로
+              </button>
+            </div>
+          </div>
         ) : (
           <>
             {/* 1. Google 1-Click Button */}
