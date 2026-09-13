@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { HeartIcon, MapPinIcon, ShieldCheckIcon, ArrowRight, CheckIcon } from '../components/Icons';
 import { ADOPTION_LIST } from '../data/mockData';
+import { formatPhoneNumber } from '../components/Modals';
 
 export default function AdoptionPage({ adoptionList = ADOPTION_LIST }) {
   const [selectedAnimal, setSelectedAnimal] = useState(null);
@@ -174,10 +175,13 @@ export default function AdoptionPage({ adoptionList = ADOPTION_LIST }) {
                   <label className="block font-semibold mb-1 text-gray-700">연락처</label>
                   <input
                     type="tel"
+                    inputMode="numeric"
+                    pattern="[0-9]*"
+                    maxLength={13}
                     required
                     value={applicant.phone}
-                    onChange={(e) => setApplicant({...applicant, phone: e.target.value})}
-                    placeholder="010-1234-5678"
+                    onChange={(e) => setApplicant({...applicant, phone: formatPhoneNumber(e.target.value)})}
+                    placeholder="010-0000-0000"
                     className="w-full px-3 py-2 border border-gray-300 focus:outline-none focus:border-[#144A42]"
                   />
                 </div>

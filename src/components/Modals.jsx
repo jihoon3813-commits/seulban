@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
   XIcon, CheckIcon, ShieldCheckIcon, PawIcon, ArrowRight, 
   PhoneIcon, MapPinIcon, HeartIcon, SparklesIcon, FileTextIcon, 
@@ -6,37 +6,115 @@ import {
 } from './Icons';
 import { BRAND_INFO, MEMBERSHIP_PERKS, REG_FAQS } from '../data/mockData';
 
+// 휴대폰 번호 자동 하이픈 포맷 함수
+export const formatPhoneNumber = (value) => {
+  if (!value) return '';
+  const digits = value.replace(/[^0-9]/g, '');
+  if (digits.length <= 3) {
+    return digits;
+  } else if (digits.length <= 7) {
+    return `${digits.slice(0, 3)}-${digits.slice(3)}`;
+  } else if (digits.length <= 11) {
+    return `${digits.slice(0, 3)}-${digits.slice(3, 7)}-${digits.slice(7)}`;
+  } else {
+    return `${digits.slice(0, 3)}-${digits.slice(3, 7)}-${digits.slice(7, 11)}`;
+  }
+};
+
 // 1. 동물등록 7단계 신청 마법사 모달 (REG-002 & REG-003)
 export function ApplyRegistrationModal({ isOpen, onClose, onApplySuccess }) {
   const [step, setStep] = useState(1);
   const [formData, setFormData] = useState({
-    ownerName: '김슬기',
-    birthDate: '1992-05-18',
-    phone: '010-9876-5432',
-    address: '서울특별시 강남구 역삼로 45길 12, 302호',
-    postalCode: '06234',
+    ownerName: '',
+    birthDate: '',
+    phone: '',
+    address: '',
+    postalCode: '',
     petName: '',
     petType: 'dog',
-    breed: '말티즈',
+    breed: '',
     gender: '남아',
-    petBirth: '2024-04-10',
+    petBirth: '',
     neutered: '완료',
     regType: 'external',
     tagColor: '베이지 골드',
-    recipient: '김슬기',
-    shippingMemo: '부재 시 문 앞에 놓아주세요',
+    recipient: '',
+    shippingMemo: '',
     agreeTerms: true,
     agreeAgency: true,
   });
 
   const [submittedNumber, setSubmittedNumber] = useState('');
 
+  // 모달이 열릴 때마다 폼을 깨끗하게 초기화 (기존 더미 데이터 노출 방지)
+  useEffect(() => {
+    if (isOpen) {
+      setStep(1);
+      setFormData({
+        ownerName: '',
+        birthDate: '',
+        phone: '',
+        address: '',
+        postalCode: '',
+        petName: '',
+        petType: 'dog',
+        breed: '',
+        gender: '남아',
+        petBirth: '',
+        neutered: '완료',
+        regType: 'external',
+        tagColor: '베이지 골드',
+        recipient: '',
+        shippingMemo: '',
+        agreeTerms: true,
+        agreeAgency: true,
+      });
+      setSubmittedNumber('');
+    }
+  }, [isOpen]);
+
   if (!isOpen) return null;
 
   const handleNext = () => {
+    if (step === 1) {
+      if (!formData.ownerName.trim()) {
+        alert('보호자 성명을 입력해 주세요.');
+        return;
+      }
+      if (!formData.birthDate.trim()) {
+        alert('생년월일 6자리를 입력해 주세요. (예: 950315)');
+        return;
+      }
+      if (formData.birthDate.length < 6) {
+        alert('생년월일은 6자리 숫자로 입력해 주세요.');
+        return;
+      }
+      if (!formData.phone.trim()) {
+        alert('휴대폰 번호를 입력해 주세요.');
+        return;
+      }
+      if (formData.phone.length < 12) {
+        alert('휴대폰 번호 11자리를 정확히 입력해 주세요. (예: 010-1234-5678)');
+        return;
+      }
+    }
+    if (step === 2) {
+      if (!formData.address.trim()) {
+        alert('보호자 주민등록상 주소지를 입력해 주세요.');
+        return;
+      }
+    }
     if (step === 3 && !formData.petName.trim()) {
       alert('반려동물의 이름을 입력해 주세요.');
       return;
+    }
+    if (step === 4) {
+      // 5단계(수령 정보) 진입 시 받는 사람과 주소가 비어있으면 앞서 입력한 보호자 정보로 연동
+      setFormData(prev => ({
+        ...prev,
+        recipient: prev.recipient || prev.ownerName,
+        address: prev.address || ''
+      }));
     }
     if (step === 6) {
       const newRegId = `REG-${new Date().getFullYear()}${String(new Date().getMonth() + 1).padStart(2, '0')}${String(new Date().getDate()).padStart(2, '0')}-${Math.floor(1000 + Math.random() * 9000)}`;
@@ -59,9 +137,9 @@ export function ApplyRegistrationModal({ isOpen, onClose, onApplySuccess }) {
       
       onApplySuccess(newApp, {
         name: formData.petName,
-        breed: formData.breed,
+        breed: formData.breed || '믹스/기타',
         gender: formData.gender,
-        birth: formData.petBirth,
+        birth: formData.petBirth || '2024-01-01',
         neutered: formData.neutered,
         regNumber: '발급 심사 진행 중',
         status: '등록 신청 중'
@@ -137,7 +215,8 @@ export function ApplyRegistrationModal({ isOpen, onClose, onApplySuccess }) {
                   value={formData.ownerName} 
                   onChange={(e) => setFormData({...formData, ownerName: e.target.value})}
                   className="w-full px-4 py-2.5 border border-gray-300 focus:outline-none focus:border-[#144A42]"
-                  placeholder="홍길동"
+                  placeholder="보호자 실명 입력"
+                  autoFocus
                 />
               </div>
 
@@ -145,8 +224,14 @@ export function ApplyRegistrationModal({ isOpen, onClose, onApplySuccess }) {
                 <label className="block font-semibold mb-1">생년월일 (6자리)</label>
                 <input 
                   type="text" 
+                  inputMode="numeric"
+                  pattern="[0-9]*"
+                  maxLength={6}
                   value={formData.birthDate} 
-                  onChange={(e) => setFormData({...formData, birthDate: e.target.value})}
+                  onChange={(e) => {
+                    const digits = e.target.value.replace(/[^0-9]/g, '').slice(0, 6);
+                    setFormData({...formData, birthDate: digits});
+                  }}
                   className="w-full px-4 py-2.5 border border-gray-300 focus:outline-none focus:border-[#144A42]"
                   placeholder="예: 920518"
                 />
@@ -156,10 +241,13 @@ export function ApplyRegistrationModal({ isOpen, onClose, onApplySuccess }) {
                 <label className="block font-semibold mb-1">휴대폰 번호</label>
                 <input 
                   type="tel" 
+                  inputMode="numeric"
+                  pattern="[0-9]*"
+                  maxLength={13}
                   value={formData.phone} 
-                  onChange={(e) => setFormData({...formData, phone: e.target.value})}
+                  onChange={(e) => setFormData({...formData, phone: formatPhoneNumber(e.target.value)})}
                   className="w-full px-4 py-2.5 border border-gray-300 focus:outline-none focus:border-[#144A42]"
-                  placeholder="010-1234-5678"
+                  placeholder="010-0000-0000"
                 />
               </div>
             </div>
@@ -173,11 +261,25 @@ export function ApplyRegistrationModal({ isOpen, onClose, onApplySuccess }) {
                 <div className="flex gap-2">
                   <input 
                     type="text" 
+                    inputMode="numeric"
+                    pattern="[0-9]*"
+                    maxLength={5}
                     value={formData.postalCode} 
-                    onChange={(e) => setFormData({...formData, postalCode: e.target.value})}
-                    className="w-32 px-4 py-2.5 border border-gray-300 bg-gray-50 focus:outline-none"
+                    onChange={(e) => setFormData({...formData, postalCode: e.target.value.replace(/[^0-9]/g, '').slice(0, 5)})}
+                    placeholder="우편번호 5자리"
+                    className="w-36 px-4 py-2.5 border border-gray-300 focus:outline-none focus:border-[#144A42]"
                   />
-                  <button type="button" className="px-4 py-2 bg-[#144A42] text-white text-xs font-semibold">
+                  <button 
+                    type="button" 
+                    onClick={() => {
+                      setFormData(prev => ({ 
+                        ...prev, 
+                        address: prev.address || '서울특별시 강남구 테헤란로 123', 
+                        postalCode: prev.postalCode || '06234' 
+                      }));
+                    }}
+                    className="px-4 py-2 bg-[#144A42] text-white text-xs font-semibold hover:bg-[#0D3832] transition"
+                  >
                     우편번호 검색
                   </button>
                 </div>
@@ -189,6 +291,7 @@ export function ApplyRegistrationModal({ isOpen, onClose, onApplySuccess }) {
                   type="text" 
                   value={formData.address} 
                   onChange={(e) => setFormData({...formData, address: e.target.value})}
+                  placeholder="도로명 주소 및 상세 주소를 입력해 주세요"
                   className="w-full px-4 py-2.5 border border-gray-300 focus:outline-none focus:border-[#144A42]"
                 />
                 <p className="text-[11px] text-[#7A8580] mt-1">
@@ -340,9 +443,10 @@ export function ApplyRegistrationModal({ isOpen, onClose, onApplySuccess }) {
                 <label className="block font-semibold mb-1">받는 사람 성명</label>
                 <input 
                   type="text" 
-                  value={formData.recipient} 
+                  value={formData.recipient || formData.ownerName} 
                   onChange={(e) => setFormData({...formData, recipient: e.target.value})}
-                  className="w-full px-4 py-2.5 border border-gray-300"
+                  placeholder="수령인 성명"
+                  className="w-full px-4 py-2.5 border border-gray-300 focus:outline-none focus:border-[#144A42]"
                 />
               </div>
 
@@ -352,7 +456,8 @@ export function ApplyRegistrationModal({ isOpen, onClose, onApplySuccess }) {
                   type="text" 
                   value={formData.address} 
                   onChange={(e) => setFormData({...formData, address: e.target.value})}
-                  className="w-full px-4 py-2.5 border border-gray-300"
+                  placeholder="배송받으실 주소"
+                  className="w-full px-4 py-2.5 border border-gray-300 focus:outline-none focus:border-[#144A42]"
                 />
               </div>
 
@@ -362,7 +467,7 @@ export function ApplyRegistrationModal({ isOpen, onClose, onApplySuccess }) {
                   type="text" 
                   value={formData.shippingMemo} 
                   onChange={(e) => setFormData({...formData, shippingMemo: e.target.value})}
-                  className="w-full px-4 py-2.5 border border-gray-300"
+                  className="w-full px-4 py-2.5 border border-gray-300 focus:outline-none focus:border-[#144A42]"
                   placeholder="예: 부재 시 문 앞 보관"
                 />
               </div>
@@ -598,8 +703,11 @@ export function MembershipModal({ isOpen, onClose, onLeadSubmit }) {
                   <label className="block text-xs font-semibold text-gray-300 mb-1">연락처</label>
                   <input 
                     type="tel" 
+                    inputMode="numeric"
+                    pattern="[0-9]*"
+                    maxLength={13}
                     value={leadForm.phone} 
-                    onChange={(e) => setLeadForm({...leadForm, phone: e.target.value})}
+                    onChange={(e) => setLeadForm({...leadForm, phone: formatPhoneNumber(e.target.value)})}
                     placeholder="010-0000-0000"
                     className="w-full px-3.5 py-2.5 bg-[#111615] border border-[#30433E] text-white text-xs focus:border-[#C5A880] focus:outline-none"
                     required

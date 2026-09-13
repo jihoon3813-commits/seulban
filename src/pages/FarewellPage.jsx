@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { FlowerIcon, PhoneIcon, ShieldCheckIcon, CheckIcon } from '../components/Icons';
 import { BRAND_INFO } from '../data/mockData';
+import { formatPhoneNumber } from '../components/Modals';
 
 export default function FarewellPage() {
   const [consultOpen, setConsultOpen] = useState(false);
@@ -149,11 +150,14 @@ export default function FarewellPage() {
                   <label className="block font-semibold mb-1 text-gray-700">연락처</label>
                   <input
                     type="tel"
+                    inputMode="numeric"
+                    pattern="[0-9]*"
+                    maxLength={13}
                     required
                     value={form.phone}
-                    onChange={(e) => setForm({...form, phone: e.target.value})}
+                    onChange={(e) => setForm({...form, phone: formatPhoneNumber(e.target.value)})}
                     placeholder="010-0000-0000"
-                    className="w-full px-3 py-2 border border-gray-300 focus:outline-none"
+                    className="w-full px-3 py-2 border border-gray-300 focus:outline-none focus:border-[#144A42]"
                   />
                 </div>
                 <div>
