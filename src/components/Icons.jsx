@@ -10,13 +10,13 @@ export const PawIcon = ({ className = "w-5 h-5", ...props }) => (
   </svg>
 );
 
-export const PawOutlineIcon = ({ className = "w-5 h-5", ...props }) => (
+export const PawOutlineIcon = ({ className = "w-7 h-7", ...props }) => (
   <svg 
     className={className} 
-    viewBox="0 0 24 24" 
+    viewBox="3 3 18 18" 
     fill="none" 
     stroke="currentColor" 
-    strokeWidth="2" 
+    strokeWidth="1.8" 
     strokeLinecap="round" 
     strokeLinejoin="round" 
     {...props}

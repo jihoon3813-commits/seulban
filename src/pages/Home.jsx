@@ -199,7 +199,7 @@ export default function Home({
           >
             <div className="flex items-center gap-5 sm:gap-6">
               <div className="w-12 h-12 rounded-full bg-[#245348] flex items-center justify-center flex-shrink-0 text-[#ECBE81] transition-transform group-hover:scale-105">
-                <PawOutlineIcon className="w-6 h-6" />
+                <PawOutlineIcon className="w-7 h-7 sm:w-8 sm:h-8" />
               </div>
               <div>
                 <h3 className="text-xl sm:text-2xl font-bold tracking-tight text-white">
@@ -220,7 +220,7 @@ export default function Home({
           >
             <div className="flex items-center gap-5 sm:gap-6">
               <div className="w-12 h-12 rounded-full bg-white flex items-center justify-center flex-shrink-0 text-[#144A42] shadow-xs transition-transform group-hover:scale-105">
-                <HandHeartIcon className="w-6 h-6" />
+                <HandHeartIcon className="w-6 h-6 sm:w-7 sm:h-7" />
               </div>
               <div>
                 <h3 className="text-xl sm:text-2xl font-bold tracking-tight text-[#2C241B]">
