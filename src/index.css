@@ -1,0 +1,53 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  * {
+    border-color: #E6E2D8;
+  }
+  body {
+    background-color: #FBF9F5;
+    color: #1B2421;
+  }
+}
+
+/* Custom transitions and glassmorphism */
+.glass-header {
+  background: rgba(255, 255, 255, 0.92);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+
+.glass-card {
+  background: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+}
+
+.gold-gradient-btn {
+  background: linear-gradient(135deg, #D4AF7A 0%, #C49B60 100%);
+  transition: all 0.25s ease;
+}
+
+.gold-gradient-btn:hover {
+  background: linear-gradient(135deg, #DFBE8C 0%, #B88E52 100%);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 14px rgba(196, 155, 96, 0.35);
+}
+
+/* Smooth active states */
+.active-tab {
+  background-color: #144A42;
+  color: #FFFFFF;
+}
+
+/* Animations */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(6px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}

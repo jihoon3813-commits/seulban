@@ -1,0 +1,962 @@
+import React, { useState } from 'react';
+import { 
+  XIcon, CheckIcon, ShieldCheckIcon, PawIcon, ArrowRight, 
+  PhoneIcon, MapPinIcon, HeartIcon, SparklesIcon, FileTextIcon, 
+  ClockIcon, StethoscopeIcon, UserIcon 
+} from './Icons';
+import { BRAND_INFO, MEMBERSHIP_PERKS, REG_FAQS } from '../data/mockData';
+
+// 1. 동물등록 7단계 신청 마법사 모달 (REG-002 & REG-003)
+export function ApplyRegistrationModal({ isOpen, onClose, onApplySuccess }) {
+  const [step, setStep] = useState(1);
+  const [formData, setFormData] = useState({
+    ownerName: '김슬기',
+    birthDate: '1992-05-18',
+    phone: '010-9876-5432',
+    address: '서울특별시 강남구 역삼로 45길 12, 302호',
+    postalCode: '06234',
+    petName: '',
+    petType: 'dog',
+    breed: '말티즈',
+    gender: '남아',
+    petBirth: '2024-04-10',
+    neutered: '완료',
+    regType: 'external',
+    tagColor: '베이지 골드',
+    recipient: '김슬기',
+    shippingMemo: '부재 시 문 앞에 놓아주세요',
+    agreeTerms: true,
+    agreeAgency: true,
+  });
+
+  const [submittedNumber, setSubmittedNumber] = useState('');
+
+  if (!isOpen) return null;
+
+  const handleNext = () => {
+    if (step === 3 && !formData.petName.trim()) {
+      alert('반려동물의 이름을 입력해 주세요.');
+      return;
+    }
+    if (step === 6) {
+      const newRegId = `REG-${new Date().getFullYear()}${String(new Date().getMonth() + 1).padStart(2, '0')}${String(new Date().getDate()).padStart(2, '0')}-${Math.floor(1000 + Math.random() * 9000)}`;
+      setSubmittedNumber(newRegId);
+      
+      const newApp = {
+        id: newRegId,
+        petName: formData.petName || '우리 아이',
+        ownerName: formData.ownerName,
+        phone: formData.phone,
+        type: formData.regType === 'external' ? '외장형 안심 목걸이 칩' : '내장형 마이크로칩 시술권',
+        appliedDate: new Date().toLocaleString('ko-KR'),
+        statusCode: 'SUBMITTED',
+        statusLabel: '접수 완료 (검수 대기)',
+        trackingNumber: '검수 후 발송 준비 예정',
+        history: [
+          { date: '방금 전', title: '온라인 신청서 접수', desc: '담당자 검수 대기 중입니다.' }
+        ]
+      };
+      
+      onApplySuccess(newApp, {
+        name: formData.petName,
+        breed: formData.breed,
+        gender: formData.gender,
+        birth: formData.petBirth,
+        neutered: formData.neutered,
+        regNumber: '발급 심사 진행 중',
+        status: '등록 신청 중'
+      });
+      setStep(7);
+      return;
+    }
+    setStep(step + 1);
+  };
+
+  const handleBack = () => {
+    if (step > 1) setStep(step - 1);
+  };
+
+  const stepsTitle = [
+    '1. 본인 확인',
+    '2. 보호자 정보',
+    '3. 반려동물 정보',
+    '4. 등록 방식 선택',
+    '5. 수령 정보',
+    '6. 최종 확인 및 동의',
+    '7. 접수 완료'
+  ];
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fade-in">
+      <div className="bg-white w-full max-w-xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh] border border-[#DDD5C7]">
+        
+        {/* Header */}
+        <div className="bg-[#144A42] text-white px-6 py-4 flex items-center justify-between">
+          <div className="flex items-center gap-2.5">
+            <PawIcon className="w-5 h-5 text-[#C5A880]" />
+            <span className="font-bold text-base">모바일 동물등록 간편 신청</span>
+          </div>
+          <button onClick={onClose} className="p-1 text-white/80 hover:text-white hover:bg-white/10">
+            <XIcon className="w-5 h-5" />
+          </button>
+        </div>
+
+        {/* Step Indicator */}
+        {step < 7 && (
+          <div className="bg-[#F8F6F1] px-6 py-3 border-b border-[#EFECE6]">
+            <div className="flex items-center justify-between text-xs font-semibold text-[#144A42] mb-1.5">
+              <span>{stepsTitle[step - 1]}</span>
+              <span className="text-[#88948F]">{step} / 6 단계</span>
+            </div>
+            <div className="w-full bg-[#E5E0D4] h-1.5 overflow-hidden">
+              <div 
+                className="bg-[#144A42] h-full transition-all duration-300"
+                style={{ width: `${(step / 6) * 100}%` }}
+              />
+            </div>
+          </div>
+        )}
+
+        {/* Form Body */}
+        <div className="p-6 overflow-y-auto space-y-4 flex-1 text-sm text-[#26312D]">
+          
+          {/* Step 1: 본인확인 */}
+          {step === 1 && (
+            <div className="space-y-4">
+              <div className="bg-[#EBF4F2] p-4 border border-[#D5E8E4] flex items-start gap-3">
+                <ShieldCheckIcon className="w-5 h-5 text-[#144A42] mt-0.5 shrink-0" />
+                <p className="text-xs text-[#204941] leading-relaxed">
+                  동물보호법에 의거하여 정확한 지자체 전산망 등록을 위해 보호자 본인 인증 정보를 확인합니다.
+                </p>
+              </div>
+
+              <div>
+                <label className="block font-semibold mb-1">보호자 성명 (실명)</label>
+                <input 
+                  type="text" 
+                  value={formData.ownerName} 
+                  onChange={(e) => setFormData({...formData, ownerName: e.target.value})}
+                  className="w-full px-4 py-2.5 border border-gray-300 focus:outline-none focus:border-[#144A42]"
+                  placeholder="홍길동"
+                />
+              </div>
+
+              <div>
+                <label className="block font-semibold mb-1">생년월일 (6자리)</label>
+                <input 
+                  type="text" 
+                  value={formData.birthDate} 
+                  onChange={(e) => setFormData({...formData, birthDate: e.target.value})}
+                  className="w-full px-4 py-2.5 border border-gray-300 focus:outline-none focus:border-[#144A42]"
+                  placeholder="예: 920518"
+                />
+              </div>
+
+              <div>
+                <label className="block font-semibold mb-1">휴대폰 번호</label>
+                <input 
+                  type="tel" 
+                  value={formData.phone} 
+                  onChange={(e) => setFormData({...formData, phone: e.target.value})}
+                  className="w-full px-4 py-2.5 border border-gray-300 focus:outline-none focus:border-[#144A42]"
+                  placeholder="010-1234-5678"
+                />
+              </div>
+            </div>
+          )}
+
+          {/* Step 2: 보호자 상세 주소 */}
+          {step === 2 && (
+            <div className="space-y-4">
+              <div>
+                <label className="block font-semibold mb-1">우편번호</label>
+                <div className="flex gap-2">
+                  <input 
+                    type="text" 
+                    value={formData.postalCode} 
+                    onChange={(e) => setFormData({...formData, postalCode: e.target.value})}
+                    className="w-32 px-4 py-2.5 border border-gray-300 bg-gray-50 focus:outline-none"
+                  />
+                  <button type="button" className="px-4 py-2 bg-[#144A42] text-white text-xs font-semibold">
+                    우편번호 검색
+                  </button>
+                </div>
+              </div>
+
+              <div>
+                <label className="block font-semibold mb-1">보호자 주민등록상 주소지</label>
+                <input 
+                  type="text" 
+                  value={formData.address} 
+                  onChange={(e) => setFormData({...formData, address: e.target.value})}
+                  className="w-full px-4 py-2.5 border border-gray-300 focus:outline-none focus:border-[#144A42]"
+                />
+                <p className="text-[11px] text-[#7A8580] mt-1">
+                  * 동물등록증 및 관할 지자체 등록을 위한 공식 주소지입니다.
+                </p>
+              </div>
+            </div>
+          )}
+
+          {/* Step 3: 반려동물 정보 */}
+          {step === 3 && (
+            <div className="space-y-4">
+              <div>
+                <label className="block font-semibold mb-1">우리 아이 이름 <span className="text-red-500">*</span></label>
+                <input 
+                  type="text" 
+                  value={formData.petName} 
+                  onChange={(e) => setFormData({...formData, petName: e.target.value})}
+                  className="w-full px-4 py-2.5 border border-gray-300 focus:outline-none focus:border-[#144A42] font-semibold text-base"
+                  placeholder="예: 뭉치, 초코, 루루"
+                  autoFocus
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block font-semibold mb-1">축종</label>
+                  <select 
+                    value={formData.petType}
+                    onChange={(e) => setFormData({...formData, petType: e.target.value})}
+                    className="w-full px-3 py-2.5 border border-gray-300 focus:outline-none"
+                  >
+                    <option value="dog">반려견 (개)</option>
+                    <option value="cat">반려묘 (고양이)</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="block font-semibold mb-1">품종</label>
+                  <input 
+                    type="text" 
+                    value={formData.breed} 
+                    onChange={(e) => setFormData({...formData, breed: e.target.value})}
+                    className="w-full px-3 py-2.5 border border-gray-300 focus:outline-none"
+                    placeholder="예: 말티푸, 포메라니안"
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block font-semibold mb-1">성별</label>
+                  <div className="flex gap-2">
+                    {['남아', '여아'].map((g) => (
+                      <button
+                        key={g}
+                        type="button"
+                        onClick={() => setFormData({...formData, gender: g})}
+                        className={`flex-1 py-2 text-xs font-semibold border ${
+                          formData.gender === g ? 'bg-[#144A42] text-white border-[#144A42]' : 'border-gray-200 text-gray-700'
+                        }`}
+                      >
+                        {g}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+                <div>
+                  <label className="block font-semibold mb-1">중성화 여부</label>
+                  <div className="flex gap-2">
+                    {['완료', '미완료'].map((n) => (
+                      <button
+                        key={n}
+                        type="button"
+                        onClick={() => setFormData({...formData, neutered: n})}
+                        className={`flex-1 py-2 text-xs font-semibold border ${
+                          formData.neutered === n ? 'bg-[#144A42] text-white border-[#144A42]' : 'border-gray-200 text-gray-700'
+                        }`}
+                      >
+                        {n}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              </div>
+
+              <div>
+                <label className="block font-semibold mb-1">생년월일 (추정 가능)</label>
+                <input 
+                  type="date" 
+                  value={formData.petBirth} 
+                  onChange={(e) => setFormData({...formData, petBirth: e.target.value})}
+                  className="w-full px-4 py-2 border border-gray-300 focus:outline-none"
+                />
+              </div>
+            </div>
+          )}
+
+          {/* Step 4: 등록 방식 선택 */}
+          {step === 4 && (
+            <div className="space-y-3">
+              <label className="block font-semibold">등록 방식 선택</label>
+              
+              <div 
+                onClick={() => setFormData({...formData, regType: 'external'})}
+                className={`p-4 border-2 cursor-pointer transition ${
+                  formData.regType === 'external' ? 'border-[#144A42] bg-[#F3F9F7]' : 'border-gray-200 hover:border-gray-300'
+                }`}
+              >
+                <div className="flex items-center justify-between mb-1">
+                  <span className="font-bold text-[#144A42] flex items-center gap-2">
+                    <span className="w-2.5 h-2.5 bg-[#144A42]"></span>
+                    외장형 안심 목걸이 인식표 패키지 (가장 인기)
+                  </span>
+                  <span className="text-xs font-bold text-[#144A42] bg-[#E1F3EE] px-2.5 py-0.5">
+                    수수료 무료
+                  </span>
+                </div>
+                <p className="text-xs text-[#52605A] leading-relaxed">
+                  가볍고 예쁜 생활방수 전자태그 펜던트와 공식 동물등록증 카드가 택배로 배송됩니다.
+                </p>
+              </div>
+
+              <div 
+                onClick={() => setFormData({...formData, regType: 'internal'})}
+                className={`p-4 border-2 cursor-pointer transition ${
+                  formData.regType === 'internal' ? 'border-[#144A42] bg-[#F3F9F7]' : 'border-gray-200 hover:border-gray-300'
+                }`}
+              >
+                <div className="flex items-center justify-between mb-1">
+                  <span className="font-bold text-[#144A42] flex items-center gap-2">
+                    <span className="w-2.5 h-2.5 bg-[#C5A880]"></span>
+                    내장형 마이크로칩 제휴병원 시술권
+                  </span>
+                  <span className="text-xs font-bold text-[#8D6836] bg-[#FAF2E5] px-2.5 py-0.5">
+                    협력 병원 지원
+                  </span>
+                </div>
+                <p className="text-xs text-[#52605A] leading-relaxed">
+                  피하에 쌀알 크기의 칩을 주입하는 방식으로 분실 위험이 전혀 없으며, 슬반생 제휴 병원에서 전문 수의사가 안전하게 시술합니다.
+                </p>
+              </div>
+            </div>
+          )}
+
+          {/* Step 5: 수령 정보 */}
+          {step === 5 && (
+            <div className="space-y-4">
+              <div>
+                <label className="block font-semibold mb-1">받는 사람 성명</label>
+                <input 
+                  type="text" 
+                  value={formData.recipient} 
+                  onChange={(e) => setFormData({...formData, recipient: e.target.value})}
+                  className="w-full px-4 py-2.5 border border-gray-300"
+                />
+              </div>
+
+              <div>
+                <label className="block font-semibold mb-1">배송지 주소</label>
+                <input 
+                  type="text" 
+                  value={formData.address} 
+                  onChange={(e) => setFormData({...formData, address: e.target.value})}
+                  className="w-full px-4 py-2.5 border border-gray-300"
+                />
+              </div>
+
+              <div>
+                <label className="block font-semibold mb-1">배송 메모</label>
+                <input 
+                  type="text" 
+                  value={formData.shippingMemo} 
+                  onChange={(e) => setFormData({...formData, shippingMemo: e.target.value})}
+                  className="w-full px-4 py-2.5 border border-gray-300"
+                  placeholder="예: 부재 시 문 앞 보관"
+                />
+              </div>
+            </div>
+          )}
+
+          {/* Step 6: 동의 및 요약 */}
+          {step === 6 && (
+            <div className="space-y-4">
+              <div className="bg-[#FAF8F5] p-5 border border-[#EAE3D5] space-y-2 text-xs">
+                <p className="font-bold text-[#144A42] text-sm mb-2">신청 내용 요약</p>
+                <div className="flex justify-between py-1 border-b border-[#EFECE6]">
+                  <span className="text-gray-500">보호자 / 연락처</span>
+                  <span className="font-semibold">{formData.ownerName} ({formData.phone})</span>
+                </div>
+                <div className="flex justify-between py-1 border-b border-[#EFECE6]">
+                  <span className="text-gray-500">반려동물</span>
+                  <span className="font-semibold">{formData.petName} ({formData.breed}, {formData.gender})</span>
+                </div>
+                <div className="flex justify-between py-1 border-b border-[#EFECE6]">
+                  <span className="text-gray-500">등록 방식</span>
+                  <span className="font-semibold">{formData.regType === 'external' ? '외장형 목걸이 인식표 패키지' : '내장형 마이크로칩 시술권'}</span>
+                </div>
+                <div className="flex justify-between py-1">
+                  <span className="text-gray-500">신청 수수료</span>
+                  <span className="font-bold text-[#144A42]">0원 (슬반생 대행 지원)</span>
+                </div>
+              </div>
+
+              <div className="space-y-2 pt-2">
+                <label className="flex items-center gap-2 cursor-pointer">
+                  <input 
+                    type="checkbox" 
+                    checked={formData.agreeTerms} 
+                    onChange={(e) => setFormData({...formData, agreeTerms: e.target.checked})}
+                    className="w-4 h-4 text-[#144A42] focus:ring-0"
+                  />
+                  <span className="text-xs font-semibold">[필수] 동물보호법에 따른 동물등록 업무 대행 위임 동의</span>
+                </label>
+                <label className="flex items-center gap-2 cursor-pointer">
+                  <input 
+                    type="checkbox" 
+                    checked={formData.agreeAgency} 
+                    onChange={(e) => setFormData({...formData, agreeAgency: e.target.checked})}
+                    className="w-4 h-4 text-[#144A42] focus:ring-0"
+                  />
+                  <span className="text-xs font-semibold">[필수] 개인정보 수집 및 지자체 전산망 등록 제공 동의</span>
+                </label>
+              </div>
+            </div>
+          )}
+
+          {/* Step 7: 접수 완료 */}
+          {step === 7 && (
+            <div className="py-6 text-center space-y-4">
+              <div className="w-16 h-16 bg-[#E5F5F0] text-[#144A42] flex items-center justify-center mx-auto shadow-inner border border-[#144A42]">
+                <CheckIcon className="w-8 h-8" />
+              </div>
+              <div className="space-y-1">
+                <h4 className="text-xl font-bold text-[#144A42]">동물등록 신청이 접수되었습니다!</h4>
+                <p className="text-xs text-[#62706A]">
+                  정부 동물보호관리시스템 검수 및 승인 절차가 신속히 진행됩니다.
+                </p>
+              </div>
+
+              <div className="bg-[#FAF8F5] p-5 border border-[#ECE5D8] max-w-sm mx-auto text-xs space-y-1.5 text-left">
+                <div className="flex justify-between">
+                  <span className="text-gray-500">접수번호</span>
+                  <span className="font-bold text-[#144A42]">{submittedNumber}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-gray-500">반려동물</span>
+                  <span className="font-semibold">{formData.petName}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-gray-500">현재 상태</span>
+                  <span className="font-bold text-amber-700 bg-amber-50 px-2 py-0.5">접수 완료 (검수 중)</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-gray-500">예상 등록완료일</span>
+                  <span className="font-semibold">영업일 기준 2~3일 이내</span>
+                </div>
+              </div>
+
+              <p className="text-[11px] text-[#838F8A]">
+                진행 상황은 상단 [MY 슬반생] 메뉴에서 언제든 실시간 확인하실 수 있습니다.
+              </p>
+            </div>
+          )}
+
+        </div>
+
+        {/* Footer Buttons */}
+        <div className="p-4 bg-[#FAF9F6] border-t border-[#EAE4D7] flex items-center justify-between">
+          {step < 7 ? (
+            <>
+              {step > 1 ? (
+                <button
+                  type="button"
+                  onClick={handleBack}
+                  className="px-5 py-2.5 border border-gray-300 text-xs font-semibold text-gray-700 hover:bg-gray-100"
+                >
+                  이전 단계
+                </button>
+              ) : <div></div>}
+              
+              <button
+                type="button"
+                onClick={handleNext}
+                className="px-6 py-2.5 bg-[#144A42] text-white text-xs font-bold hover:bg-[#0D3832] transition flex items-center gap-1.5 shadow-md"
+              >
+                <span>{step === 6 ? '동물등록 신청 완료하기' : '다음 단계'}</span>
+                <ArrowRight className="w-3.5 h-3.5" />
+              </button>
+            </>
+          ) : (
+            <button
+              type="button"
+              onClick={onClose}
+              className="w-full py-3 bg-[#144A42] text-white text-sm font-bold hover:bg-[#0D3832] transition"
+            >
+              확인 및 닫기
+            </button>
+          )}
+        </div>
+
+      </div>
+    </div>
+  );
+}
+
+// 2. 멤버십 혜택 & 사전신청 모달 (MEM-001 & MEM-002)
+export function MembershipModal({ isOpen, onClose, onLeadSubmit }) {
+  const [leadForm, setLeadForm] = useState({
+    name: '',
+    phone: '',
+    petBreed: '',
+    interest: '병원비 할인',
+    agree: true,
+  });
+  const [submitted, setSubmitted] = useState(false);
+
+  if (!isOpen) return null;
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    if (!leadForm.name || !leadForm.phone) {
+      alert('성함과 연락처를 입력해 주세요.');
+      return;
+    }
+    onLeadSubmit(leadForm);
+    setSubmitted(true);
+  };
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fade-in">
+      <div className="bg-[#121615] text-white w-full max-w-2xl shadow-2xl border border-[#263733] overflow-hidden flex flex-col max-h-[90vh]">
+        
+        {/* Modal Top */}
+        <div className="px-6 py-5 border-b border-[#202E2A] flex items-center justify-between">
+          <div className="flex items-center gap-2.5">
+            <SparklesIcon className="w-5 h-5 text-[#C5A880]" />
+            <span className="font-bold text-lg text-white">슬반생 프리미엄 멤버십 사전신청</span>
+          </div>
+          <button onClick={onClose} className="p-1 text-gray-400 hover:text-white">
+            <XIcon className="w-5 h-5" />
+          </button>
+        </div>
+
+        {/* Modal Content */}
+        <div className="p-6 overflow-y-auto space-y-6 flex-1 text-sm text-[#CAD6D1]">
+          
+          {/* Header Copy */}
+          <div>
+            <span className="text-xs font-bold tracking-widest text-[#C5A880] uppercase">SEULBAN VIP CLUB</span>
+            <h3 className="text-2xl font-bold text-white mt-1 leading-snug">
+              반려생활의 부담은 가볍게,<br />혜택은 더 든든하게
+            </h3>
+            <p className="text-xs text-[#8E9F99] mt-2">
+              정기 론칭 전 사전신청자 분들께만 평생 월회비 40% 할인 혜택 및 웰컴 스타터 패키지를 선물합니다.
+            </p>
+          </div>
+
+          {/* Perks Comparison Table */}
+          <div className="bg-[#192220] border border-[#2A3B37] overflow-hidden">
+            <div className="grid grid-cols-3 bg-[#202E2A] px-4 py-2.5 text-xs font-bold text-[#E5EFEA]">
+              <span>혜택 항목</span>
+              <span className="text-center text-gray-400">일반 회원</span>
+              <span className="text-center text-[#E8DEC8]">슬반생 멤버십</span>
+            </div>
+            <div className="divide-y divide-[#263733] text-xs">
+              <div className="grid grid-cols-3 px-4 py-3 items-center">
+                <span className="font-medium text-gray-300">동물등록비</span>
+                <span className="text-center text-gray-400">대행 수수료만 지원</span>
+                <span className="text-center text-[#5EEAD4] font-bold">인식표 키트 전액 지원</span>
+              </div>
+              <div className="grid grid-cols-3 px-4 py-3 items-center">
+                <span className="font-medium text-gray-300">제휴 동물병원</span>
+                <span className="text-center text-gray-400">기본 상담</span>
+                <span className="text-center text-[#5EEAD4] font-bold">진료비 10~20% 즉시할인</span>
+              </div>
+              <div className="grid grid-cols-3 px-4 py-3 items-center">
+                <span className="font-medium text-gray-300">반려동물 숙소</span>
+                <span className="text-center text-gray-400">정가 이용</span>
+                <span className="text-center text-[#5EEAD4] font-bold">주중 최대 30% 우대</span>
+              </div>
+              <div className="grid grid-cols-3 px-4 py-3 items-center">
+                <span className="font-medium text-gray-300">슬반생몰 쇼핑</span>
+                <span className="text-center text-gray-400">첫구매 3,000원</span>
+                <span className="text-center text-[#5EEAD4] font-bold">매월 50,000원 쿠폰팩</span>
+              </div>
+            </div>
+          </div>
+
+          {/* Lead Submission Form */}
+          {!submitted ? (
+            <form onSubmit={handleSubmit} className="bg-[#192220] p-5 border border-[#283A35] space-y-3.5">
+              <p className="font-bold text-white text-sm">사전 예약 신청서 (비용 발생 없음)</p>
+              
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-xs font-semibold text-gray-300 mb-1">성함</label>
+                  <input 
+                    type="text" 
+                    value={leadForm.name} 
+                    onChange={(e) => setLeadForm({...leadForm, name: e.target.value})}
+                    placeholder="홍길동"
+                    className="w-full px-3.5 py-2.5 bg-[#111615] border border-[#30433E] text-white text-xs focus:border-[#C5A880] focus:outline-none"
+                    required
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-semibold text-gray-300 mb-1">연락처</label>
+                  <input 
+                    type="tel" 
+                    value={leadForm.phone} 
+                    onChange={(e) => setLeadForm({...leadForm, phone: e.target.value})}
+                    placeholder="010-0000-0000"
+                    className="w-full px-3.5 py-2.5 bg-[#111615] border border-[#30433E] text-white text-xs focus:border-[#C5A880] focus:outline-none"
+                    required
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-xs font-semibold text-gray-300 mb-1">반려견/묘 품종</label>
+                  <input 
+                    type="text" 
+                    value={leadForm.petBreed} 
+                    onChange={(e) => setLeadForm({...leadForm, petBreed: e.target.value})}
+                    placeholder="예: 푸들, 말티즈, 코숏"
+                    className="w-full px-3.5 py-2.5 bg-[#111615] border border-[#30433E] text-white text-xs focus:border-[#C5A880] focus:outline-none"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-semibold text-gray-300 mb-1">가장 기대되는 혜택</label>
+                  <select 
+                    value={leadForm.interest} 
+                    onChange={(e) => setLeadForm({...leadForm, interest: e.target.value})}
+                    className="w-full px-3.5 py-2.5 bg-[#111615] border border-[#30433E] text-white text-xs focus:border-[#C5A880] focus:outline-none"
+                  >
+                    <option value="동물병원비 할인">동물병원비 할인</option>
+                    <option value="반려동물 숙소 우대">반려동물 숙소 우대</option>
+                    <option value="동물등록 지원">동물등록 지원</option>
+                    <option value="쇼핑몰 쿠폰">쇼핑몰 정기 할인쿠폰</option>
+                  </select>
+                </div>
+              </div>
+
+              <label className="flex items-center gap-2 cursor-pointer pt-1">
+                <input 
+                  type="checkbox" 
+                  checked={leadForm.agree} 
+                  onChange={(e) => setLeadForm({...leadForm, agree: e.target.checked})}
+                  className="text-[#C5A880]"
+                  required
+                />
+                <span className="text-[11px] text-gray-400">[필수] 사전 예약 혜택 안내 및 출시 알림 수신 동의</span>
+              </label>
+
+              <button
+                type="submit"
+                className="w-full py-3.5 bg-[#C5A880] hover:bg-[#B4956B] text-[#144A42] font-bold text-sm transition shadow-lg mt-2"
+              >
+                사전신청 완료하고 혜택 찜하기 →
+              </button>
+            </form>
+          ) : (
+            <div className="bg-[#192522] p-6 border border-[#2F4741] text-center space-y-2">
+              <div className="w-12 h-12 bg-[#203D37] text-[#5EEAD4] flex items-center justify-center mx-auto mb-2">
+                <CheckIcon className="w-6 h-6" />
+              </div>
+              <h4 className="text-lg font-bold text-white">사전예약 신청이 접수되었습니다!</h4>
+              <p className="text-xs text-[#A0B4AD]">
+                정식 출시 시 가장 먼저 우대 혜택 알림톡을 발송해 드리겠습니다. 감사합니다.
+              </p>
+            </div>
+          )}
+
+        </div>
+
+      </div>
+    </div>
+  );
+}
+
+// 3. 제휴처 상세 모달 (PAR-002)
+export function PartnerModal({ partner, isOpen, onClose, onToggleBookmark, isBookmarked }) {
+  if (!isOpen || !partner) return null;
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fade-in">
+      <div className="bg-white w-full max-w-lg shadow-2xl overflow-hidden flex flex-col max-h-[90vh] border border-[#DDD5C7]">
+        
+        {/* Header with category tag */}
+        <div className="p-6 bg-[#FAF8F5] border-b border-[#ECE6DA] flex items-start justify-between">
+          <div>
+            <span className="text-xs font-bold text-[#144A42] bg-[#E1F1ED] px-2.5 py-1">
+              {partner.categoryName} • {partner.tag}
+            </span>
+            <h3 className="text-xl font-bold text-[#144A42] mt-2">{partner.name}</h3>
+            <p className="text-xs text-[#717E78] flex items-center gap-1 mt-1">
+              <MapPinIcon className="w-3.5 h-3.5 text-[#889891]" />
+              {partner.location}
+            </p>
+          </div>
+          <button onClick={onClose} className="p-1 text-gray-400 hover:text-gray-700">
+            <XIcon className="w-5 h-5" />
+          </button>
+        </div>
+
+        {/* Content */}
+        <div className="p-6 space-y-4 text-sm text-[#26312D] overflow-y-auto">
+          {/* Benefit box */}
+          <div className="p-4 bg-[#EAF5F2] border border-[#CDE5DF] space-y-1">
+            <span className="text-[11px] font-bold text-[#144A42] tracking-wider uppercase">슬반생 단독 제휴 혜택</span>
+            <p className="font-bold text-[#144A42] text-sm">{partner.benefit}</p>
+          </div>
+
+          <div>
+            <h5 className="font-semibold text-xs text-gray-500 mb-1">시설 소개 및 특징</h5>
+            <p className="text-xs text-[#525E59] leading-relaxed">{partner.desc}</p>
+          </div>
+
+          <div className="bg-[#FAF9F6] p-4 space-y-2 text-xs border border-[#ECE6D8]">
+            <div className="flex justify-between">
+              <span className="text-gray-500">영업 시간</span>
+              <span className="font-semibold">연중무휴 (24시간 응급진료 가능)</span>
+            </div>
+            <div className="flex justify-between">
+              <span className="text-gray-500">반려동물 동반조건</span>
+              <span className="font-semibold">모든 견종/묘종 가능 (예방접종 완료 권장)</span>
+            </div>
+            <div className="flex justify-between">
+              <span className="text-gray-500">전화번호</span>
+              <span className="font-bold text-[#144A42]">{partner.phone}</span>
+            </div>
+          </div>
+        </div>
+
+        {/* Footer Actions */}
+        <div className="p-4 bg-[#FAF8F5] border-t border-[#ECE6DA] flex items-center gap-3">
+          <button
+            onClick={() => onToggleBookmark(partner.id)}
+            className={`px-5 py-2.5 border flex items-center gap-1.5 text-xs font-semibold transition ${
+              isBookmarked ? 'bg-red-50 text-red-600 border-red-200' : 'bg-white text-gray-700 border-gray-300'
+            }`}
+          >
+            <HeartIcon className="w-4 h-4" filled={isBookmarked} />
+            <span>{isBookmarked ? '찜 완료' : '찜하기'}</span>
+          </button>
+          
+          <a
+            href={`tel:${partner.phone}`}
+            className="flex-1 py-2.5 bg-[#144A42] text-white font-bold text-xs flex items-center justify-center gap-1.5 hover:bg-[#0D3832] transition shadow-xs"
+          >
+            <PhoneIcon className="w-3.5 h-3.5" />
+            <span>전화 문의 및 예약하기</span>
+          </a>
+        </div>
+
+      </div>
+    </div>
+  );
+}
+
+// 4. 간편 로그인/회원가입 모달 (USR-001 & USR-002)
+export function LoginModal({ isOpen, onClose, onLogin }) {
+  const [isSignUp, setIsSignUp] = useState(false);
+  const [email, setEmail] = useState('demo@seulbanlife.com');
+  const [password, setPassword] = useState('password123');
+  const [name, setName] = useState('김슬기');
+
+  if (!isOpen) return null;
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    onLogin({
+      name: isSignUp ? name : '김슬기',
+      email: email,
+      phone: '010-9876-5432',
+      isMember: true,
+    });
+    onClose();
+  };
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fade-in">
+      <div className="bg-white w-full max-w-md shadow-2xl overflow-hidden p-6 border border-[#ECE5D8]">
+        <div className="flex justify-between items-center mb-5">
+          <div className="flex items-center gap-2">
+            <span className="text-xl font-bold text-[#144A42]">슬반생</span>
+            <span className="text-xs text-gray-500">{isSignUp ? '회원가입' : '로그인'}</span>
+          </div>
+          <button onClick={onClose} className="p-1 text-gray-400 hover:text-gray-700">
+            <XIcon className="w-5 h-5" />
+          </button>
+        </div>
+
+        <form onSubmit={handleSubmit} className="space-y-3.5 text-xs">
+          {isSignUp && (
+            <div>
+              <label className="block font-semibold mb-1 text-gray-700">이름</label>
+              <input 
+                type="text" 
+                value={name} 
+                onChange={(e) => setName(e.target.value)}
+                className="w-full px-3.5 py-2.5 border border-gray-300 focus:border-[#144A42] focus:outline-none"
+                required
+              />
+            </div>
+          )}
+
+          <div>
+            <label className="block font-semibold mb-1 text-gray-700">이메일 계정</label>
+            <input 
+              type="email" 
+              value={email} 
+              onChange={(e) => setEmail(e.target.value)}
+              className="w-full px-3.5 py-2.5 border border-gray-300 focus:border-[#144A42] focus:outline-none"
+              required
+            />
+          </div>
+
+          <div>
+            <label className="block font-semibold mb-1 text-gray-700">비밀번호</label>
+            <input 
+              type="password" 
+              value={password} 
+              onChange={(e) => setPassword(e.target.value)}
+              className="w-full px-3.5 py-2.5 border border-gray-300 focus:border-[#144A42] focus:outline-none"
+              required
+            />
+          </div>
+
+          <button
+            type="submit"
+            className="w-full py-3 bg-[#144A42] text-white font-bold hover:bg-[#0D3832] transition shadow-md mt-2"
+          >
+            {isSignUp ? '간편 가입 완료' : '로그인'}
+          </button>
+        </form>
+
+        <div className="mt-4 pt-4 border-t border-gray-100 flex justify-between text-xs text-gray-500">
+          <button onClick={() => setIsSignUp(!isSignUp)} className="text-[#144A42] font-semibold underline">
+            {isSignUp ? '이미 계정이 있으신가요? 로그인' : '처음이신가요? 10초 간편가입'}
+          </button>
+          <span>데모 모드: 즉시 로그인</span>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// 5. 관리자 시스템 모달 (기획서 13장 ADM-001 ~ ADM-130)
+export function AdminModal({ isOpen, onClose, applications, onUpdateAppStatus }) {
+  if (!isOpen) return null;
+
+  const statuses = [
+    { code: 'SUBMITTED', label: '접수 완료' },
+    { code: 'REVIEWING', label: '서류 검수 중' },
+    { code: 'ACCEPTED', label: '처리 승인' },
+    { code: 'REGISTERED', label: '등록번호 발급' },
+    { code: 'SHIPPING', label: '배송 출발' },
+    { code: 'COMPLETED', label: '처리 완료' },
+  ];
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm animate-fade-in">
+      <div className="bg-white w-full max-w-4xl shadow-2xl overflow-hidden flex flex-col max-h-[92vh] border border-[#DDD5C7]">
+        
+        {/* Admin Header */}
+        <div className="bg-[#111716] text-white px-6 py-4 flex items-center justify-between border-b border-[#23312E]">
+          <div className="flex items-center gap-3">
+            <span className="w-2.5 h-2.5 bg-emerald-400 animate-pulse"></span>
+            <div>
+              <h3 className="font-bold text-base">슬반생 통합 관리자 콘솔 (ADM-001)</h3>
+              <p className="text-[11px] text-gray-400">개발기획서 13장: 동물등록 검수 & 상태 제어 CRM</p>
+            </div>
+          </div>
+          <button onClick={onClose} className="p-1 text-gray-400 hover:text-white">
+            <XIcon className="w-5 h-5" />
+          </button>
+        </div>
+
+        {/* Dashboard KPIs */}
+        <div className="grid grid-cols-4 gap-3 p-5 bg-[#FAF9F6] border-b border-gray-200 text-xs">
+          <div className="bg-white p-3.5 border border-gray-200 shadow-xs">
+            <span className="text-gray-500 font-medium">오늘 접수건</span>
+            <p className="text-xl font-extrabold text-[#144A42] mt-1">{applications.length}건</p>
+          </div>
+          <div className="bg-white p-3.5 border border-gray-200 shadow-xs">
+            <span className="text-gray-500 font-medium">검수 대기</span>
+            <p className="text-xl font-extrabold text-amber-600 mt-1">
+              {applications.filter(a => a.statusCode === 'SUBMITTED' || a.statusCode === 'REVIEWING').length}건
+            </p>
+          </div>
+          <div className="bg-white p-3.5 border border-gray-200 shadow-xs">
+            <span className="text-gray-500 font-medium">배송 중</span>
+            <p className="text-xl font-extrabold text-blue-600 mt-1">
+              {applications.filter(a => a.statusCode === 'SHIPPING').length}건
+            </p>
+          </div>
+          <div className="bg-white p-3.5 border border-gray-200 shadow-xs">
+            <span className="text-gray-500 font-medium">완료율</span>
+            <p className="text-xl font-extrabold text-emerald-700 mt-1">98.4%</p>
+          </div>
+        </div>
+
+        {/* Application Table */}
+        <div className="p-5 overflow-y-auto flex-1">
+          <h4 className="text-xs font-bold text-gray-700 uppercase tracking-wider mb-3">
+            동물등록 신청 목록 (실시간 연동)
+          </h4>
+          <div className="border border-gray-200 overflow-hidden shadow-xs">
+            <table className="w-full text-left text-xs">
+              <thead className="bg-gray-50 border-b border-gray-200 text-gray-600 font-semibold">
+                <tr>
+                  <th className="p-3">접수번호</th>
+                  <th className="p-3">보호자 / 반려동물</th>
+                  <th className="p-3">등록 유형</th>
+                  <th className="p-3">신청일시</th>
+                  <th className="p-3">현재 상태</th>
+                  <th className="p-3 text-right">상태 변경 액션</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-gray-200">
+                {applications.map((app) => (
+                  <tr key={app.id} className="hover:bg-gray-50/80 transition">
+                    <td className="p-3 font-mono font-bold text-[#144A42]">{app.id}</td>
+                    <td className="p-3">
+                      <span className="font-semibold text-gray-800">{app.ownerName}</span>
+                      <span className="text-gray-400 mx-1">/</span>
+                      <span className="text-emerald-800 font-bold">{app.petName}</span>
+                    </td>
+                    <td className="p-3 text-gray-600">{app.type}</td>
+                    <td className="p-3 text-gray-500">{app.appliedDate}</td>
+                    <td className="p-3">
+                      <span className={`inline-block px-2.5 py-0.5 font-bold text-[11px] ${
+                        app.statusCode === 'COMPLETED' ? 'bg-emerald-100 text-emerald-800' :
+                        app.statusCode === 'SHIPPING' ? 'bg-blue-100 text-blue-800' :
+                        'bg-amber-100 text-amber-800'
+                      }`}>
+                        {app.statusLabel}
+                      </span>
+                    </td>
+                    <td className="p-3 text-right">
+                      <select
+                        value={app.statusCode}
+                        onChange={(e) => onUpdateAppStatus(app.id, e.target.value)}
+                        className="text-xs font-semibold px-2 py-1 border border-gray-300 bg-white focus:outline-none focus:border-[#144A42]"
+                      >
+                        {statuses.map((s) => (
+                          <option key={s.code} value={s.code}>{s.label}</option>
+                        ))}
+                      </select>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        {/* Modal Footer */}
+        <div className="p-4 bg-gray-50 border-t border-gray-200 flex justify-between items-center text-xs text-gray-500">
+          <span>* 상태를 변경하면 사용자 마이페이지(MY)에 실시간으로 즉시 반영됩니다.</span>
+          <button onClick={onClose} className="px-5 py-2.5 bg-[#144A42] text-white font-bold">
+            관리자 닫기
+          </button>
+        </div>
+
+      </div>
+    </div>
+  );
+}
