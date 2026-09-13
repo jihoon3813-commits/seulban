@@ -54,6 +54,7 @@ export default function AdminPage({
 
   // Modals for adding items
   const [isAddPartnerOpen, setIsAddPartnerOpen] = useState(false);
+  const [partnerImageMode, setPartnerImageMode] = useState('upload'); // 'upload' | 'url'
   const [newPartner, setNewPartner] = useState({
     name: '',
     category: 'hospital',
@@ -67,8 +68,23 @@ export default function AdminPage({
     phone: '02-000-0000',
     color: 'bg-[#EBF3FB] text-[#2563EB]',
     icon: 'stethoscope',
+    imageUrl: '',
     featured: false
   });
+
+  const handlePartnerImageUpload = (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (file.size > 5 * 1024 * 1024) {
+      alert('이미지 파일 용량은 최대 5MB 이하만 업로드 가능합니다.');
+      return;
+    }
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      setNewPartner(prev => ({ ...prev, imageUrl: event.target.result }));
+    };
+    reader.readAsDataURL(file);
+  };
 
   const [isAddAdoptionOpen, setIsAddAdoptionOpen] = useState(false);
   const [newAdoption, setNewAdoption] = useState({
@@ -84,6 +100,7 @@ export default function AdminPage({
   });
 
   const [isAddTravelOpen, setIsAddTravelOpen] = useState(false);
+  const [travelImageMode, setTravelImageMode] = useState('upload'); // 'upload' | 'url'
   const [newTravel, setNewTravel] = useState({
     type: '리조트',
     name: '',
@@ -92,8 +109,23 @@ export default function AdminPage({
     price: '150,000원~',
     features: '천연잔디 운동장, 수영장, 바베큐',
     memberBenefit: '주중 20% 특별 우대',
-    phone: '033-000-0000'
+    phone: '033-000-0000',
+    imageUrl: '',
   });
+
+  const handleTravelImageUpload = (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (file.size > 5 * 1024 * 1024) {
+      alert('이미지 파일 용량은 최대 5MB 이하만 업로드 가능합니다.');
+      return;
+    }
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      setNewTravel(prev => ({ ...prev, imageUrl: event.target.result }));
+    };
+    reader.readAsDataURL(file);
+  };
 
   // Popup Management State (3:4 Ratio Popups)
   const [isAddPopupOpen, setIsAddPopupOpen] = useState(false);
@@ -1191,37 +1223,56 @@ export default function AdminPage({
             {/* Partners Grid */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
               {partners.map((partner) => (
-                <div key={partner.id} className="bg-white border border-[#E2DDD3] p-5 shadow-xs flex flex-col justify-between">
-                  <div className="space-y-2.5">
-                    <div className="flex justify-between items-start">
-                      <span className="text-[11px] font-bold text-[#144A42] bg-[#E8E0D1] px-2.5 py-0.5">
-                        {partner.categoryName} • {partner.tag}
-                      </span>
-                      <button
-                        onClick={() => {
-                          if (confirm(`[${partner.name}] 제휴처를 정말 삭제하시겠습니까?`)) {
-                            onDeletePartner(partner.id);
-                          }
-                        }}
-                        className="text-xs text-red-500 hover:text-red-700 underline"
-                      >
-                        삭제
-                      </button>
-                    </div>
+                <div key={partner.id} className="bg-white border border-[#E2DDD3] overflow-hidden shadow-xs flex flex-col justify-between">
+                  <div>
+                    {partner.imageUrl ? (
+                      <div className="relative w-full h-40 bg-gray-100 overflow-hidden border-b border-[#ECE5D8]">
+                        <img
+                          src={partner.imageUrl}
+                          alt={partner.name}
+                          className="w-full h-full object-cover"
+                        />
+                        <span className="absolute top-2.5 left-2.5 text-[11px] font-bold text-white bg-black/60 backdrop-blur-xs px-2 py-0.5">
+                          {partner.categoryName} • {partner.tag}
+                        </span>
+                      </div>
+                    ) : (
+                      <div className={`p-4 border-b border-[#ECE5D8] flex items-center justify-between ${partner.color || 'bg-[#FAF8F5]'}`}>
+                        <span className="text-[11px] font-bold text-[#144A42] bg-white/80 px-2.5 py-0.5">
+                          {partner.categoryName} • {partner.tag}
+                        </span>
+                      </div>
+                    )}
 
-                    <h4 className="font-bold text-base text-[#142C27]">{partner.name}</h4>
-                    <p className="text-xs text-[#717E78] flex items-center gap-1">
-                      <MapPinIcon className="w-3.5 h-3.5 text-[#889891]" />
-                      {partner.location}
-                    </p>
+                    <div className="p-5 space-y-2.5">
+                      <div className="flex justify-between items-start">
+                        <div>
+                          <h4 className="font-bold text-base text-[#142C27]">{partner.name}</h4>
+                          <p className="text-xs text-[#717E78] flex items-center gap-1 mt-0.5">
+                            <MapPinIcon className="w-3.5 h-3.5 text-[#889891]" />
+                            {partner.location}
+                          </p>
+                        </div>
+                        <button
+                          onClick={() => {
+                            if (confirm(`[${partner.name}] 제휴처를 정말 삭제하시겠습니까?`)) {
+                              onDeletePartner(partner.id);
+                            }
+                          }}
+                          className="text-xs text-red-500 hover:text-red-700 underline shrink-0 ml-2"
+                        >
+                          삭제
+                        </button>
+                      </div>
 
-                    <div className="p-3 bg-[#FAF8F5] border border-[#EAE3D6] text-xs space-y-1">
-                      <p className="font-bold text-[#144A42]">{partner.benefit}</p>
-                      <p className="text-[11px] text-[#65736D] line-clamp-2">{partner.desc}</p>
+                      <div className="p-3 bg-[#FAF8F5] border border-[#EAE3D6] text-xs space-y-1">
+                        <p className="font-bold text-[#144A42]">{partner.benefit}</p>
+                        <p className="text-[11px] text-[#65736D] line-clamp-2">{partner.desc}</p>
+                      </div>
                     </div>
                   </div>
 
-                  <div className="pt-4 border-t border-gray-100 flex items-center justify-between text-xs text-gray-500 mt-4">
+                  <div className="px-5 py-3 border-t border-gray-100 flex items-center justify-between text-xs text-gray-500 bg-[#FAF9F7]">
                     <span>전화: {partner.phone}</span>
                     <span className="font-bold text-amber-600">★ {partner.rating}</span>
                   </div>
@@ -1273,10 +1324,17 @@ export default function AdminPage({
                               kindergarten: '유치원/호텔',
                               funeral: '장례케어'
                             };
+                            const catColors = {
+                              hospital: 'bg-[#EBF3FB] text-[#2563EB]',
+                              grooming: 'bg-[#FDF2F4] text-[#E11D48]',
+                              kindergarten: 'bg-[#FEF9EE] text-[#D97706]',
+                              funeral: 'bg-[#F3F4F6] text-[#4B5563]'
+                            };
                             setNewPartner({
                               ...newPartner, 
                               category: e.target.value,
-                              categoryName: catNames[e.target.value] || '기타'
+                              categoryName: catNames[e.target.value] || '기타',
+                              color: catColors[e.target.value] || newPartner.color
                             });
                           }}
                           className="w-full px-3 py-2 border border-gray-300 focus:border-[#144A42] focus:outline-none"
@@ -1299,6 +1357,70 @@ export default function AdminPage({
                           required
                         />
                       </div>
+                    </div>
+
+                    {/* Image Upload / URL Mode */}
+                    <div className="p-3 bg-[#FAF8F5] border border-[#EAE3D6] space-y-2">
+                      <div className="flex items-center justify-between">
+                        <label className="block font-bold text-[#144A42]">
+                          제휴처 대표 이미지 등록 <span className="text-[11px] font-normal text-gray-500">(선택)</span>
+                        </label>
+                        <div className="flex gap-1 text-[11px]">
+                          <button
+                            type="button"
+                            onClick={() => setPartnerImageMode('upload')}
+                            className={`px-2 py-0.5 font-bold transition ${partnerImageMode === 'upload' ? 'bg-[#144A42] text-white' : 'bg-gray-200 text-gray-600'}`}
+                          >
+                            직접 업로드
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => setPartnerImageMode('url')}
+                            className={`px-2 py-0.5 font-bold transition ${partnerImageMode === 'url' ? 'bg-[#144A42] text-white' : 'bg-gray-200 text-gray-600'}`}
+                          >
+                            이미지 URL 입력
+                          </button>
+                        </div>
+                      </div>
+
+                      {partnerImageMode === 'upload' ? (
+                        <div>
+                          <input
+                            type="file"
+                            accept="image/*"
+                            onChange={handlePartnerImageUpload}
+                            className="w-full text-xs text-gray-500 file:mr-3 file:py-1.5 file:px-3 file:border-0 file:text-xs file:font-semibold file:bg-[#144A42] file:text-white hover:file:bg-[#0D3832] cursor-pointer"
+                          />
+                          <p className="text-[10px] text-gray-400 mt-1">권장 비율: 16:9 또는 4:3 (최대 5MB, JPG/PNG/WebP)</p>
+                        </div>
+                      ) : (
+                        <div>
+                          <input
+                            type="url"
+                            value={newPartner.imageUrl}
+                            onChange={(e) => setNewPartner({ ...newPartner, imageUrl: e.target.value })}
+                            placeholder="https://images.unsplash.com/... 또는 웹 이미지 URL"
+                            className="w-full px-3 py-2 border border-gray-300 focus:border-[#144A42] focus:outline-none text-xs"
+                          />
+                        </div>
+                      )}
+
+                      {newPartner.imageUrl && (
+                        <div className="mt-2 relative w-full h-32 bg-gray-100 overflow-hidden border border-gray-200">
+                          <img
+                            src={newPartner.imageUrl}
+                            alt="제휴처 미리보기"
+                            className="w-full h-full object-cover"
+                          />
+                          <button
+                            type="button"
+                            onClick={() => setNewPartner({ ...newPartner, imageUrl: '' })}
+                            className="absolute top-1.5 right-1.5 bg-black/70 text-white text-[10px] px-1.5 py-0.5 hover:bg-black"
+                          >
+                            제거
+                          </button>
+                        </div>
+                      )}
                     </div>
 
                     <div>
@@ -1593,35 +1715,61 @@ export default function AdminPage({
             {/* Travel Grid */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
               {travelList.map((item) => (
-                <div key={item.id} className="bg-white border border-[#E2DDD3] p-5 shadow-xs flex flex-col justify-between">
-                  <div className="space-y-2.5">
-                    <div className="flex justify-between items-start">
-                      <span className="text-[11px] font-bold text-[#144A42] bg-[#E8E0D1] px-2 py-0.5">
-                        {item.type}
-                      </span>
-                      <button
-                        onClick={() => {
-                          if (confirm(`[${item.name}] 숙소를 정말 삭제하시겠습니까?`)) {
-                            onDeleteTravel(item.id);
-                          }
-                        }}
-                        className="text-xs text-red-500 hover:text-red-700 underline"
-                      >
-                        삭제
-                      </button>
-                    </div>
+                <div key={item.id} className="bg-white border border-[#E2DDD3] overflow-hidden shadow-xs flex flex-col justify-between">
+                  <div>
+                    {item.imageUrl ? (
+                      <div className="relative w-full h-40 bg-gray-100 overflow-hidden border-b border-[#ECE5D8]">
+                        <img
+                          src={item.imageUrl}
+                          alt={item.name}
+                          className="w-full h-full object-cover"
+                        />
+                        <span className="absolute top-2.5 left-2.5 text-[11px] font-bold text-white bg-black/60 backdrop-blur-xs px-2 py-0.5">
+                          {item.type}
+                        </span>
+                        <span className="absolute bottom-2.5 right-2.5 bg-white/90 backdrop-blur-xs text-[#144A42] text-[11px] font-extrabold px-2 py-0.5">
+                          {item.price}
+                        </span>
+                      </div>
+                    ) : (
+                      <div className="p-4 bg-[#FAF8F5] border-b border-[#ECE5D8] flex items-center justify-between">
+                        <span className="text-[11px] font-bold text-[#144A42] bg-[#E8E0D1] px-2 py-0.5">
+                          {item.type}
+                        </span>
+                        <span className="text-xs font-extrabold text-[#144A42]">
+                          {item.price}
+                        </span>
+                      </div>
+                    )}
 
-                    <h4 className="font-bold text-base text-[#142C27]">{item.name}</h4>
-                    <p className="text-xs text-gray-500">{item.location}</p>
-                    <p className="text-xs text-gray-500 font-semibold">{item.weightLimit} | {item.price}</p>
+                    <div className="p-5 space-y-2.5">
+                      <div className="flex justify-between items-start">
+                        <div>
+                          <h4 className="font-bold text-base text-[#142C27]">{item.name}</h4>
+                          <p className="text-xs text-gray-500 mt-0.5">{item.location}</p>
+                        </div>
+                        <button
+                          onClick={() => {
+                            if (confirm(`[${item.name}] 숙소를 정말 삭제하시겠습니까?`)) {
+                              onDeleteTravel(item.id);
+                            }
+                          }}
+                          className="text-xs text-red-500 hover:text-red-700 underline shrink-0 ml-2"
+                        >
+                          삭제
+                        </button>
+                      </div>
 
-                    <div className="p-3 bg-[#FAF8F5] border border-[#EAE3D6] text-xs space-y-1">
-                      <p className="font-bold text-[#144A42]">회원 혜택: {item.memberBenefit}</p>
-                      <p className="text-[11px] text-gray-500">시설: {Array.isArray(item.features) ? item.features.join(', ') : item.features}</p>
+                      <p className="text-xs text-gray-500 font-semibold">{item.weightLimit}</p>
+
+                      <div className="p-3 bg-[#FAF8F5] border border-[#EAE3D6] text-xs space-y-1">
+                        <p className="font-bold text-[#144A42]">회원 혜택: {item.memberBenefit}</p>
+                        <p className="text-[11px] text-gray-500">시설: {Array.isArray(item.features) ? item.features.join(', ') : item.features}</p>
+                      </div>
                     </div>
                   </div>
 
-                  <div className="pt-3 border-t border-gray-100 text-xs text-gray-500 mt-4">
+                  <div className="px-5 py-3 border-t border-gray-100 text-xs text-gray-500 bg-[#FAF9F7]">
                     예약 전화: {item.phone}
                   </div>
                 </div>
@@ -1685,6 +1833,70 @@ export default function AdminPage({
                           required
                         />
                       </div>
+                    </div>
+
+                    {/* Image Upload / URL Mode */}
+                    <div className="p-3 bg-[#FAF8F5] border border-[#EAE3D6] space-y-2">
+                      <div className="flex items-center justify-between">
+                        <label className="block font-bold text-[#144A42]">
+                          숙소 대표 이미지 등록 <span className="text-[11px] font-normal text-gray-500">(선택)</span>
+                        </label>
+                        <div className="flex gap-1 text-[11px]">
+                          <button
+                            type="button"
+                            onClick={() => setTravelImageMode('upload')}
+                            className={`px-2 py-0.5 font-bold transition ${travelImageMode === 'upload' ? 'bg-[#144A42] text-white' : 'bg-gray-200 text-gray-600'}`}
+                          >
+                            직접 업로드
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => setTravelImageMode('url')}
+                            className={`px-2 py-0.5 font-bold transition ${travelImageMode === 'url' ? 'bg-[#144A42] text-white' : 'bg-gray-200 text-gray-600'}`}
+                          >
+                            이미지 URL 입력
+                          </button>
+                        </div>
+                      </div>
+
+                      {travelImageMode === 'upload' ? (
+                        <div>
+                          <input
+                            type="file"
+                            accept="image/*"
+                            onChange={handleTravelImageUpload}
+                            className="w-full text-xs text-gray-500 file:mr-3 file:py-1.5 file:px-3 file:border-0 file:text-xs file:font-semibold file:bg-[#144A42] file:text-white hover:file:bg-[#0D3832] cursor-pointer"
+                          />
+                          <p className="text-[10px] text-gray-400 mt-1">권장 비율: 16:9 또는 16:10 (최대 5MB, JPG/PNG/WebP)</p>
+                        </div>
+                      ) : (
+                        <div>
+                          <input
+                            type="url"
+                            value={newTravel.imageUrl}
+                            onChange={(e) => setNewTravel({ ...newTravel, imageUrl: e.target.value })}
+                            placeholder="https://images.unsplash.com/... 또는 웹 이미지 URL"
+                            className="w-full px-3 py-2 border border-gray-300 focus:border-[#144A42] focus:outline-none text-xs"
+                          />
+                        </div>
+                      )}
+
+                      {newTravel.imageUrl && (
+                        <div className="mt-2 relative w-full h-32 bg-gray-100 overflow-hidden border border-gray-200">
+                          <img
+                            src={newTravel.imageUrl}
+                            alt="숙소 미리보기"
+                            className="w-full h-full object-cover"
+                          />
+                          <button
+                            type="button"
+                            onClick={() => setNewTravel({ ...newTravel, imageUrl: '' })}
+                            className="absolute top-1.5 right-1.5 bg-black/70 text-white text-[10px] px-1.5 py-0.5 hover:bg-black"
+                          >
+                            제거
+                          </button>
+                        </div>
+                      )}
                     </div>
 
                     <div className="grid grid-cols-2 gap-3">
@@ -1757,7 +1969,7 @@ export default function AdminPage({
                         type="submit"
                         className="px-5 py-2 bg-[#144A42] text-white font-bold hover:bg-[#0D3832]"
                       >
-                        등록 완료
+                        숙소 등록 완료
                       </button>
                     </div>
                   </form>

@@ -128,27 +128,50 @@ export default function PartnersPage({
                 className="bg-white overflow-hidden border border-[#ECE5D8] shadow-xs hover:shadow-xl transition-all duration-300 cursor-pointer group flex flex-col justify-between"
               >
                 <div>
-                  <div className={`h-28 sm:h-36 flex flex-col items-center justify-center relative ${item.color}`}>
-                    <button
-                      type="button"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        onToggleBookmark(item.id);
-                      }}
-                      className="absolute top-2.5 right-2.5 sm:top-3.5 sm:right-3.5 w-7 h-7 sm:w-8 sm:h-8 bg-white/90 flex items-center justify-center text-gray-400 hover:text-red-500 shadow-xs"
-                    >
-                      <HeartIcon className="w-3.5 h-3.5 sm:w-4 sm:h-4" filled={isBookmarked} />
-                    </button>
-
-                    <div className="w-9 h-9 sm:w-12 sm:h-12 bg-white shadow-xs flex items-center justify-center mb-1 text-current">
-                      {item.icon === 'stethoscope' && <StethoscopeIcon className="w-5 h-5 sm:w-6 sm:h-6" />}
-                      {item.icon === 'scissors' && <ScissorsIcon className="w-5 h-5 sm:w-6 sm:h-6" />}
-                      {item.icon === 'home' && <HomeIcon className="w-5 h-5 sm:w-6 sm:h-6" />}
+                  {item.imageUrl ? (
+                    <div className="relative h-32 sm:h-44 bg-gray-100 overflow-hidden border-b border-[#ECE5D8]">
+                      <img
+                        src={item.imageUrl}
+                        alt={item.name}
+                        className="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-500"
+                      />
+                      <span className="absolute top-2.5 left-2.5 sm:top-3 sm:left-3 bg-black/60 backdrop-blur-xs text-white text-[10px] sm:text-[11px] font-extrabold px-2 sm:px-2.5 py-0.5 tracking-wider uppercase">
+                        {item.categoryName}
+                      </span>
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          onToggleBookmark(item.id);
+                        }}
+                        className="absolute top-2.5 right-2.5 sm:top-3 sm:right-3 w-7 h-7 sm:w-8 sm:h-8 bg-white/90 flex items-center justify-center text-gray-400 hover:text-red-500 shadow-xs"
+                      >
+                        <HeartIcon className="w-3.5 h-3.5 sm:w-4 sm:h-4" filled={isBookmarked} />
+                      </button>
                     </div>
-                    <span className="text-[10px] sm:text-[11px] font-extrabold tracking-wider uppercase opacity-80">
-                      {item.categoryName}
-                    </span>
-                  </div>
+                  ) : (
+                    <div className={`h-28 sm:h-36 flex flex-col items-center justify-center relative ${item.color}`}>
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          onToggleBookmark(item.id);
+                        }}
+                        className="absolute top-2.5 right-2.5 sm:top-3.5 sm:right-3.5 w-7 h-7 sm:w-8 sm:h-8 bg-white/90 flex items-center justify-center text-gray-400 hover:text-red-500 shadow-xs"
+                      >
+                        <HeartIcon className="w-3.5 h-3.5 sm:w-4 sm:h-4" filled={isBookmarked} />
+                      </button>
+
+                      <div className="w-9 h-9 sm:w-12 sm:h-12 bg-white shadow-xs flex items-center justify-center mb-1 text-current">
+                        {item.icon === 'stethoscope' && <StethoscopeIcon className="w-5 h-5 sm:w-6 sm:h-6" />}
+                        {item.icon === 'scissors' && <ScissorsIcon className="w-5 h-5 sm:w-6 sm:h-6" />}
+                        {item.icon === 'home' && <HomeIcon className="w-5 h-5 sm:w-6 sm:h-6" />}
+                      </div>
+                      <span className="text-[10px] sm:text-[11px] font-extrabold tracking-wider uppercase opacity-80">
+                        {item.categoryName}
+                      </span>
+                    </div>
+                  )}
 
                   <div className="p-4 sm:p-6 space-y-1.5 sm:space-y-3">
                     <div className="flex items-center gap-1.5 text-[11px] sm:text-xs text-[#808E88]">

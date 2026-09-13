@@ -1163,6 +1163,17 @@ export function PartnerModal({ partner, isOpen, onClose, onToggleBookmark, isBoo
           </button>
         </div>
 
+        {/* Optional Photo Banner */}
+        {partner.imageUrl && (
+          <div className="w-full h-48 sm:h-56 bg-gray-100 overflow-hidden shrink-0 border-b border-[#ECE6DA]">
+            <img
+              src={partner.imageUrl}
+              alt={partner.name}
+              className="w-full h-full object-cover"
+            />
+          </div>
+        )}
+
         {/* Content */}
         <div className="p-6 space-y-4 text-sm text-[#26312D] overflow-y-auto">
           {/* Benefit box */}

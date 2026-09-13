@@ -145,6 +145,7 @@ export const PARTNER_LIST = [
     phone: "02-555-8275",
     color: "bg-[#DFECF6] text-[#2C4A63]",
     icon: "hospital",
+    imageUrl: "https://images.unsplash.com/photo-1584820927498-cfe5211fd8bf?w=700&auto=format&fit=crop&q=80",
     featured: true,
   },
   {
@@ -161,6 +162,7 @@ export const PARTNER_LIST = [
     phone: "031-772-4982",
     color: "bg-[#E0EFE6] text-[#2A5443]",
     icon: "hotel",
+    imageUrl: "https://images.unsplash.com/photo-1601758228041-f3b2795255f1?w=700&auto=format&fit=crop&q=80",
     featured: true,
   },
   {
@@ -177,6 +179,7 @@ export const PARTNER_LIST = [
     phone: "02-334-9988",
     color: "bg-[#F8E5E5] text-[#6B3737]",
     icon: "scissors",
+    imageUrl: "https://images.unsplash.com/photo-1516734212186-a967f81ad0d7?w=700&auto=format&fit=crop&q=80",
     featured: true,
   },
   {
@@ -193,6 +196,7 @@ export const PARTNER_LIST = [
     phone: "02-418-7582",
     color: "bg-[#EBF3FB] text-[#2563EB]",
     icon: "stethoscope",
+    imageUrl: "https://images.unsplash.com/photo-1628009368231-7bb7cfcb0def?w=700&auto=format&fit=crop&q=80",
     featured: false,
   },
 ];
@@ -209,6 +213,7 @@ export const TRAVEL_LIST = [
     features: ["500평 인조잔디", "사계절 온수 미온수풀", "바베큐"],
     memberBenefit: "슬반생 회원 주중 20% 추가 할인 + 웰컴간식",
     phone: "033-261-0091",
+    imageUrl: "https://images.unsplash.com/photo-1540555700478-4be289fbecef?w=700&auto=format&fit=crop&q=80",
   },
   {
     id: "t2",
@@ -220,6 +225,7 @@ export const TRAVEL_LIST = [
     features: ["개별 울타리 마당", "히노끼 펫 스파", "조식 제공"],
     memberBenefit: "인원 및 반려견 추가 요금 1마리 무료",
     phone: "031-773-4554",
+    imageUrl: "https://images.unsplash.com/photo-1510798831971-661eb04b3739?w=700&auto=format&fit=crop&q=80",
   },
   {
     id: "t3",
@@ -231,6 +237,7 @@ export const TRAVEL_LIST = [
     features: ["프라이빗 해변 산책로", "불멍 키트", "반려견 식기구 완비"],
     memberBenefit: "바베큐 숯세트 무료 제공",
     phone: "041-672-8821",
+    imageUrl: "https://images.unsplash.com/photo-1504280390367-361c6d9f38f4?w=700&auto=format&fit=crop&q=80",
   },
 ];
 

@@ -61,9 +61,10 @@ export default function TravelPage({ travelList = TRAVEL_LIST }) {
                 <div className="relative aspect-[16/10] bg-gray-100 overflow-hidden">
                   <img 
                     src={
-                      item.id === 't1' ? 'https://images.unsplash.com/photo-1540555700478-4be289fbecef?w=700&auto=format&fit=crop&q=80' :
+                      item.imageUrl ||
+                      (item.id === 't1' ? 'https://images.unsplash.com/photo-1540555700478-4be289fbecef?w=700&auto=format&fit=crop&q=80' :
                       item.id === 't2' ? 'https://images.unsplash.com/photo-1510798831971-661eb04b3739?w=700&auto=format&fit=crop&q=80' :
-                      'https://images.unsplash.com/photo-1504280390367-361c6d9f38f4?w=700&auto=format&fit=crop&q=80'
+                      'https://images.unsplash.com/photo-1504280390367-361c6d9f38f4?w=700&auto=format&fit=crop&q=80')
                     }
                     alt={item.name}
                     className="w-full h-full object-cover transform hover:scale-105 transition-transform duration-500"

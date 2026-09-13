@@ -437,19 +437,32 @@ export default function Home({
               onClick={() => onOpenPartnerModal(item)}
               className="group cursor-pointer transition-all duration-300"
             >
-              {/* Top Pastel Visual Block */}
-              <div className={`w-full aspect-[16/9] sm:h-52 flex flex-col items-center justify-center transition-transform duration-300 group-hover:-translate-y-1 ${item.color}`}>
-                <div className="w-10 h-10 sm:w-12 sm:h-12 flex items-center justify-center mb-1.5 sm:mb-2 text-current">
-                  {item.icon === 'hospital' && <HospitalBuildingIcon className="w-6 h-6 sm:w-8 sm:h-8 stroke-[1.8]" />}
-                  {item.icon === 'hotel' && <HotelBuildingIcon className="w-6 h-6 sm:w-8 sm:h-8 stroke-[1.8]" />}
-                  {item.icon === 'scissors' && <ScissorsIcon className="w-6 h-6 sm:w-7 sm:h-7 stroke-[1.8]" />}
-                  {item.icon === 'stethoscope' && <HospitalBuildingIcon className="w-6 h-6 sm:w-8 sm:h-8 stroke-[1.8]" />}
-                  {item.icon === 'home' && <HotelBuildingIcon className="w-6 h-6 sm:w-8 sm:h-8 stroke-[1.8]" />}
+              {/* Top Visual Block (Image or Pastel Block) */}
+              {item.imageUrl ? (
+                <div className="w-full aspect-[16/9] sm:h-52 bg-gray-100 overflow-hidden relative transition-transform duration-300 group-hover:-translate-y-1">
+                  <img
+                    src={item.imageUrl}
+                    alt={item.name}
+                    className="w-full h-full object-cover"
+                  />
+                  <span className="absolute top-2.5 left-2.5 bg-black/60 backdrop-blur-xs text-white text-[10px] sm:text-xs font-semibold px-2 py-0.5">
+                    {item.categoryName}
+                  </span>
                 </div>
-                <span className="text-[11px] sm:text-xs font-semibold tracking-tight opacity-90">
-                  {item.categoryName}
-                </span>
-              </div>
+              ) : (
+                <div className={`w-full aspect-[16/9] sm:h-52 flex flex-col items-center justify-center transition-transform duration-300 group-hover:-translate-y-1 ${item.color}`}>
+                  <div className="w-10 h-10 sm:w-12 sm:h-12 flex items-center justify-center mb-1.5 sm:mb-2 text-current">
+                    {item.icon === 'hospital' && <HospitalBuildingIcon className="w-6 h-6 sm:w-8 sm:h-8 stroke-[1.8]" />}
+                    {item.icon === 'hotel' && <HotelBuildingIcon className="w-6 h-6 sm:w-8 sm:h-8 stroke-[1.8]" />}
+                    {item.icon === 'scissors' && <ScissorsIcon className="w-6 h-6 sm:w-7 sm:h-7 stroke-[1.8]" />}
+                    {item.icon === 'stethoscope' && <HospitalBuildingIcon className="w-6 h-6 sm:w-8 sm:h-8 stroke-[1.8]" />}
+                    {item.icon === 'home' && <HotelBuildingIcon className="w-6 h-6 sm:w-8 sm:h-8 stroke-[1.8]" />}
+                  </div>
+                  <span className="text-[11px] sm:text-xs font-semibold tracking-tight opacity-90">
+                    {item.categoryName}
+                  </span>
+                </div>
+              )}
 
               {/* Bottom Information */}
               <div className="pt-2.5 pb-1 space-y-0.5">
