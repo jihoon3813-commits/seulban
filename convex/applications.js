@@ -34,6 +34,7 @@ export const submit = mutation({
     petWeight: v.optional(v.string()),
     ownerName: v.string(),
     phone: v.string(),
+    ownerEmail: v.optional(v.string()),
     address: v.optional(v.string()),
     shippingAddress: v.optional(v.string()),
     statusCode: v.optional(v.string()),
@@ -108,6 +109,7 @@ export const update = mutation({
     id: v.string(), // 접수번호
     ownerName: v.optional(v.string()),
     phone: v.optional(v.string()),
+    ownerEmail: v.optional(v.string()),
     address: v.optional(v.string()),
     shippingAddress: v.optional(v.string()),
     petName: v.optional(v.string()),

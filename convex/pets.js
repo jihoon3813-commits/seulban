@@ -1,4 +1,4 @@
-﻿import { query, mutation } from "./_generated/server";
+import { query, mutation } from "./_generated/server";
 import { v } from "convex/values";
 
 export const getLatest = query({
@@ -28,6 +28,8 @@ export const save = mutation({
     status: v.string(),
     photoUrl: v.optional(v.string()),
     ownerPhone: v.optional(v.string()),
+    ownerEmail: v.optional(v.string()),
+    ownerName: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
     const existing = await ctx.db

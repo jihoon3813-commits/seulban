@@ -22,12 +22,12 @@ export const formatPhoneNumber = (value) => {
 };
 
 // 1. 동물등록 7단계 신청 마법사 모달 (REG-002 & REG-003)
-export function ApplyRegistrationModal({ isOpen, onClose, onApplySuccess }) {
+export function ApplyRegistrationModal({ isOpen, onClose, onApplySuccess, user }) {
   const [step, setStep] = useState(1);
   const [formData, setFormData] = useState({
-    ownerName: '',
+    ownerName: user?.name || '',
     birthDate: '',
-    phone: '',
+    phone: user?.phone || '',
     address: '',
     addressDetail: '',
     postalCode: '',
@@ -40,7 +40,7 @@ export function ApplyRegistrationModal({ isOpen, onClose, onApplySuccess }) {
     neutered: '완료',
     regType: 'external',
     tagColor: '베이지 골드',
-    recipient: '',
+    recipient: user?.name || '',
     shippingPostalCode: '',
     shippingAddress: '',
     shippingAddressDetail: '',
@@ -63,9 +63,9 @@ export function ApplyRegistrationModal({ isOpen, onClose, onApplySuccess }) {
     if (isOpen) {
       setStep(1);
       setFormData({
-        ownerName: '',
+        ownerName: user?.name || '',
         birthDate: '',
-        phone: '',
+        phone: user?.phone || '',
         address: '',
         addressDetail: '',
         postalCode: '',
@@ -256,6 +256,7 @@ export function ApplyRegistrationModal({ isOpen, onClose, onApplySuccess }) {
         petPhoto: formData.petPhoto || '',
         ownerName: formData.ownerName,
         phone: formData.phone,
+        ownerEmail: user?.email || '',
         address: fullOwnerAddress,
         shippingAddress: fullShippingAddress,
         type: formData.regType === 'external' ? '외장형 안심 목걸이 칩' : '내장형 마이크로칩 시술권',

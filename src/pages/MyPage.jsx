@@ -107,7 +107,7 @@ export default function MyPage({
         <div className="flex items-center justify-between mb-3 sm:mb-4">
           <h2 className="text-base sm:text-lg font-bold text-[#144A42] flex items-center gap-2">
             <PawIcon className="w-4 h-4 sm:w-5 sm:h-5 text-[#144A42]" />
-            <span>등록된 내 반려동물 (1마리)</span>
+            <span>등록된 내 반려동물 ({pet ? 1 : 0}마리)</span>
           </h2>
         </div>
 
@@ -159,7 +159,7 @@ export default function MyPage({
             <p className="text-xs text-gray-500">아직 등록된 반려동물이 없습니다.</p>
             <button
               onClick={onOpenApplyModal}
-              className="px-5 py-2 sm:px-6 sm:py-2.5 bg-[#144A42] text-white font-bold text-xs"
+              className="px-5 py-2 sm:px-6 sm:py-2.5 bg-[#144A42] text-white font-bold text-xs hover:bg-[#0D3832] transition"
             >
               지금 동물등록 신청하기
             </button>
@@ -171,10 +171,21 @@ export default function MyPage({
       <div className="mb-6 sm:mb-10">
         <h2 className="text-base sm:text-lg font-bold text-[#144A42] mb-3 sm:mb-4 flex items-center gap-2">
           <ClockIcon className="w-4 h-4 sm:w-5 sm:h-5 text-[#144A42]" />
-          <span>동물등록 신청 현황 및 배송 추적</span>
+          <span>동물등록 신청 현황 및 배송 추적 ({applications.length}건)</span>
         </h2>
 
-        <div className="space-y-3 sm:space-y-4">
+        {applications.length === 0 ? (
+          <div className="bg-white p-6 sm:p-8 border border-dashed border-gray-300 text-center space-y-2.5">
+            <p className="text-xs text-gray-500">아직 접수된 동물등록 신청 내역이 없습니다.</p>
+            <button
+              onClick={onOpenApplyModal}
+              className="px-5 py-2 sm:px-6 sm:py-2.5 bg-[#144A42] text-white font-bold text-xs hover:bg-[#0D3832] transition"
+            >
+              지금 동물등록 신청하기
+            </button>
+          </div>
+        ) : (
+          <div className="space-y-3 sm:space-y-4">
           {applications.map((app) => (
             <div key={app.id} className="bg-white p-4 sm:p-6 border border-[#EAE3D6] shadow-xs">
               <div className="flex flex-col sm:flex-row sm:items-center justify-between pb-3 sm:pb-4 border-b border-gray-100 gap-1.5">
@@ -222,6 +233,7 @@ export default function MyPage({
             </div>
           ))}
         </div>
+        )}
       </div>
 
       {/* 3. Bookmarked Partners */}

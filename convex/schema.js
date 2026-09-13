@@ -14,6 +14,7 @@ export default defineSchema({
     petWeight: v.optional(v.string()),
     ownerName: v.string(),
     phone: v.string(),
+    ownerEmail: v.optional(v.string()),
     address: v.optional(v.string()),
     shippingAddress: v.optional(v.string()),
     statusCode: v.string(), // SUBMITTED, REVIEWING, ACCEPTED, REGISTERED, SHIPPING, COMPLETED
@@ -43,6 +44,8 @@ export default defineSchema({
     status: v.string(),
     photoUrl: v.optional(v.string()),
     ownerPhone: v.optional(v.string()),
+    ownerEmail: v.optional(v.string()),
+    ownerName: v.optional(v.string()),
   }).index("by_reg_number", ["regNumber"]),
 
   // 제휴처 (Partners)
