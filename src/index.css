@@ -9,6 +9,9 @@
   body {
     background-color: #F4F0E8;
     color: #1B2421;
+    word-break: keep-all;
+    overflow-wrap: break-word;
+    overflow-x: hidden;
   }
 }
 

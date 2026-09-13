@@ -22,109 +22,109 @@ export default function FarewellPage() {
 
   return (
     <div className="w-full">
-      {/* Top Banner Image (Width matching Header: logo to mall button) */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-6 sm:pt-8">
+      {/* Top Banner Image */}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-3 sm:pt-8">
         <div className="w-full overflow-hidden shadow-xs border border-[#E5DFD1]">
           <img
             src="https://res.cloudinary.com/lyjyvy54/image/upload/v1789268626/ChatGPT_Image_2026%EB%85%84_9%EC%9B%94_13%EC%9D%BC_%EC%98%A4%ED%9B%84_12_03_30_5_anaspb.png"
             alt="아름다운 이별 장례케어 배너"
-            className="w-full h-auto object-cover max-h-[340px] sm:max-h-[400px]"
+            className="w-full h-auto object-cover max-h-[220px] sm:max-h-[400px]"
           />
         </div>
       </div>
 
-      <div className="py-12 md:py-16 max-w-5xl mx-auto px-4 sm:px-6">
+      <div className="py-8 sm:py-16 max-w-5xl mx-auto px-4 sm:px-6">
         
         {/* Title */}
-      <div className="text-center max-w-2xl mx-auto mb-12 space-y-3">
-        <span className="text-xs font-bold tracking-widest text-[#B48B55] uppercase">
-          BEAUTIFUL FAREWELL (FAR-001)
-        </span>
-        <h1 className="text-3xl sm:text-5xl font-extrabold text-[#144A42] tracking-tight">
-          소중한 가족의 마지막 길,<br />존중과 품격을 담아 배웅합니다
-        </h1>
-        <p className="text-xs sm:text-sm text-[#65736D] leading-relaxed">
-          국가 정식 허가 반려동물 장례식장 전속 제휴로 단독 화장, 전담 장례지도사 1:1 배정, 24시간 긴급 출동 시스템을 제공합니다.
-        </p>
+        <div className="text-center max-w-2xl mx-auto mb-8 sm:mb-12 space-y-2 sm:space-y-3">
+          <span className="text-[10px] sm:text-xs font-bold tracking-widest text-[#B48B55] uppercase">
+            BEAUTIFUL FAREWELL (FAR-001)
+          </span>
+          <h1 className="text-2xl sm:text-5xl font-extrabold text-[#144A42] tracking-tight leading-tight">
+            소중한 가족의 마지막 길,<br />존중과 품격을 담아 배웅합니다
+          </h1>
+          <p className="text-[11px] sm:text-sm text-[#65736D] leading-relaxed">
+            국가 정식 허가 반려동물 장례식장 전속 제휴로 단독 화장, 전담 장례지도사 1:1 배정, 24시간 긴급 출동 시스템을 제공합니다.
+          </p>
 
-        {/* 24h Hotlines */}
-        <div className="pt-4 flex flex-wrap justify-center gap-3">
-          <a
-            href={`tel:${BRAND_INFO.phone2}`}
-            className="px-6 py-3.5 bg-[#144A42] text-white font-bold text-xs sm:text-sm hover:bg-[#0D3832] transition flex items-center gap-2 shadow-lg"
-          >
-            <PhoneIcon className="w-4 h-4 text-[#C5A880]" />
-            <span>24시간 긴급 장례 직통: {BRAND_INFO.phone2}</span>
-          </a>
+          {/* 24h Hotlines */}
+          <div className="pt-2 sm:pt-4 flex flex-col sm:flex-row justify-center gap-2 sm:gap-3">
+            <a
+              href={`tel:${BRAND_INFO.phone2}`}
+              className="px-5 py-3 sm:px-6 sm:py-3.5 bg-[#144A42] text-white font-bold text-xs sm:text-sm hover:bg-[#0D3832] transition flex items-center justify-center gap-2 shadow-md"
+            >
+              <PhoneIcon className="w-4 h-4 text-[#C5A880]" />
+              <span>24시간 긴급 장례 직통: {BRAND_INFO.phone2}</span>
+            </a>
 
-          <button
-            onClick={() => { setConsultOpen(true); setSubmitted(false); }}
-            className="px-6 py-3.5 bg-white border border-[#D5CEC0] text-[#144A42] font-semibold text-xs sm:text-sm hover:bg-gray-50 transition"
-          >
-            온라인 장례 상담 접수
-          </button>
-        </div>
-      </div>
-
-      {/* 4-Step Funeral Procedure */}
-      <div className="bg-white p-6 sm:p-8 border border-[#ECE5D8] mb-12 shadow-xs">
-        <h3 className="text-xl font-bold text-[#144A42] text-center mb-8">
-          정식 허가 프리미엄 장례 절차
-        </h3>
-
-        <div className="grid grid-cols-1 sm:grid-cols-4 gap-4 text-xs">
-          <div className="bg-[#FAF8F5] p-5 border border-[#E8E1D2] space-y-1.5">
-            <span className="font-bold text-[#B48B55] text-xs">STEP 01</span>
-            <h4 className="font-bold text-sm text-[#142C27]">긴급 출동 및 안치</h4>
-            <p className="text-[#64716B] leading-relaxed">
-              24시간 전문 운구 차량을 통해 장례식장으로 안전하고 경건하게 모십니다.
-            </p>
-          </div>
-
-          <div className="bg-[#FAF8F5] p-5 border border-[#E8E1D2] space-y-1.5">
-            <span className="font-bold text-[#B48B55] text-xs">STEP 02</span>
-            <h4 className="font-bold text-sm text-[#142C27]">염습 및 단독 추모</h4>
-            <p className="text-[#64716B] leading-relaxed">
-              천연 삼베 수의와 꽃관으로 정결히 단장 후 독립된 추모실에서 마지막 인사를 나눕니다.
-            </p>
-          </div>
-
-          <div className="bg-[#FAF8F5] p-5 border border-[#E8E1D2] space-y-1.5">
-            <span className="font-bold text-[#B48B55] text-xs">STEP 03</span>
-            <h4 className="font-bold text-sm text-[#142C27]">100% 단독 화장</h4>
-            <p className="text-[#64716B] leading-relaxed">
-              보호자 참관 하에 오직 한 아이만을 위한 단독 화로에서 경건하게 진행됩니다.
-            </p>
-          </div>
-
-          <div className="bg-[#FAF8F5] p-5 border border-[#E8E1D2] space-y-1.5">
-            <span className="font-bold text-[#B48B55] text-xs">STEP 04</span>
-            <h4 className="font-bold text-sm text-[#142C27]">수골 및 안치/스톤</h4>
-            <p className="text-[#64716B] leading-relaxed">
-              유골함 봉안당 안치, 산골 또는 평생 간직할 수 있는 메모리얼 스톤 제작을 지원합니다.
-            </p>
+            <button
+              onClick={() => { setConsultOpen(true); setSubmitted(false); }}
+              className="px-5 py-3 sm:px-6 sm:py-3.5 bg-white border border-[#D5CEC0] text-[#144A42] font-semibold text-xs sm:text-sm hover:bg-gray-50 transition"
+            >
+              온라인 장례 상담 접수
+            </button>
           </div>
         </div>
-      </div>
 
-      {/* Safety & Promises */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-center text-xs">
-        <div className="p-5 bg-[#FAF8F5] border border-[#E8E1D2]">
-          <ShieldCheckIcon className="w-6 h-6 text-[#144A42] mx-auto mb-2" />
-          <h5 className="font-bold text-[#144A42] mb-1">농림축산식품부 정식 허가</h5>
-          <p className="text-[#64716B]">합법 시설 등록업체만 엄선</p>
+        {/* 4-Step Funeral Procedure */}
+        <div className="bg-white p-4 sm:p-8 border border-[#ECE5D8] mb-8 sm:mb-12 shadow-xs">
+          <h3 className="text-base sm:text-xl font-bold text-[#144A42] text-center mb-4 sm:mb-8">
+            정식 허가 프리미엄 장례 절차
+          </h3>
+
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 sm:gap-4 text-xs">
+            <div className="bg-[#FAF8F5] p-3 sm:p-5 border border-[#E8E1D2] space-y-1">
+              <span className="font-bold text-[#B48B55] text-[11px]">STEP 01</span>
+              <h4 className="font-bold text-xs sm:text-sm text-[#142C27]">긴급 출동/안치</h4>
+              <p className="text-[10px] sm:text-xs text-[#64716B] leading-tight">
+                24시간 전용 차량 안전 운구
+              </p>
+            </div>
+
+            <div className="bg-[#FAF8F5] p-3 sm:p-5 border border-[#E8E1D2] space-y-1">
+              <span className="font-bold text-[#B48B55] text-[11px]">STEP 02</span>
+              <h4 className="font-bold text-xs sm:text-sm text-[#142C27]">염습 및 추모</h4>
+              <p className="text-[10px] sm:text-xs text-[#64716B] leading-tight">
+                천연 수의와 독립 추모실
+              </p>
+            </div>
+
+            <div className="bg-[#FAF8F5] p-3 sm:p-5 border border-[#E8E1D2] space-y-1">
+              <span className="font-bold text-[#B48B55] text-[11px]">STEP 03</span>
+              <h4 className="font-bold text-xs sm:text-sm text-[#142C27]">100% 단독화장</h4>
+              <p className="text-[10px] sm:text-xs text-[#64716B] leading-tight">
+                보호자 참관 전용 단독 화로
+              </p>
+            </div>
+
+            <div className="bg-[#FAF8F5] p-3 sm:p-5 border border-[#E8E1D2] space-y-1">
+              <span className="font-bold text-[#B48B55] text-[11px]">STEP 04</span>
+              <h4 className="font-bold text-xs sm:text-sm text-[#142C27]">봉안/스톤제작</h4>
+              <p className="text-[10px] sm:text-xs text-[#64716B] leading-tight">
+                유골함 안치 및 메모리얼 스톤
+              </p>
+            </div>
+          </div>
         </div>
-        <div className="p-5 bg-[#FAF8F5] border border-[#E8E1D2]">
-          <CheckIcon className="w-6 h-6 text-[#144A42] mx-auto mb-2" />
-          <h5 className="font-bold text-[#144A42] mb-1">장례 후 동물등록 말소 대행</h5>
-          <p className="text-[#64716B]">복잡한 지자체 행정 무료 처리</p>
+
+        {/* Safety & Promises */}
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5 sm:gap-4 text-center text-xs">
+          <div className="p-3.5 sm:p-5 bg-[#FAF8F5] border border-[#E8E1D2]">
+            <ShieldCheckIcon className="w-5 h-5 sm:w-6 sm:h-6 text-[#144A42] mx-auto mb-1.5 sm:mb-2" />
+            <h5 className="font-bold text-xs sm:text-sm text-[#144A42] mb-0.5 sm:mb-1">농림축산식품부 정식 허가</h5>
+            <p className="text-[11px] sm:text-xs text-[#64716B]">합법 시설 등록업체만 엄선</p>
+          </div>
+          <div className="p-3.5 sm:p-5 bg-[#FAF8F5] border border-[#E8E1D2]">
+            <CheckIcon className="w-5 h-5 sm:w-6 sm:h-6 text-[#144A42] mx-auto mb-1.5 sm:mb-2" />
+            <h5 className="font-bold text-xs sm:text-sm text-[#144A42] mb-0.5 sm:mb-1">동물등록 말소 대행</h5>
+            <p className="text-[11px] sm:text-xs text-[#64716B]">복잡한 지자체 행정 무료 처리</p>
+          </div>
+          <div className="p-3.5 sm:p-5 bg-[#FAF8F5] border border-[#E8E1D2]">
+            <FlowerIcon className="w-5 h-5 sm:w-6 sm:h-6 text-[#144A42] mx-auto mb-1.5 sm:mb-2" />
+            <h5 className="font-bold text-xs sm:text-sm text-[#144A42] mb-0.5 sm:mb-1">슬반생 회원 15% 우대</h5>
+            <p className="text-[11px] sm:text-xs text-[#64716B]">고급 수의 및 유골함 지원</p>
+          </div>
         </div>
-        <div className="p-5 bg-[#FAF8F5] border border-[#E8E1D2]">
-          <FlowerIcon className="w-6 h-6 text-[#144A42] mx-auto mb-2" />
-          <h5 className="font-bold text-[#144A42] mb-1">슬반생 회원 15% 우대</h5>
-          <p className="text-[#64716B]">고급 수의 및 유골함 패키지 지원</p>
-        </div>
-      </div>
 
       {/* Consult Modal */}
       {consultOpen && (

@@ -40,22 +40,22 @@ export default function Header({
   return (
     <>
       {/* Top Banner */}
-      <div className="bg-[#144A42] text-[#E8DEC8] text-xs py-2 px-4 text-center font-medium tracking-wide flex items-center justify-center gap-2">
-        <span className="inline-block w-1.5 h-1.5 bg-[#E8DEC8] animate-pulse"></span>
-        <span>슬기로운 반려생활의 시작, 슬반생 동물등록 및 프리미엄 멤버십 사전신청 오픈!</span>
+      <div className="bg-[#144A42] text-[#E8DEC8] text-[11px] sm:text-xs py-1.5 sm:py-2 px-3 sm:px-4 text-center font-medium tracking-wide flex items-center justify-center gap-1.5 sm:gap-2">
+        <span className="inline-block w-1.5 h-1.5 bg-[#E8DEC8] animate-pulse flex-shrink-0"></span>
+        <span className="truncate">슬반생 동물등록 및 프리미엄 멤버십 사전신청 오픈!</span>
         <button 
           onClick={onOpenMembershipModal}
-          className="ml-2 text-white underline underline-offset-2 hover:text-[#F3EFE6] text-[11px]"
+          className="ml-1 sm:ml-2 text-white underline underline-offset-2 hover:text-[#F3EFE6] text-[10px] sm:text-[11px] flex-shrink-0"
         >
-          혜택 알아보기 →
+          혜택 보기 →
         </button>
       </div>
 
       {/* Main Navigation Header */}
       <header className={`sticky top-0 z-40 transition-all duration-300 ${
         isScrolled 
-          ? 'bg-[#F4F0E8]/95 backdrop-blur-md shadow-[0_4px_20px_rgba(0,0,0,0.06)] py-3 border-b border-[#E5DFD1]' 
-          : 'bg-[#F4F0E8] border-b border-[#E5DFD1] py-4'
+          ? 'bg-[#F4F0E8]/95 backdrop-blur-md shadow-[0_4px_20px_rgba(0,0,0,0.06)] py-2 sm:py-3 border-b border-[#E5DFD1]' 
+          : 'bg-[#F4F0E8] border-b border-[#E5DFD1] py-2.5 sm:py-4'
       }`}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between">
           

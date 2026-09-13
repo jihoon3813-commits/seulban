@@ -189,28 +189,28 @@ export function ApplyRegistrationModal({ isOpen, onClose, onApplySuccess }) {
   ];
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fade-in">
-      <div className="bg-white w-full max-w-xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh] border border-[#DDD5C7]">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-2.5 sm:p-4 bg-black/60 backdrop-blur-sm animate-fade-in">
+      <div className="bg-white w-full max-w-xl shadow-2xl overflow-hidden flex flex-col max-h-[92vh] border border-[#DDD5C7]">
         
         {/* Header */}
-        <div className="bg-[#144A42] text-white px-6 py-4 flex items-center justify-between">
-          <div className="flex items-center gap-2.5">
-            <PawIcon className="w-5 h-5 text-[#C5A880]" />
-            <span className="font-bold text-base">모바일 동물등록 간편 신청</span>
+        <div className="bg-[#144A42] text-white px-4 sm:px-6 py-3 sm:py-4 flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <PawIcon className="w-4 h-4 sm:w-5 sm:h-5 text-[#C5A880]" />
+            <span className="font-bold text-sm sm:text-base">모바일 동물등록 간편 신청</span>
           </div>
           <button onClick={onClose} className="p-1 text-white/80 hover:text-white hover:bg-white/10">
-            <XIcon className="w-5 h-5" />
+            <XIcon className="w-4 h-4 sm:w-5 sm:h-5" />
           </button>
         </div>
 
         {/* Step Indicator */}
         {step < 7 && (
-          <div className="bg-[#F8F6F1] px-6 py-3 border-b border-[#EFECE6]">
-            <div className="flex items-center justify-between text-xs font-semibold text-[#144A42] mb-1.5">
+          <div className="bg-[#F8F6F1] px-4 sm:px-6 py-2 sm:py-3 border-b border-[#EFECE6]">
+            <div className="flex items-center justify-between text-[11px] sm:text-xs font-semibold text-[#144A42] mb-1">
               <span>{stepsTitle[step - 1]}</span>
               <span className="text-[#88948F]">{step} / 6 단계</span>
             </div>
-            <div className="w-full bg-[#E5E0D4] h-1.5 overflow-hidden">
+            <div className="w-full bg-[#E5E0D4] h-1 sm:h-1.5 overflow-hidden">
               <div 
                 className="bg-[#144A42] h-full transition-all duration-300"
                 style={{ width: `${(step / 6) * 100}%` }}
@@ -220,14 +220,14 @@ export function ApplyRegistrationModal({ isOpen, onClose, onApplySuccess }) {
         )}
 
         {/* Form Body */}
-        <div className="p-6 overflow-y-auto space-y-4 flex-1 text-sm text-[#26312D]">
+        <div className="p-4 sm:p-6 overflow-y-auto space-y-3 sm:space-y-4 flex-1 text-xs sm:text-sm text-[#26312D]">
           
           {/* Step 1: 본인확인 */}
           {step === 1 && (
-            <div className="space-y-4">
-              <div className="bg-[#EBF4F2] p-4 border border-[#D5E8E4] flex items-start gap-3">
-                <ShieldCheckIcon className="w-5 h-5 text-[#144A42] mt-0.5 shrink-0" />
-                <p className="text-xs text-[#204941] leading-relaxed">
+            <div className="space-y-3 sm:space-y-4">
+              <div className="bg-[#EBF4F2] p-3 sm:p-4 border border-[#D5E8E4] flex items-start gap-2.5 sm:gap-3">
+                <ShieldCheckIcon className="w-4 h-4 sm:w-5 sm:h-5 text-[#144A42] mt-0.5 shrink-0" />
+                <p className="text-[11px] sm:text-xs text-[#204941] leading-relaxed">
                   동물보호법에 의거하여 정확한 지자체 전산망 등록을 위해 보호자 본인 인증 정보를 확인합니다.
                 </p>
               </div>
@@ -719,30 +719,30 @@ export function MembershipModal({ isOpen, onClose, onLeadSubmit }) {
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fade-in">
-      <div className="bg-white text-[#1D2522] w-full max-w-2xl shadow-2xl border border-[#DDD5C7] overflow-hidden flex flex-col max-h-[90vh]">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-2.5 sm:p-4 bg-black/60 backdrop-blur-sm animate-fade-in">
+      <div className="bg-white text-[#1D2522] w-full max-w-2xl shadow-2xl border border-[#DDD5C7] overflow-hidden flex flex-col max-h-[92vh]">
         
         {/* Modal Top */}
-        <div className="px-6 py-5 bg-[#144A42] text-white flex items-center justify-between">
-          <div className="flex items-center gap-2.5">
-            <SparklesIcon className="w-5 h-5 text-[#E6CAA4]" />
-            <span className="font-bold text-lg text-white">슬반생 프리미엄 멤버십 사전신청</span>
+        <div className="px-4 sm:px-6 py-3 sm:py-5 bg-[#144A42] text-white flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <SparklesIcon className="w-4 h-4 sm:w-5 sm:h-5 text-[#E6CAA4]" />
+            <span className="font-bold text-sm sm:text-lg text-white">슬반생 프리미엄 멤버십 사전신청</span>
           </div>
           <button onClick={onClose} className="p-1 text-white/70 hover:text-white transition">
-            <XIcon className="w-5 h-5" />
+            <XIcon className="w-4 h-4 sm:w-5 sm:h-5" />
           </button>
         </div>
 
         {/* Modal Content */}
-        <div className="p-6 overflow-y-auto space-y-6 flex-1 text-sm text-[#2D3734] bg-white">
+        <div className="p-4 sm:p-6 overflow-y-auto space-y-4 sm:space-y-6 flex-1 text-xs sm:text-sm text-[#2D3734] bg-white">
           
           {/* Header Copy */}
-          <div className="bg-[#FAF8F5] p-5 border border-[#ECE5DA]">
-            <span className="text-xs font-bold tracking-widest text-[#9C7A4E] uppercase">SEULBAN VIP CLUB</span>
-            <h3 className="text-xl md:text-2xl font-bold text-[#144A42] mt-1 leading-snug">
+          <div className="bg-[#FAF8F5] p-3.5 sm:p-5 border border-[#ECE5DA]">
+            <span className="text-[10px] sm:text-xs font-bold tracking-widest text-[#9C7A4E] uppercase">SEULBAN VIP CLUB</span>
+            <h3 className="text-base sm:text-2xl font-bold text-[#144A42] mt-0.5 sm:mt-1 leading-snug">
               반려생활의 부담은 가볍게,<br className="hidden sm:inline" />혜택은 더 든든하게
             </h3>
-            <p className="text-xs text-[#5E6D67] mt-2 leading-relaxed">
+            <p className="text-[11px] sm:text-xs text-[#5E6D67] mt-1 sm:mt-2 leading-relaxed">
               정식 론칭 전 사전신청자 분들께만 평생 월회비 40% 할인 혜택 및 웰컴 스타터 패키지를 선물합니다.
             </p>
           </div>
