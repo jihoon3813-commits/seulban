@@ -196,11 +196,11 @@ export default function AdminPage({
 
         {/* Login Box */}
         <div className="bg-white w-full max-w-md border border-[#DDD5C7] shadow-xl p-8 sm:p-10 space-y-6">
-          <div className="text-center space-y-2">
-            <div className="w-14 h-14 bg-[#144A42] text-[#D4AF7A] mx-auto rounded-full flex items-center justify-center shadow-md">
-              <ShieldCheckIcon className="w-8 h-8" />
+          <div className="text-center space-y-3">
+            <div className="flex justify-center mb-1">
+              <LogoEmblem className="h-12 w-auto shadow-sm" />
             </div>
-            <span className="text-[11px] font-bold tracking-widest text-[#B48B55] uppercase block pt-2">
+            <span className="text-[11px] font-bold tracking-widest text-[#B48B55] uppercase block">
               SEULBAN MANAGEMENT SYSTEM
             </span>
             <h1 className="text-2xl font-black text-[#142C27] tracking-tight">
@@ -268,13 +268,15 @@ export default function AdminPage({
       <header className="bg-[#142C27] text-white border-b border-[#22443C] sticky top-0 z-40 shadow-sm">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
           <div className="flex items-center gap-4">
-            <div className="flex items-center gap-2.5 cursor-pointer" onClick={() => setCurrentTab('dashboard')}>
-              <LogoEmblem className="w-8 h-8 brightness-110" />
-              <div>
-                <span className="font-extrabold text-base tracking-tight text-white flex items-center gap-1.5">
-                  슬반생 <span className="text-xs px-1.5 py-0.5 bg-[#2A4D45] text-[#D4AF7A] font-medium border border-[#3E655B]">ADMIN</span>
-                </span>
-              </div>
+            <div 
+              className="flex items-center gap-2.5 cursor-pointer group" 
+              onClick={() => setCurrentTab('dashboard')}
+              title="슬반생 관리자 대시보드"
+            >
+              <LogoEmblem className="h-9 sm:h-10 w-auto brightness-110 group-hover:scale-105 transition-transform" />
+              <span className="text-[11px] px-2 py-0.5 bg-[#2A4D45] text-[#D4AF7A] font-bold tracking-wider border border-[#3E655B] rounded-sm uppercase">
+                ADMIN
+              </span>
             </div>
 
             {/* Menu Tabs in Header */}
