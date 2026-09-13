@@ -195,7 +195,7 @@ export default function Home({
           {/* Card 1: 동물등록 */}
           <div
             onClick={onOpenApplyModal}
-            className="group relative bg-[#173F35] text-white p-7 sm:p-8 flex items-center justify-between cursor-pointer shadow-sm hover:shadow-xl hover:-translate-y-0.5 transition-all duration-300 border border-[#1E564E] min-h-[160px]"
+            className="group relative bg-[#173F35] text-white p-7 sm:p-8 flex items-center justify-between cursor-pointer shadow-sm hover:shadow-xl hover:-translate-y-0.5 transition-all duration-300 border border-[#1E564E] min-h-[190px] sm:min-h-[210px] h-[190px] sm:h-[210px]"
           >
             <div className="flex items-center gap-5 sm:gap-6">
               <div className="w-12 h-12 rounded-full bg-[#245348] flex items-center justify-center flex-shrink-0 text-[#ECBE81] transition-transform group-hover:scale-105">
@@ -210,13 +210,13 @@ export default function Home({
                 </p>
               </div>
             </div>
-            <ArrowRight className="w-4 h-4 text-white/70 group-hover:text-white group-hover:translate-x-1 transition-all self-end mb-1" />
+            <ArrowRight className="absolute bottom-6 right-6 w-4 h-4 text-white/70 group-hover:text-white group-hover:translate-x-1 transition-all" />
           </div>
 
           {/* Card 2: 새로운 만남 */}
           <div
             onClick={() => onNavigate('adoption')}
-            className="group relative bg-[#D4C3AC] text-[#2C241B] p-7 sm:p-8 flex items-center justify-between cursor-pointer shadow-sm hover:shadow-xl hover:-translate-y-0.5 transition-all duration-300 border border-[#C7B59D] min-h-[160px]"
+            className="group relative bg-[#D4C3AC] text-[#2C241B] p-7 sm:p-8 flex items-center justify-between cursor-pointer shadow-sm hover:shadow-xl hover:-translate-y-0.5 transition-all duration-300 border border-[#C7B59D] min-h-[190px] sm:min-h-[210px] h-[190px] sm:h-[210px]"
           >
             <div className="flex items-center gap-5 sm:gap-6">
               <div className="w-12 h-12 rounded-full bg-white flex items-center justify-center flex-shrink-0 text-[#144A42] shadow-xs transition-transform group-hover:scale-105">
@@ -231,7 +231,7 @@ export default function Home({
                 </p>
               </div>
             </div>
-            <ArrowRight className="w-4 h-4 text-[#2C241B]/70 group-hover:text-[#2C241B] group-hover:translate-x-1 transition-all self-end mb-1" />
+            <ArrowRight className="absolute bottom-6 right-6 w-4 h-4 text-[#2C241B]/70 group-hover:text-[#2C241B] group-hover:translate-x-1 transition-all" />
           </div>
 
         </div>
@@ -242,7 +242,7 @@ export default function Home({
           {/* Card 3: 병원·건강 */}
           <div
             onClick={() => onNavigate('partners')}
-            className="group relative bg-[#EBE5DA] p-6 sm:p-7 flex flex-col justify-between cursor-pointer shadow-sm hover:shadow-xl hover:-translate-y-0.5 transition-all duration-300 border border-[#DFD8CB] min-h-[190px] sm:min-h-[210px]"
+            className="group relative bg-[#EBE5DA] p-6 sm:p-7 flex flex-col justify-between cursor-pointer shadow-sm hover:shadow-xl hover:-translate-y-0.5 transition-all duration-300 border border-[#DFD8CB] min-h-[190px] sm:min-h-[210px] h-[190px] sm:h-[210px]"
           >
             <div className="w-10 h-10 rounded-full bg-white flex items-center justify-center text-[#144A42] shadow-xs mb-6 transition-transform group-hover:scale-105">
               <StethoscopeIcon className="w-5 h-5" />
@@ -255,13 +255,13 @@ export default function Home({
                 가까운 병원과 건강관리 정보
               </p>
             </div>
-            <ArrowRight className="w-4 h-4 text-[#1F2C27]/50 group-hover:text-[#1F2C27] group-hover:translate-x-1 transition-all self-end mt-2" />
+            <ArrowRight className="absolute bottom-6 right-6 w-4 h-4 text-[#1F2C27]/50 group-hover:text-[#1F2C27] group-hover:translate-x-1 transition-all" />
           </div>
 
           {/* Card 4: 미용생활 */}
           <div
             onClick={() => onNavigate('partners')}
-            className="group relative bg-[#EBE5DA] p-6 sm:p-7 flex flex-col justify-between cursor-pointer shadow-sm hover:shadow-xl hover:-translate-y-0.5 transition-all duration-300 border border-[#DFD8CB] min-h-[190px] sm:min-h-[210px]"
+            className="group relative bg-[#EBE5DA] p-6 sm:p-7 flex flex-col justify-between cursor-pointer shadow-sm hover:shadow-xl hover:-translate-y-0.5 transition-all duration-300 border border-[#DFD8CB] min-h-[190px] sm:min-h-[210px] h-[190px] sm:h-[210px]"
           >
             <div className="w-10 h-10 rounded-full bg-white flex items-center justify-center text-[#144A42] shadow-xs mb-6 transition-transform group-hover:scale-105">
               <ScissorsIcon className="w-5 h-5" />
@@ -274,13 +274,13 @@ export default function Home({
                 우리 아이에게 맞는 미용 제휴처
               </p>
             </div>
-            <ArrowRight className="w-4 h-4 text-[#1F2C27]/50 group-hover:text-[#1F2C27] group-hover:translate-x-1 transition-all self-end mt-2" />
+            <ArrowRight className="absolute bottom-6 right-6 w-4 h-4 text-[#1F2C27]/50 group-hover:text-[#1F2C27] group-hover:translate-x-1 transition-all" />
           </div>
 
           {/* Card 5: 반려여행 */}
           <div
             onClick={() => onNavigate('travel')}
-            className="group relative bg-[#EBE5DA] p-6 sm:p-7 flex flex-col justify-between cursor-pointer shadow-sm hover:shadow-xl hover:-translate-y-0.5 transition-all duration-300 border border-[#DFD8CB] min-h-[190px] sm:min-h-[210px]"
+            className="group relative bg-[#EBE5DA] p-6 sm:p-7 flex flex-col justify-between cursor-pointer shadow-sm hover:shadow-xl hover:-translate-y-0.5 transition-all duration-300 border border-[#DFD8CB] min-h-[190px] sm:min-h-[210px] h-[190px] sm:h-[210px]"
           >
             <div className="w-10 h-10 rounded-full bg-white flex items-center justify-center text-[#144A42] shadow-xs mb-6 transition-transform group-hover:scale-105">
               <PlaneIcon className="w-5 h-5" />
@@ -293,13 +293,13 @@ export default function Home({
                 함께 머무는 호텔·펜션·리조트
               </p>
             </div>
-            <ArrowRight className="w-4 h-4 text-[#1F2C27]/50 group-hover:text-[#1F2C27] group-hover:translate-x-1 transition-all self-end mt-2" />
+            <ArrowRight className="absolute bottom-6 right-6 w-4 h-4 text-[#1F2C27]/50 group-hover:text-[#1F2C27] group-hover:translate-x-1 transition-all" />
           </div>
 
           {/* Card 6: 아름다운 이별 */}
           <div
             onClick={() => onNavigate('farewell')}
-            className="group relative bg-[#EBE5DA] p-6 sm:p-7 flex flex-col justify-between cursor-pointer shadow-sm hover:shadow-xl hover:-translate-y-0.5 transition-all duration-300 border border-[#DFD8CB] min-h-[190px] sm:min-h-[210px]"
+            className="group relative bg-[#EBE5DA] p-6 sm:p-7 flex flex-col justify-between cursor-pointer shadow-sm hover:shadow-xl hover:-translate-y-0.5 transition-all duration-300 border border-[#DFD8CB] min-h-[190px] sm:min-h-[210px] h-[190px] sm:h-[210px]"
           >
             <div className="w-10 h-10 rounded-full bg-white flex items-center justify-center text-[#144A42] shadow-xs mb-6 transition-transform group-hover:scale-105">
               <HeartIcon className="w-5 h-5" />
@@ -312,7 +312,7 @@ export default function Home({
                 마지막까지 곁을 지키는 안내
               </p>
             </div>
-            <ArrowRight className="w-4 h-4 text-[#1F2C27]/50 group-hover:text-[#1F2C27] group-hover:translate-x-1 transition-all self-end mt-2" />
+            <ArrowRight className="absolute bottom-6 right-6 w-4 h-4 text-[#1F2C27]/50 group-hover:text-[#1F2C27] group-hover:translate-x-1 transition-all" />
           </div>
 
         </div>
