@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { 
   ArrowRight, CheckIcon, ShieldCheckIcon, PawIcon, PawOutlineIcon, HeartIcon, 
   HomeIcon, ScissorsIcon, StethoscopeIcon, FlowerIcon, SearchIcon, 
-  MapPinIcon, SparklesIcon, ChevronRight, PhoneIcon 
+  MapPinIcon, SparklesIcon, ChevronRight, PhoneIcon, PlaneIcon, HandHeartIcon 
 } from '../components/Icons';
 import { 
   CORE_SERVICES, MEMBERSHIP_PERKS, PARTNER_LIST, BRAND_INFO 
@@ -188,73 +188,132 @@ export default function Home({
           </p>
         </div>
 
-        {/* 6 Bento Grid Cards - Clean Straight Rectangles */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {CORE_SERVICES.map((srv, index) => {
-            const isFirst = index === 0;
-            const isSecond = index === 1;
-            
-            return (
-              <div
-                key={srv.id}
-                onClick={() => {
-                  if (srv.id === 'registration') onOpenApplyModal();
-                  else if (srv.id === 'adoption') onNavigate('adoption');
-                  else if (srv.id === 'travel') onNavigate('travel');
-                  else if (srv.id === 'life' || srv.id === 'medical') onNavigate('partners');
-                  else if (srv.id === 'farewell') onNavigate('farewell');
-                }}
-                className={`group p-8 flex flex-col justify-between transition-all duration-300 cursor-pointer shadow-sm hover:shadow-xl hover:-translate-y-1 relative overflow-hidden border border-[#E8E2D5] ${
-                  isFirst 
-                    ? 'bg-[#144A42] text-white md:col-span-2 lg:col-span-2 border-[#1E564E]' 
-                    : isSecond
-                    ? 'bg-[#D8C7B0] text-[#2C241B] border-[#C8B69E]'
-                    : 'bg-[#EFECE6] text-[#242A27]'
-                }`}
-              >
-                {/* Top Badge & Icon */}
-                <div className="flex items-center justify-between mb-8">
-                  <span className={`text-[11px] font-bold px-3 py-1 ${
-                    isFirst ? 'bg-white/20 text-[#E8DEC8]' : 'bg-black/5 text-[#5C5042]'
-                  }`}>
-                    {srv.badge}
-                  </span>
-
-                  <div className={`w-10 h-10 rounded-full flex items-center justify-center transition-transform group-hover:scale-110 ${
-                    isFirst ? 'bg-[#22554A] text-[#ECBE81]' : 'bg-white text-[#144A42] shadow-xs'
-                  }`}>
-                    {srv.icon === 'paw' && (
-                      isFirst ? <PawOutlineIcon className="w-5 h-5 text-[#ECBE81]" /> : <PawIcon className="w-5 h-5" />
-                    )}
-                    {srv.icon === 'heart' && <HeartIcon className="w-5 h-5" />}
-                    {srv.icon === 'home' && <HomeIcon className="w-5 h-5" />}
-                    {srv.icon === 'scissors' && <ScissorsIcon className="w-5 h-5" />}
-                    {srv.icon === 'stethoscope' && <StethoscopeIcon className="w-5 h-5" />}
-                    {srv.icon === 'flower' && <FlowerIcon className="w-5 h-5" />}
-                  </div>
-                </div>
-
-                {/* Content */}
-                <div className="space-y-2 mt-auto">
-                  <h3 className={`text-2xl font-bold tracking-tight ${
-                    isFirst ? 'text-white' : isSecond ? 'text-[#2C241B]' : 'text-[#1F2C27]'
-                  }`}>
-                    {srv.title}
-                  </h3>
-                  <p className={`text-xs sm:text-sm leading-relaxed ${
-                    isFirst ? 'text-white/80' : isSecond ? 'text-[#5C5042]' : 'text-[#66726C]'
-                  }`}>
-                    {srv.subtitle}
-                  </p>
-
-                  <div className="pt-4 flex items-center gap-1 text-xs font-bold group-hover:underline">
-                    <span>{srv.linkText}</span>
-                    <ChevronRight className="w-3.5 h-3.5 transform group-hover:translate-x-1 transition-transform" />
-                  </div>
-                </div>
+        {/* Row 1: 2 Wide Featured Cards (동물등록 & 새로운 만남) */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-5 mb-5">
+          
+          {/* Card 1: 동물등록 */}
+          <div
+            onClick={onOpenApplyModal}
+            className="group relative bg-[#173F35] text-white p-7 sm:p-8 flex items-center justify-between cursor-pointer shadow-sm hover:shadow-xl hover:-translate-y-0.5 transition-all duration-300 border border-[#1E564E] min-h-[160px]"
+          >
+            <div className="flex items-center gap-5 sm:gap-6">
+              <div className="w-12 h-12 rounded-full bg-[#245348] flex items-center justify-center flex-shrink-0 text-[#ECBE81] transition-transform group-hover:scale-105">
+                <PawOutlineIcon className="w-6 h-6" />
               </div>
-            );
-          })}
+              <div>
+                <h3 className="text-xl sm:text-2xl font-bold tracking-tight text-white">
+                  동물등록
+                </h3>
+                <p className="text-xs sm:text-sm text-white/80 leading-relaxed mt-1.5 whitespace-pre-line">
+                  복잡한 등록을 모바일로{'\n'}간편하게
+                </p>
+              </div>
+            </div>
+            <ArrowRight className="w-4 h-4 text-white/70 group-hover:text-white group-hover:translate-x-1 transition-all self-end mb-1" />
+          </div>
+
+          {/* Card 2: 새로운 만남 */}
+          <div
+            onClick={() => onNavigate('adoption')}
+            className="group relative bg-[#D4C3AC] text-[#2C241B] p-7 sm:p-8 flex items-center justify-between cursor-pointer shadow-sm hover:shadow-xl hover:-translate-y-0.5 transition-all duration-300 border border-[#C7B59D] min-h-[160px]"
+          >
+            <div className="flex items-center gap-5 sm:gap-6">
+              <div className="w-12 h-12 rounded-full bg-white flex items-center justify-center flex-shrink-0 text-[#144A42] shadow-xs transition-transform group-hover:scale-105">
+                <HandHeartIcon className="w-6 h-6" />
+              </div>
+              <div>
+                <h3 className="text-xl sm:text-2xl font-bold tracking-tight text-[#2C241B]">
+                  새로운 만남
+                </h3>
+                <p className="text-xs sm:text-sm text-[#5C5042] leading-relaxed mt-1.5">
+                  책임 있는 입양과 가족의 시작
+                </p>
+              </div>
+            </div>
+            <ArrowRight className="w-4 h-4 text-[#2C241B]/70 group-hover:text-[#2C241B] group-hover:translate-x-1 transition-all self-end mb-1" />
+          </div>
+
+        </div>
+
+        {/* Row 2: 4 Service Cards (병원·건강, 미용생활, 반려여행, 아름다운 이별) */}
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-5">
+          
+          {/* Card 3: 병원·건강 */}
+          <div
+            onClick={() => onNavigate('partners')}
+            className="group relative bg-[#EBE5DA] p-6 sm:p-7 flex flex-col justify-between cursor-pointer shadow-sm hover:shadow-xl hover:-translate-y-0.5 transition-all duration-300 border border-[#DFD8CB] min-h-[190px] sm:min-h-[210px]"
+          >
+            <div className="w-10 h-10 rounded-full bg-white flex items-center justify-center text-[#144A42] shadow-xs mb-6 transition-transform group-hover:scale-105">
+              <StethoscopeIcon className="w-5 h-5" />
+            </div>
+            <div className="space-y-1 pr-3">
+              <h4 className="text-base sm:text-lg font-bold tracking-tight text-[#1F2C27]">
+                병원·건강
+              </h4>
+              <p className="text-xs text-[#6A7871] leading-relaxed">
+                가까운 병원과 건강관리 정보
+              </p>
+            </div>
+            <ArrowRight className="w-4 h-4 text-[#1F2C27]/50 group-hover:text-[#1F2C27] group-hover:translate-x-1 transition-all self-end mt-2" />
+          </div>
+
+          {/* Card 4: 미용생활 */}
+          <div
+            onClick={() => onNavigate('partners')}
+            className="group relative bg-[#EBE5DA] p-6 sm:p-7 flex flex-col justify-between cursor-pointer shadow-sm hover:shadow-xl hover:-translate-y-0.5 transition-all duration-300 border border-[#DFD8CB] min-h-[190px] sm:min-h-[210px]"
+          >
+            <div className="w-10 h-10 rounded-full bg-white flex items-center justify-center text-[#144A42] shadow-xs mb-6 transition-transform group-hover:scale-105">
+              <ScissorsIcon className="w-5 h-5" />
+            </div>
+            <div className="space-y-1 pr-3">
+              <h4 className="text-base sm:text-lg font-bold tracking-tight text-[#1F2C27]">
+                미용생활
+              </h4>
+              <p className="text-xs text-[#6A7871] leading-relaxed">
+                우리 아이에게 맞는 미용 제휴처
+              </p>
+            </div>
+            <ArrowRight className="w-4 h-4 text-[#1F2C27]/50 group-hover:text-[#1F2C27] group-hover:translate-x-1 transition-all self-end mt-2" />
+          </div>
+
+          {/* Card 5: 반려여행 */}
+          <div
+            onClick={() => onNavigate('travel')}
+            className="group relative bg-[#EBE5DA] p-6 sm:p-7 flex flex-col justify-between cursor-pointer shadow-sm hover:shadow-xl hover:-translate-y-0.5 transition-all duration-300 border border-[#DFD8CB] min-h-[190px] sm:min-h-[210px]"
+          >
+            <div className="w-10 h-10 rounded-full bg-white flex items-center justify-center text-[#144A42] shadow-xs mb-6 transition-transform group-hover:scale-105">
+              <PlaneIcon className="w-5 h-5" />
+            </div>
+            <div className="space-y-1 pr-3">
+              <h4 className="text-base sm:text-lg font-bold tracking-tight text-[#1F2C27]">
+                반려여행
+              </h4>
+              <p className="text-xs text-[#6A7871] leading-relaxed">
+                함께 머무는 호텔·펜션·리조트
+              </p>
+            </div>
+            <ArrowRight className="w-4 h-4 text-[#1F2C27]/50 group-hover:text-[#1F2C27] group-hover:translate-x-1 transition-all self-end mt-2" />
+          </div>
+
+          {/* Card 6: 아름다운 이별 */}
+          <div
+            onClick={() => onNavigate('farewell')}
+            className="group relative bg-[#EBE5DA] p-6 sm:p-7 flex flex-col justify-between cursor-pointer shadow-sm hover:shadow-xl hover:-translate-y-0.5 transition-all duration-300 border border-[#DFD8CB] min-h-[190px] sm:min-h-[210px]"
+          >
+            <div className="w-10 h-10 rounded-full bg-white flex items-center justify-center text-[#144A42] shadow-xs mb-6 transition-transform group-hover:scale-105">
+              <HeartIcon className="w-5 h-5" />
+            </div>
+            <div className="space-y-1 pr-3">
+              <h4 className="text-base sm:text-lg font-bold tracking-tight text-[#1F2C27]">
+                아름다운 이별
+              </h4>
+              <p className="text-xs text-[#6A7871] leading-relaxed">
+                마지막까지 곁을 지키는 안내
+              </p>
+            </div>
+            <ArrowRight className="w-4 h-4 text-[#1F2C27]/50 group-hover:text-[#1F2C27] group-hover:translate-x-1 transition-all self-end mt-2" />
+          </div>
+
         </div>
 
       </section>

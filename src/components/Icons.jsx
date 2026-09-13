@@ -218,3 +218,17 @@ export const FlowerIcon = ({ className = "w-5 h-5" }) => (
     <path d="M12 16.5V21"/>
   </svg>
 );
+
+export const PlaneIcon = ({ className = "w-5 h-5", ...props }) => (
+  <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}>
+    <path d="M17.8 19.2 16 11l3.5-3.5C21 6 21.5 4 21 3.5c-.5-.5-2.5 0-4 1.5L13.5 8.5 5.3 6.7c-.6-.1-1.2.1-1.5.7l-.5 1 5.5 3.5-3 3-2.5-.5-1 .5 2 2 2 2 .5-1-.5-2.5 3-3 3.5 5.5 1-.5c.6-.3.8-.9.7-1.5z" />
+  </svg>
+);
+
+export const HandHeartIcon = ({ className = "w-5 h-5", ...props }) => (
+  <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}>
+    <path d="M11 14h2a2 2 0 1 0 0-4h-3c-.6 0-1.1.2-1.4.6L4 15" />
+    <path d="m7 20 1.6-1.4c.3-.4.8-.6 1.4-.6h4c1.1 0 2.1-.4 2.8-1.2l4.6-4.4a2 2 0 0 0-2.8-2.8L15 13" />
+    <path d="M16 6a2.5 2.5 0 0 0-2.5-2.5 2.5 2.5 0 0 0-5 0c0 2 2.5 4.5 5 6.5 2.5-2 5-4.5 5-6.5A2.5 2.5 0 0 0 16 6z" />
+  </svg>
+);
