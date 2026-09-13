@@ -11,7 +11,8 @@ export default function MyPage({
   applications, 
   bookmarks, 
   onOpenApplyModal, 
-  onOpenPartnerModal 
+  onOpenPartnerModal,
+  onLogout
 }) {
   const bookmarkedItems = PARTNER_LIST.filter(p => bookmarks.includes(p.id));
 
@@ -31,19 +32,42 @@ export default function MyPage({
                 슬반생 VIP 회원
               </span>
             </div>
-            <p className="text-xs text-[#73827C] mt-1">
-              {user ? user.email : 'demo@seulbanlife.com'} • 가입일: 2026.09.09
-            </p>
+            <div className="flex items-center gap-2 mt-1">
+              <p className="text-xs text-[#73827C]">
+                {user ? user.email : 'demo@seulbanlife.com'} • 가입일: 2026.09.09
+              </p>
+              {onLogout && (
+                <>
+                  <span className="text-gray-300">•</span>
+                  <button 
+                    onClick={onLogout}
+                    className="text-xs text-[#8E9B95] hover:text-red-600 underline transition"
+                  >
+                    로그아웃
+                  </button>
+                </>
+              )}
+            </div>
           </div>
         </div>
 
-        <button
-          onClick={onOpenApplyModal}
-          className="px-5 py-2.5 bg-[#144A42] text-white text-xs font-bold hover:bg-[#0D3832] transition flex items-center gap-1.5 shadow-xs"
-        >
-          <PawIcon className="w-4 h-4 text-[#C5A880]" />
-          <span>반려동물 추가 등록</span>
-        </button>
+        <div className="flex items-center gap-2 w-full sm:w-auto">
+          <button
+            onClick={onOpenApplyModal}
+            className="flex-1 sm:flex-initial px-5 py-2.5 bg-[#144A42] text-white text-xs font-bold hover:bg-[#0D3832] transition flex items-center justify-center gap-1.5 shadow-xs"
+          >
+            <PawIcon className="w-4 h-4 text-[#C5A880]" />
+            <span>반려동물 추가 등록</span>
+          </button>
+          {onLogout && (
+            <button
+              onClick={onLogout}
+              className="sm:hidden px-3 py-2.5 border border-[#D0C9BD] text-xs font-semibold text-[#5A6862] hover:bg-gray-50"
+            >
+              로그아웃
+            </button>
+          )}
+        </div>
       </div>
 
       {/* 1. Registered Pet Profile (MY-002) */}

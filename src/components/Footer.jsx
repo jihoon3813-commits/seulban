@@ -22,7 +22,6 @@ export default function Footer({ onOpenAdmin, onNavigate }) {
             <button onClick={() => onNavigate('membership')} className="hover:text-white transition">멤버십 혜택</button>
             <button onClick={() => onNavigate('partners')} className="hover:text-white transition">제휴처 찾기</button>
             <button onClick={() => onNavigate('farewell')} className="hover:text-white transition">장례케어 안내</button>
-            <button onClick={onOpenAdmin} className="hover:text-[#D4AF7A] font-semibold transition">관리자 시스템</button>
           </div>
         </div>
 
@@ -58,10 +57,18 @@ export default function Footer({ onOpenAdmin, onNavigate }) {
 
         {/* Bottom row: Copyright & Policy Links */}
         <div className="pt-6 border-t border-[#1C2624] flex flex-col sm:flex-row items-center justify-between text-xs text-[#6B7973] gap-4">
-          <div className="flex gap-4">
+          <div className="flex items-center gap-4 flex-wrap">
             <a href="#privacy" className="hover:text-white underline">개인정보처리방침</a>
             <a href="#terms" className="hover:text-white">이용약관</a>
             <a href="#marketing" className="hover:text-white">마케팅 수신동의</a>
+            <span className="text-[#2C3833]">|</span>
+            <button
+              onClick={onOpenAdmin}
+              className="text-[11px] text-[#55645E] hover:text-[#A6B2AD] transition flex items-center gap-1"
+              title="관리자 모드"
+            >
+              <span>관리자</span>
+            </button>
           </div>
           <div>
             © 2026 Seulban Life Inc. All rights reserved.

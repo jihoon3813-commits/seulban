@@ -98,22 +98,14 @@ export default function Header({
           {/* Right Action Buttons */}
           <div className="hidden md:flex items-center gap-2">
             {user ? (
-              <div className="flex items-center gap-2">
-                <button
-                  onClick={() => handleNavClick('mypage')}
-                  className="flex items-center gap-1.5 text-xs sm:text-sm font-medium text-[#1F2C27] bg-transparent hover:bg-black/5 px-3 py-1.5 transition border border-[#D0C9BD]"
-                  title={`${user.name}님 마이페이지`}
-                >
-                  <UserIcon className="w-3.5 h-3.5 text-[#1F2C27]" />
-                  <span>MY</span>
-                </button>
-                <button
-                  onClick={onLogout}
-                  className="text-xs text-[#7B8580] hover:text-[#144A42] underline ml-0.5"
-                >
-                  로그아웃
-                </button>
-              </div>
+              <button
+                onClick={() => handleNavClick('mypage')}
+                className="flex items-center gap-1.5 text-xs sm:text-sm font-medium text-[#1F2C27] bg-transparent hover:bg-black/5 px-3 py-1.5 transition border border-[#D0C9BD]"
+                title={`${user.name}님 마이페이지`}
+              >
+                <UserIcon className="w-3.5 h-3.5 text-[#1F2C27]" />
+                <span>MY</span>
+              </button>
             ) : (
               <div className="flex items-center text-sm font-medium text-[#4A5550] divide-x divide-gray-300">
                 <button 
@@ -141,15 +133,6 @@ export default function Header({
               <ShoppingBagIcon className="w-3.5 h-3.5" />
               <span>슬반생몰</span>
             </a>
-
-            {/* Admin Demo Switcher */}
-            <button
-              onClick={onOpenAdmin}
-              className="text-[11px] font-semibold text-[#144A42] border border-[#144A42] hover:bg-[#144A42] hover:text-white px-2.5 py-1.5 transition ml-1"
-              title="기획서 13장 관리자 시스템 데모"
-            >
-              관리자
-            </button>
           </div>
 
           {/* Mobile Hamburger Button */}

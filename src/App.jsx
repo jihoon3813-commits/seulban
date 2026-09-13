@@ -199,6 +199,7 @@ export default function App() {
             bookmarks={bookmarks}
             onOpenApplyModal={() => setApplyModalOpen(true)}
             onOpenPartnerModal={(partner) => setSelectedPartner(partner)}
+            onLogout={() => { setUser(null); setActiveTab('home'); showToast('로그아웃 되었습니다.'); }}
           />
         )}
       </main>
