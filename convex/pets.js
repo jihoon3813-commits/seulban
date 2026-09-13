@@ -32,10 +32,19 @@ export const save = mutation({
     ownerName: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
-    const existing = await ctx.db
+    // 1) Match by unique pet id
+    let existing = await ctx.db
       .query("pets")
-      .withIndex("by_reg_number", (q) => q.eq("regNumber", args.regNumber))
+      .withIndex("by_pet_id", (q) => q.eq("id", args.id))
       .first();
+
+    // 2) If not found and has official regNumber (not placeholder), match by regNumber
+    if (!existing && args.regNumber && args.regNumber !== "발급 심사 진행 중" && args.regNumber !== "심사 진행 중") {
+      existing = await ctx.db
+        .query("pets")
+        .withIndex("by_reg_number", (q) => q.eq("regNumber", args.regNumber))
+        .first();
+    }
 
     if (existing) {
       await ctx.db.patch(existing._id, args);
@@ -43,5 +52,21 @@ export const save = mutation({
     } else {
       return await ctx.db.insert("pets", args);
     }
+  },
+});
+
+export const remove = mutation({
+  args: { id: v.string() },
+  handler: async (ctx, args) => {
+    const existing = await ctx.db
+      .query("pets")
+      .withIndex("by_pet_id", (q) => q.eq("id", args.id))
+      .first();
+
+    if (existing) {
+      await ctx.db.delete(existing._id);
+      return true;
+    }
+    return false;
   },
 });

@@ -121,15 +121,30 @@ export default function App() {
     }
   });
 
-  // Derived effective states: Convex data is preferred once loaded; fallback to local state
-  const applications = (convexApps && convexApps.length > 0) ? convexApps : localApplications;
+  // Seamlessly merge Convex applications with optimistic local applications
+  const applications = React.useMemo(() => {
+    const map = new Map();
+    // 1) First add local applications
+    (localApplications || []).forEach(app => {
+      if (app && app.id) map.set(app.id, app);
+    });
+    // 2) Merge Convex applications (server truth)
+    if (convexApps && convexApps.length > 0) {
+      convexApps.forEach(app => {
+        if (app && app.id) map.set(app.id, app);
+      });
+    }
+    return Array.from(map.values()).sort((a, b) => {
+      return (b.appliedDate || '').localeCompare(a.appliedDate || '');
+    });
+  }, [convexApps, localApplications]);
 
   // Filter applications specifically for the logged-in user
   const userApplications = React.useMemo(() => {
     if (!user) return [];
     return applications.filter(app => {
-      // 1) Direct email match
-      if (user.email && app.ownerEmail && app.ownerEmail.toLowerCase() === user.email.toLowerCase()) return true;
+      // 1) Direct email match (case-insensitive)
+      if (user.email && app.ownerEmail && app.ownerEmail.trim().toLowerCase() === user.email.trim().toLowerCase()) return true;
       // 2) Direct phone match
       const cleanUserPhone = (user.phone || '').replace(/[^0-9]/g, '');
       const cleanAppPhone = (app.phone || '').replace(/[^0-9]/g, '');
@@ -148,7 +163,7 @@ export default function App() {
     if (convexPets && convexPets.length > 0) {
       const cleanUserPhone = (user.phone || '').replace(/[^0-9]/g, '');
       const match = convexPets.find(p => {
-        if (user.email && p.ownerEmail && p.ownerEmail.toLowerCase() === user.email.toLowerCase()) return true;
+        if (user.email && p.ownerEmail && p.ownerEmail.trim().toLowerCase() === user.email.trim().toLowerCase()) return true;
         const cleanPetPhone = (p.ownerPhone || '').replace(/[^0-9]/g, '');
         if (cleanUserPhone && cleanPetPhone && cleanUserPhone === cleanPetPhone) return true;
         if (user.name && p.ownerName && p.ownerName.trim() === user.name.trim()) return true;
@@ -157,8 +172,8 @@ export default function App() {
       if (match) return match;
     }
 
-    // 2) Match from user's submitted applications
-    if (userApplications.length > 0) {
+    // 2) Match from user's submitted applications (newest first)
+    if (userApplications && userApplications.length > 0) {
       const latestApp = userApplications[0];
       return {
         id: `pet_${latestApp.id}`,
@@ -176,7 +191,14 @@ export default function App() {
       };
     }
 
-    // 3) Match from user-specific localStorage
+    // 3) Match from localPet state
+    if (localPet) {
+      const isOwner = (user.email && localPet.ownerEmail && localPet.ownerEmail.trim().toLowerCase() === user.email.trim().toLowerCase())
+        || (user.name && localPet.ownerName && localPet.ownerName.trim() === user.name.trim());
+      if (isOwner) return localPet;
+    }
+
+    // 4) Match from user-specific localStorage
     try {
       if (user.email) {
         const savedUserPet = localStorage.getItem(`seulban_pet_${user.email}`);
@@ -186,7 +208,7 @@ export default function App() {
 
     // Fresh user has no pet registered yet
     return null;
-  }, [user, convexPets, userApplications]);
+  }, [user, convexPets, userApplications, localPet]);
 
   // Bookmarks State (isolated per user or guest)
   const [bookmarks, setBookmarks] = useState(() => {
@@ -261,30 +283,48 @@ export default function App() {
     setTimeout(() => setToast(null), 3000);
   };
 
-  // 1. 동물등록 신청 접수 (Convex DB 연동 + 사용자별 스코프 저장)
+  // 1. 동물등록 신청 접수 (Convex DB 연동 + 사용자별 스코프 영구 보존)
   const handleApplySuccess = async (newApp, newPet) => {
+    const ownerEmail = user?.email || newApp.ownerEmail || '';
     const appWithOwner = {
       ...newApp,
-      ownerEmail: user?.email || '',
+      ownerEmail,
     };
+
+    // 사용자 정보에 연락처가 비어있다면 신청서 연락처로 자동 업데이트
+    if (user && !user.phone && newApp.phone) {
+      const updatedUser = { ...user, phone: newApp.phone };
+      setUser(updatedUser);
+      try {
+        localStorage.setItem('seulban_user', JSON.stringify(updatedUser));
+      } catch (e) {}
+    }
 
     // 1) 즉시 로컬 반영 (낙관적 업데이트)
     const updatedApps = [appWithOwner, ...localApplications.filter(a => a.id !== newApp.id)];
     setLocalApplications(updatedApps);
-    localStorage.setItem('seulban_applications', JSON.stringify(updatedApps));
+    try {
+      localStorage.setItem('seulban_applications', JSON.stringify(updatedApps));
+    } catch (e) {
+      console.warn('localStorage save applications note:', e);
+    }
 
     let updatedPet = null;
     if (newPet) {
       updatedPet = {
         ...newPet,
-        id: `pet_${Date.now()}`,
-        ownerEmail: user?.email || '',
+        id: `pet_${appWithOwner.id}`,
+        ownerEmail,
         ownerName: newApp.ownerName,
         ownerPhone: newApp.phone,
       };
       setLocalPet(updatedPet);
-      if (user?.email) {
-        localStorage.setItem(`seulban_pet_${user.email}`, JSON.stringify(updatedPet));
+      if (ownerEmail) {
+        try {
+          localStorage.setItem(`seulban_pet_${ownerEmail}`, JSON.stringify(updatedPet));
+        } catch (e) {
+          console.warn('localStorage save pet note:', e);
+        }
       }
     }
 
@@ -301,7 +341,7 @@ export default function App() {
         petWeight: String(newPet?.weight || '3.5'),
         ownerName: appWithOwner.ownerName,
         phone: appWithOwner.phone,
-        ownerEmail: user?.email || '',
+        ownerEmail,
         address: appWithOwner.address || '',
         shippingAddress: appWithOwner.shippingAddress || '',
         statusCode: appWithOwner.statusCode || 'SUBMITTED',
@@ -326,13 +366,13 @@ export default function App() {
           status: updatedPet.status || '등록 신청 중',
           photoUrl: updatedPet.photoUrl || '',
           ownerPhone: newApp.phone,
-          ownerEmail: user?.email || '',
+          ownerEmail,
           ownerName: newApp.ownerName,
         });
       }
       console.log('✅ Convex DB 동물등록 신청서 및 반려동물 데이터 저장 완료:', newApp.id);
     } catch (err) {
-      console.warn('Convex DB sync note (fallback to local):', err);
+      console.error('Convex DB sync error:', err);
     }
 
     showToast('동물등록 신청서가 성공적으로 접수되었습니다!');

@@ -5,6 +5,7 @@ import {
   ClockIcon, StethoscopeIcon, UserIcon, CameraIcon, SearchIcon, GoogleIcon 
 } from './Icons';
 import { BRAND_INFO, MEMBERSHIP_PERKS, REG_FAQS } from '../data/mockData';
+import { compressImage } from '../utils/imageCompressor';
 
 // 휴대폰 번호 자동 하이픈 포맷 함수
 export const formatPhoneNumber = (value) => {
@@ -168,24 +169,34 @@ export function ApplyRegistrationModal({ isOpen, onClose, onApplySuccess, user }
     return () => clearTimeout(timer);
   }, [isPostcodeModalOpen, postcodeTarget]);
 
-  // 반려동물 사진 업로드 핸들러
-  const handlePhotoUpload = (e) => {
+  // 반려동물 사진 업로드 핸들러 (고화질 사진 자동 압축 최적화)
+  const handlePhotoUpload = async (e) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
-    if (file.size > 5 * 1024 * 1024) {
-      alert('사진 용량은 5MB 이하만 등록 가능합니다.');
+    if (file.size > 15 * 1024 * 1024) {
+      alert('사진 용량은 15MB 이하만 등록 가능합니다.');
       return;
     }
 
-    const reader = new FileReader();
-    reader.onload = (event) => {
+    try {
+      // 800x800 해상도 및 JPEG 0.8 압축 -> 약 40~80KB로 경량화하여 Convex DB 저장 보장
+      const compressedDataUrl = await compressImage(file, 800, 800, 0.8);
       setFormData(prev => ({
         ...prev,
-        petPhoto: event.target?.result
+        petPhoto: compressedDataUrl
       }));
-    };
-    reader.readAsDataURL(file);
+    } catch (err) {
+      console.warn('이미지 압축 중 대체 로직 실행:', err);
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        setFormData(prev => ({
+          ...prev,
+          petPhoto: event.target?.result
+        }));
+      };
+      reader.readAsDataURL(file);
+    }
   };
 
   if (!isOpen) return null;

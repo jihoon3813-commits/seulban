@@ -46,7 +46,10 @@ export default defineSchema({
     ownerPhone: v.optional(v.string()),
     ownerEmail: v.optional(v.string()),
     ownerName: v.optional(v.string()),
-  }).index("by_reg_number", ["regNumber"]),
+  })
+    .index("by_pet_id", ["id"])
+    .index("by_reg_number", ["regNumber"])
+    .index("by_owner_email", ["ownerEmail"]),
 
   // 제휴처 (Partners)
   partners: defineTable({

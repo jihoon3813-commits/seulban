@@ -5,6 +5,7 @@ import {
   CheckIcon, XIcon, SearchIcon, PhoneIcon, MapPinIcon, 
   ArrowRight, ClockIcon, UserIcon, ExternalLinkIcon
 } from '../components/Icons';
+import { compressImage } from '../utils/imageCompressor';
 
 export default function AdminPage({
   onNavigateHome,
@@ -77,18 +78,19 @@ export default function AdminPage({
     featured: false
   });
 
-  const handlePartnerImageUpload = (e) => {
+  const handlePartnerImageUpload = async (e) => {
     const file = e.target.files?.[0];
     if (!file) return;
-    if (file.size > 5 * 1024 * 1024) {
-      alert('이미지 파일 용량은 최대 5MB 이하만 업로드 가능합니다.');
-      return;
+    try {
+      const compressed = await compressImage(file, 800, 800, 0.8);
+      setNewPartner(prev => ({ ...prev, imageUrl: compressed }));
+    } catch (err) {
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        setNewPartner(prev => ({ ...prev, imageUrl: event.target.result }));
+      };
+      reader.readAsDataURL(file);
     }
-    const reader = new FileReader();
-    reader.onload = (event) => {
-      setNewPartner(prev => ({ ...prev, imageUrl: event.target.result }));
-    };
-    reader.readAsDataURL(file);
   };
 
   // Modals for editing partner
@@ -96,18 +98,19 @@ export default function AdminPage({
   const [editingPartner, setEditingPartner] = useState(null);
   const [editPartnerImageMode, setEditPartnerImageMode] = useState('upload'); // 'upload' | 'url'
 
-  const handleEditPartnerImageUpload = (e) => {
+  const handleEditPartnerImageUpload = async (e) => {
     const file = e.target.files?.[0];
     if (!file) return;
-    if (file.size > 5 * 1024 * 1024) {
-      alert('이미지 파일 용량은 최대 5MB 이하만 업로드 가능합니다.');
-      return;
+    try {
+      const compressed = await compressImage(file, 800, 800, 0.8);
+      setEditingPartner(prev => ({ ...prev, imageUrl: compressed }));
+    } catch (err) {
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        setEditingPartner(prev => ({ ...prev, imageUrl: event.target.result }));
+      };
+      reader.readAsDataURL(file);
     }
-    const reader = new FileReader();
-    reader.onload = (event) => {
-      setEditingPartner(prev => ({ ...prev, imageUrl: event.target.result }));
-    };
-    reader.readAsDataURL(file);
   };
 
   // Application edit modal state
@@ -130,36 +133,38 @@ export default function AdminPage({
     photoUrl: ''
   });
 
-  const handleAdoptionImageUpload = (e) => {
+  const handleAdoptionImageUpload = async (e) => {
     const file = e.target.files?.[0];
     if (!file) return;
-    if (file.size > 5 * 1024 * 1024) {
-      alert('이미지 파일 용량은 최대 5MB 이하만 업로드 가능합니다.');
-      return;
+    try {
+      const compressed = await compressImage(file, 800, 800, 0.8);
+      setNewAdoption(prev => ({ ...prev, photoUrl: compressed }));
+    } catch (err) {
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        setNewAdoption(prev => ({ ...prev, photoUrl: event.target.result }));
+      };
+      reader.readAsDataURL(file);
     }
-    const reader = new FileReader();
-    reader.onload = (event) => {
-      setNewAdoption(prev => ({ ...prev, photoUrl: event.target.result }));
-    };
-    reader.readAsDataURL(file);
   };
 
   const [isEditAdoptionOpen, setIsEditAdoptionOpen] = useState(false);
   const [editingAdoption, setEditingAdoption] = useState(null);
   const [editAdoptionImageMode, setEditAdoptionImageMode] = useState('upload');
 
-  const handleEditAdoptionImageUpload = (e) => {
+  const handleEditAdoptionImageUpload = async (e) => {
     const file = e.target.files?.[0];
     if (!file) return;
-    if (file.size > 5 * 1024 * 1024) {
-      alert('이미지 파일 용량은 최대 5MB 이하만 업로드 가능합니다.');
-      return;
+    try {
+      const compressed = await compressImage(file, 800, 800, 0.8);
+      setEditingAdoption(prev => ({ ...prev, photoUrl: compressed }));
+    } catch (err) {
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        setEditingAdoption(prev => ({ ...prev, photoUrl: event.target.result }));
+      };
+      reader.readAsDataURL(file);
     }
-    const reader = new FileReader();
-    reader.onload = (event) => {
-      setEditingAdoption(prev => ({ ...prev, photoUrl: event.target.result }));
-    };
-    reader.readAsDataURL(file);
   };
 
   // Travel edit modal state
@@ -177,36 +182,38 @@ export default function AdminPage({
     imageUrl: '',
   });
 
-  const handleTravelImageUpload = (e) => {
+  const handleTravelImageUpload = async (e) => {
     const file = e.target.files?.[0];
     if (!file) return;
-    if (file.size > 5 * 1024 * 1024) {
-      alert('이미지 파일 용량은 최대 5MB 이하만 업로드 가능합니다.');
-      return;
+    try {
+      const compressed = await compressImage(file, 800, 800, 0.8);
+      setNewTravel(prev => ({ ...prev, imageUrl: compressed }));
+    } catch (err) {
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        setNewTravel(prev => ({ ...prev, imageUrl: event.target.result }));
+      };
+      reader.readAsDataURL(file);
     }
-    const reader = new FileReader();
-    reader.onload = (event) => {
-      setNewTravel(prev => ({ ...prev, imageUrl: event.target.result }));
-    };
-    reader.readAsDataURL(file);
   };
 
   const [isEditTravelOpen, setIsEditTravelOpen] = useState(false);
   const [editingTravel, setEditingTravel] = useState(null);
   const [editTravelImageMode, setEditTravelImageMode] = useState('upload');
 
-  const handleEditTravelImageUpload = (e) => {
+  const handleEditTravelImageUpload = async (e) => {
     const file = e.target.files?.[0];
     if (!file) return;
-    if (file.size > 5 * 1024 * 1024) {
-      alert('이미지 파일 용량은 최대 5MB 이하만 업로드 가능합니다.');
-      return;
+    try {
+      const compressed = await compressImage(file, 800, 800, 0.8);
+      setEditingTravel(prev => ({ ...prev, imageUrl: compressed }));
+    } catch (err) {
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        setEditingTravel(prev => ({ ...prev, imageUrl: event.target.result }));
+      };
+      reader.readAsDataURL(file);
     }
-    const reader = new FileReader();
-    reader.onload = (event) => {
-      setEditingTravel(prev => ({ ...prev, imageUrl: event.target.result }));
-    };
-    reader.readAsDataURL(file);
   };
 
   // Popup Management State (3:4 Ratio Popups)
@@ -221,18 +228,20 @@ export default function AdminPage({
     active: true,
   });
 
-  const handlePopupImageUpload = (e) => {
+  const handlePopupImageUpload = async (e) => {
     const file = e.target.files?.[0];
     if (!file) return;
-    if (file.size > 5 * 1024 * 1024) {
-      alert('이미지 파일 용량은 최대 5MB 이하만 업로드 가능합니다.');
-      return;
+    try {
+      // 3:4 ratio popups, max 600x800
+      const compressed = await compressImage(file, 600, 800, 0.8);
+      setNewPopup(prev => ({ ...prev, imageUrl: compressed }));
+    } catch (err) {
+      const reader = new FileReader();
+      reader.onload = (uploadEvent) => {
+        setNewPopup(prev => ({ ...prev, imageUrl: uploadEvent.target.result }));
+      };
+      reader.readAsDataURL(file);
     }
-    const reader = new FileReader();
-    reader.onload = (uploadEvent) => {
-      setNewPopup(prev => ({ ...prev, imageUrl: uploadEvent.target.result }));
-    };
-    reader.readAsDataURL(file);
   };
 
   const handleResetPopupHide7Days = () => {
