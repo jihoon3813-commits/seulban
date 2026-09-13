@@ -59,13 +59,17 @@ export default function Header({
       }`}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between">
           
-          {/* Logo */}
+          {/* Logo with Symbol + Text */}
           <button 
             onClick={() => handleNavClick('home')}
-            className="flex items-center text-left group py-1"
+            className="flex items-center gap-2.5 text-left group py-1"
             aria-label="슬반생 홈"
           >
-            <LogoEmblem className="h-9 sm:h-10 w-auto group-hover:scale-105 transition-transform" />
+            <LogoEmblem className="w-8 h-8 group-hover:scale-105 transition-transform" />
+            <div className="flex flex-col">
+              <span className="text-xl font-bold tracking-tight text-[#144A42] leading-none">슬반생</span>
+              <span className="text-[10px] text-[#78827D] font-medium tracking-wider mt-0.5">슬기로운 반려생활</span>
+            </div>
           </button>
 
           {/* Desktop Navigation Menus */}
