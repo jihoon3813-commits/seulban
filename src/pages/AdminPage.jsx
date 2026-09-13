@@ -269,7 +269,7 @@ export default function AdminPage({
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
           <div className="flex items-center gap-4">
             <div className="flex items-center gap-2.5 cursor-pointer" onClick={() => setCurrentTab('dashboard')}>
-              <LogoEmblem className="w-8 h-8 bg-[#1E3E37] text-[#D4AF7A]" />
+              <LogoEmblem className="w-8 h-8 brightness-110" />
               <div>
                 <span className="font-extrabold text-base tracking-tight text-white flex items-center gap-1.5">
                   슬반생 <span className="text-xs px-1.5 py-0.5 bg-[#2A4D45] text-[#D4AF7A] font-medium border border-[#3E655B]">ADMIN</span>

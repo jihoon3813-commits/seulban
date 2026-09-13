@@ -10,7 +10,7 @@ export default function Footer({ onOpenAdmin, onNavigate }) {
         {/* Top footer row: Logo and Quick links */}
         <div className="flex flex-col md:flex-row md:items-center justify-between pb-8 border-b border-[#1E2926] gap-6">
           <div className="flex items-center gap-3">
-            <LogoEmblem className="w-9 h-9 bg-[#1E332E] text-[#D4AF7A]" />
+            <LogoEmblem className="w-10 h-10 brightness-110" />
             <div>
               <span className="text-xl font-bold text-white tracking-tight">슬반생</span>
               <p className="text-xs text-[#82918B]">슬기로운 반려생활 라이프케어 플랫폼</p>

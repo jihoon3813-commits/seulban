@@ -31,14 +31,13 @@ export const PawOutlineIcon = ({ className = "w-7 h-7", ...props }) => (
   </svg>
 );
 
-export const LogoEmblem = ({ className = "w-8 h-8" }) => (
-  <div className={`rounded-full bg-[#144A42] flex items-center justify-center text-white shadow-sm ${className}`}>
-    <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-      <path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
-      <circle cx="12" cy="14" r="2.5" fill="currentColor" />
-      <circle cx="9.5" cy="11.5" r="1.2" fill="currentColor" />
-      <circle cx="14.5" cy="11.5" r="1.2" fill="currentColor" />
-    </svg>
+export const LogoEmblem = ({ className = "w-8 h-8", imgClassName = "w-full h-full object-contain" }) => (
+  <div className={`flex items-center justify-center shrink-0 overflow-hidden ${className}`}>
+    <img 
+      src="https://res.cloudinary.com/lyjyvy54/image/upload/v1789272326/Group_3_3_gtg1wf.png" 
+      alt="슬반생 로고" 
+      className={imgClassName}
+    />
   </div>
 );
 

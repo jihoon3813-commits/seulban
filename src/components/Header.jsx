@@ -62,9 +62,9 @@ export default function Header({
           {/* Logo */}
           <button 
             onClick={() => handleNavClick('home')}
-            className="flex items-center gap-3 text-left group"
+            className="flex items-center gap-2.5 text-left group"
           >
-            <LogoEmblem className="w-9 h-9 shadow-sm group-hover:scale-105 transition-transform" />
+            <LogoEmblem className="w-9 h-9 group-hover:scale-105 transition-transform" />
             <div className="flex flex-col">
               <span className="text-xl font-bold tracking-tight text-[#144A42] leading-none">슬반생</span>
               <span className="text-[10px] text-[#78827D] font-medium tracking-wider mt-0.5">슬기로운 반려생활</span>
