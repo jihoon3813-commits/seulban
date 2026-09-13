@@ -10,6 +10,7 @@ import TravelPage from './pages/TravelPage';
 import FarewellPage from './pages/FarewellPage';
 import MembershipPage from './pages/MembershipPage';
 import MyPage from './pages/MyPage';
+import AdminPage from './pages/AdminPage';
 
 import { 
   ApplyRegistrationModal, 
@@ -20,7 +21,14 @@ import {
 } from './components/Modals';
 
 import { PhoneIcon, SparklesIcon, PawIcon, MessageSquare } from './components/Icons';
-import { INITIAL_PET, INITIAL_APPLICATION, BRAND_INFO } from './data/mockData';
+import { 
+  INITIAL_PET, 
+  INITIAL_APPLICATION, 
+  BRAND_INFO, 
+  PARTNER_LIST, 
+  ADOPTION_LIST, 
+  TRAVEL_LIST 
+} from './data/mockData';
 
 export default function App() {
   // Navigation
@@ -42,6 +50,27 @@ export default function App() {
 
   // Bookmarks State
   const [bookmarks, setBookmarks] = useState(['p1', 'p2']);
+
+  // Dynamic Content States (Controlled by Admin)
+  const [partners, setPartners] = useState(() => {
+    const saved = localStorage.getItem('seulban_partners');
+    return saved ? JSON.parse(saved) : PARTNER_LIST;
+  });
+
+  const [adoptionList, setAdoptionList] = useState(() => {
+    const saved = localStorage.getItem('seulban_adoption');
+    return saved ? JSON.parse(saved) : ADOPTION_LIST;
+  });
+
+  const [travelList, setTravelList] = useState(() => {
+    const saved = localStorage.getItem('seulban_travel');
+    return saved ? JSON.parse(saved) : TRAVEL_LIST;
+  });
+
+  const [brandInfo, setBrandInfo] = useState(() => {
+    const saved = localStorage.getItem('seulban_brand');
+    return saved ? JSON.parse(saved) : BRAND_INFO;
+  });
 
   // Modals
   const [applyModalOpen, setApplyModalOpen] = useState(false);
@@ -118,10 +147,86 @@ export default function App() {
     showToast(`접수건(${appId}) 상태가 [${statusMap[newStatusCode]}]로 변경되었습니다.`);
   };
 
+  const handleAddPartner = (newPartner) => {
+    const updated = [newPartner, ...partners];
+    setPartners(updated);
+    localStorage.setItem('seulban_partners', JSON.stringify(updated));
+  };
+
+  const handleDeletePartner = (id) => {
+    const updated = partners.filter(p => p.id !== id);
+    setPartners(updated);
+    localStorage.setItem('seulban_partners', JSON.stringify(updated));
+    showToast('제휴처가 삭제되었습니다.');
+  };
+
+  const handleAddAdoption = (newAnimal) => {
+    const updated = [newAnimal, ...adoptionList];
+    setAdoptionList(updated);
+    localStorage.setItem('seulban_adoption', JSON.stringify(updated));
+  };
+
+  const handleDeleteAdoption = (id) => {
+    const updated = adoptionList.filter(a => a.id !== id);
+    setAdoptionList(updated);
+    localStorage.setItem('seulban_adoption', JSON.stringify(updated));
+    showToast('입양 동물이 삭제되었습니다.');
+  };
+
+  const handleAddTravel = (newTravel) => {
+    const updated = [newTravel, ...travelList];
+    setTravelList(updated);
+    localStorage.setItem('seulban_travel', JSON.stringify(updated));
+  };
+
+  const handleDeleteTravel = (id) => {
+    const updated = travelList.filter(t => t.id !== id);
+    setTravelList(updated);
+    localStorage.setItem('seulban_travel', JSON.stringify(updated));
+    showToast('동반 숙소가 삭제되었습니다.');
+  };
+
+  const handleUpdateBrandInfo = (newBrand) => {
+    setBrandInfo(newBrand);
+    localStorage.setItem('seulban_brand', JSON.stringify(newBrand));
+  };
+
   const handleNavigate = (tabId) => {
     setActiveTab(tabId);
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
+
+  // If in admin mode, show full-screen AdminPage
+  if (activeTab === 'admin') {
+    return (
+      <div className="min-h-screen flex flex-col bg-[#F4F0E8] text-[#1D2522]">
+        {toast && (
+          <div className="fixed top-5 left-1/2 -translate-x-1/2 z-50 bg-[#144A42] text-white px-6 py-3 shadow-2xl text-xs font-bold flex items-center gap-2 animate-fade-in border border-[#2D665D]">
+            <span className="w-2 h-2 bg-[#C5A880]"></span>
+            <span>{toast}</span>
+          </div>
+        )}
+
+        <AdminPage 
+          onNavigateHome={() => handleNavigate('home')}
+          applications={applications}
+          onUpdateAppStatus={handleUpdateAppStatus}
+          partners={partners}
+          onAddPartner={handleAddPartner}
+          onDeletePartner={handleDeletePartner}
+          adoptionList={adoptionList}
+          onAddAdoption={handleAddAdoption}
+          onDeleteAdoption={handleDeleteAdoption}
+          travelList={travelList}
+          onAddTravel={handleAddTravel}
+          onDeleteTravel={handleDeleteTravel}
+          brandInfo={brandInfo}
+          onUpdateBrandInfo={handleUpdateBrandInfo}
+          showToast={showToast}
+        />
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen flex flex-col bg-[#F4F0E8] text-[#1D2522]">
@@ -143,7 +248,7 @@ export default function App() {
         activeTab={activeTab}
         onOpenApplyModal={() => setApplyModalOpen(true)}
         onOpenMembershipModal={() => setMembershipModalOpen(true)}
-        onOpenAdmin={() => setAdminModalOpen(true)}
+        onOpenAdmin={() => handleNavigate('admin')}
       />
 
       {/* Main Page View */}
@@ -156,6 +261,7 @@ export default function App() {
             onNavigate={handleNavigate}
             bookmarks={bookmarks}
             onToggleBookmark={handleToggleBookmark}
+            partners={partners}
           />
         )}
 
@@ -166,7 +272,9 @@ export default function App() {
         )}
 
         {activeTab === 'adoption' && (
-          <AdoptionPage />
+          <AdoptionPage 
+            adoptionList={adoptionList}
+          />
         )}
 
         {activeTab === 'partners' && (
@@ -174,11 +282,14 @@ export default function App() {
             onOpenPartnerModal={(partner) => setSelectedPartner(partner)}
             bookmarks={bookmarks}
             onToggleBookmark={handleToggleBookmark}
+            partners={partners}
           />
         )}
 
         {activeTab === 'travel' && (
-          <TravelPage />
+          <TravelPage 
+            travelList={travelList}
+          />
         )}
 
         {activeTab === 'farewell' && (
@@ -206,7 +317,7 @@ export default function App() {
 
       {/* Footer */}
       <Footer 
-        onOpenAdmin={() => setAdminModalOpen(true)}
+        onOpenAdmin={() => handleNavigate('admin')}
         onNavigate={handleNavigate}
       />
 

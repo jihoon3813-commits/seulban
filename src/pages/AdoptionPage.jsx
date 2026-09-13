@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { HeartIcon, MapPinIcon, ShieldCheckIcon, ArrowRight, CheckIcon } from '../components/Icons';
 import { ADOPTION_LIST } from '../data/mockData';
 
-export default function AdoptionPage() {
+export default function AdoptionPage({ adoptionList = ADOPTION_LIST }) {
   const [selectedAnimal, setSelectedAnimal] = useState(null);
   const [consultModalOpen, setConsultModalOpen] = useState(false);
   const [consultSubmitted, setConsultSubmitted] = useState(false);
@@ -43,7 +43,7 @@ export default function AdoptionPage() {
 
       {/* Adoption Animals Grid */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-16">
-        {ADOPTION_LIST.map((pet) => (
+        {adoptionList.map((pet) => (
           <div key={pet.id} className="bg-white overflow-hidden border border-[#ECE5D8] shadow-sm hover:shadow-xl transition-all duration-300 flex flex-col justify-between">
             <div>
               {/* Pet Photo */}

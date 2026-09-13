@@ -5,12 +5,17 @@ import {
 } from '../components/Icons';
 import { PARTNER_LIST } from '../data/mockData';
 
-export default function PartnersPage({ onOpenPartnerModal, bookmarks, onToggleBookmark }) {
+export default function PartnersPage({ 
+  onOpenPartnerModal, 
+  bookmarks, 
+  onToggleBookmark,
+  partners = PARTNER_LIST
+}) {
   const [selectedCat, setSelectedCat] = useState('all');
   const [region, setRegion] = useState('all');
   const [keyword, setKeyword] = useState('');
 
-  const filtered = PARTNER_LIST.filter(item => {
+  const filtered = partners.filter(item => {
     const matchCat = selectedCat === 'all' || item.category === selectedCat;
     const matchRegion = region === 'all' || item.location.includes(region);
     const matchKey = !keyword || item.name.includes(keyword) || item.location.includes(keyword) || item.desc.includes(keyword);

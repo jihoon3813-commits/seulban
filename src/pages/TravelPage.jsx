@@ -2,10 +2,10 @@ import React, { useState } from 'react';
 import { HomeIcon, MapPinIcon, HeartIcon, PhoneIcon, CheckIcon, SearchIcon } from '../components/Icons';
 import { TRAVEL_LIST } from '../data/mockData';
 
-export default function TravelPage() {
+export default function TravelPage({ travelList = TRAVEL_LIST }) {
   const [filterType, setFilterType] = useState('all');
 
-  const filtered = TRAVEL_LIST.filter(t => filterType === 'all' || t.type === filterType);
+  const filtered = travelList.filter(t => filterType === 'all' || t.type === filterType);
 
   return (
     <div className="py-12 md:py-16 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">

@@ -15,12 +15,13 @@ export default function Home({
   onOpenPartnerModal,
   onNavigate,
   bookmarks,
-  onToggleBookmark
+  onToggleBookmark,
+  partners = PARTNER_LIST
 }) {
   const [partnerCategory, setPartnerCategory] = useState('all');
   const [searchKeyword, setSearchKeyword] = useState('');
 
-  const filteredPartners = PARTNER_LIST.filter(p => {
+  const filteredPartners = partners.filter(p => {
     const matchCat = partnerCategory === 'all' || p.category === partnerCategory;
     const matchKey = !searchKeyword || p.name.includes(searchKeyword) || p.location.includes(searchKeyword);
     return matchCat && matchKey;
