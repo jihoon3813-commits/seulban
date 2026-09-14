@@ -18,7 +18,8 @@ import {
   PartnerModal, 
   LoginModal, 
   AdminModal,
-  MainPopupModal
+  MainPopupModal,
+  MallPreparingModal
 } from './components/Modals';
 
 import { PhoneIcon, SparklesIcon, PawIcon, MessageSquare } from './components/Icons';
@@ -270,6 +271,7 @@ export default function App() {
   const [membershipModalOpen, setMembershipModalOpen] = useState(false);
   const [loginModalOpen, setLoginModalOpen] = useState(false);
   const [adminModalOpen, setAdminModalOpen] = useState(false);
+  const [mallModalOpen, setMallModalOpen] = useState(false);
   const [selectedPartner, setSelectedPartner] = useState(null);
 
   // Floating consult widget state
@@ -885,6 +887,7 @@ export default function App() {
         onOpenApplyModal={() => setApplyModalOpen(true)}
         onOpenMembershipModal={() => setMembershipModalOpen(true)}
         onOpenAdmin={handleOpenAdmin}
+        onOpenMallModal={() => setMallModalOpen(true)}
       />
 
       {/* Main Page View */}
@@ -935,6 +938,7 @@ export default function App() {
         {activeTab === 'membership' && (
           <MembershipPage 
             onOpenMembershipModal={() => setMembershipModalOpen(true)}
+            onOpenMallModal={() => setMallModalOpen(true)}
           />
         )}
 
@@ -1050,6 +1054,14 @@ export default function App() {
         onClose={() => setAdminModalOpen(false)}
         applications={applications}
         onUpdateAppStatus={handleUpdateAppStatus}
+      />
+
+      {/* 슬반생몰 준비중 안내 모달 */}
+      <MallPreparingModal 
+        isOpen={mallModalOpen}
+        onClose={() => setMallModalOpen(false)}
+        user={user}
+        onNavigate={handleNavigate}
       />
 
       {/* 메인 3:4 팝업 (관리자에서 설정한 활성 팝업, 7일간 숨김 및 다크 백드롭 지원) */}

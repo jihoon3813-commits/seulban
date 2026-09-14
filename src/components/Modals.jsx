@@ -2,7 +2,8 @@ import React, { useState, useEffect, useRef } from 'react';
 import { 
   XIcon, CheckIcon, ShieldCheckIcon, PawIcon, ArrowRight, 
   PhoneIcon, MapPinIcon, HeartIcon, SparklesIcon, FileTextIcon, 
-  ClockIcon, StethoscopeIcon, UserIcon, CameraIcon, SearchIcon 
+  ClockIcon, StethoscopeIcon, UserIcon, CameraIcon, SearchIcon,
+  LogoEmblem, ShoppingBagIcon, GiftIcon, BellIcon
 } from './Icons';
 import { BRAND_INFO, MEMBERSHIP_PERKS, REG_FAQS } from '../data/mockData';
 import { compressImage } from '../utils/imageCompressor';
@@ -1043,7 +1044,10 @@ export function MembershipModal({ isOpen, onClose, onLeadSubmit }) {
                 <span className="text-center text-[#144A42] font-bold bg-[#EBF5F2] py-1">주중 최대 30% 우대</span>
               </div>
               <div className="grid grid-cols-3 px-4 py-3 items-center">
-                <span className="font-semibold text-gray-800">슬반생몰 쇼핑</span>
+                <div className="flex items-center gap-1.5">
+                  <span className="font-semibold text-gray-800">슬반생몰 쇼핑</span>
+                  <span className="text-[10px] bg-[#EAE4D7] text-[#144A42] px-1 py-0.5 rounded font-bold">준비중</span>
+                </div>
                 <span className="text-center text-gray-500">첫구매 3,000원</span>
                 <span className="text-center text-[#144A42] font-bold bg-[#EBF5F2] py-1">매월 50,000원 쿠폰팩</span>
               </div>
@@ -1781,3 +1785,215 @@ export function MainPopupModal({ popups = [], onNavigate }) {
     </div>
   );
 }
+
+// 7. 슬반생몰 오픈 준비 중 프리미엄 모달
+export function MallPreparingModal({ isOpen, onClose, user, onNavigate }) {
+  const [phone, setPhone] = useState(user?.phone || '');
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isNotified, setIsNotified] = useState(false);
+
+  useEffect(() => {
+    if (isOpen) {
+      setIsNotified(false);
+      if (user?.phone) {
+        setPhone(user.phone);
+      }
+    }
+  }, [isOpen, user]);
+
+  if (!isOpen) return null;
+
+  const handleNotifySubmit = (e) => {
+    e.preventDefault();
+    if (!phone || phone.replace(/[^0-9]/g, '').length < 10) {
+      alert('올바른 휴대폰 번호를 입력해주세요.');
+      return;
+    }
+    setIsSubmitting(true);
+    setTimeout(() => {
+      setIsSubmitting(false);
+      setIsNotified(true);
+      try {
+        const savedList = JSON.parse(localStorage.getItem('seulban_mall_notify_leads') || '[]');
+        savedList.push({
+          phone,
+          userName: user?.name || '비회원',
+          createdAt: new Date().toISOString(),
+        });
+        localStorage.setItem('seulban_mall_notify_leads', JSON.stringify(savedList));
+      } catch (e) {
+        console.warn('LocalStorage error:', e);
+      }
+    }, 400);
+  };
+
+  return (
+    <div 
+      className="fixed inset-0 z-50 bg-black/70 backdrop-blur-xs flex items-center justify-center p-3 sm:p-4 animate-fade-in"
+      onClick={onClose}
+    >
+      <div 
+        className="bg-white rounded-2xl shadow-2xl max-w-md w-full overflow-hidden border border-[#EAE4D7] relative animate-scale-up"
+        onClick={(e) => e.stopPropagation()}
+      >
+        {/* 상단 비주얼 이미지 & 로고 배너 */}
+        <div className="relative h-48 sm:h-52 w-full overflow-hidden bg-[#144A42]">
+          <img 
+            src="https://images.unsplash.com/photo-1583511655857-d19b40a7a54e?w=800&auto=format&fit=crop&q=80" 
+            alt="슬반생몰 오픈 준비 중"
+            className="w-full h-full object-cover object-center transform hover:scale-105 transition duration-700 brightness-95"
+          />
+          {/* 어두운 그라데이션 오버레이 */}
+          <div className="absolute inset-0 bg-gradient-to-t from-[#144A42] via-[#144A42]/40 to-black/30" />
+
+          {/* 상단 로고 & 닫기 버튼 */}
+          <div className="absolute top-3.5 left-4 right-4 flex items-center justify-between z-10">
+            <div className="bg-white/90 backdrop-blur-md px-3 py-1 rounded-full shadow-sm flex items-center gap-1.5 border border-white/50">
+              <LogoEmblem className="h-6 w-auto" />
+              <span className="text-[11px] font-bold text-[#144A42] tracking-tight">슬반생 공식몰</span>
+            </div>
+            <button 
+              onClick={onClose}
+              className="w-8 h-8 rounded-full bg-black/40 hover:bg-black/60 text-white flex items-center justify-center transition backdrop-blur-xs"
+              aria-label="닫기"
+            >
+              <XIcon className="w-4 h-4" />
+            </button>
+          </div>
+
+          {/* 중앙/하단 오픈 예정 뱃지 & 쇼핑백 아이콘 */}
+          <div className="absolute bottom-3 left-4 right-4 flex items-end justify-between z-10 text-white">
+            <div>
+              <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-[#C5A880] text-[#144A42] shadow-sm mb-1.5">
+                <SparklesIcon className="w-3 h-3 text-[#144A42]" />
+                COMING SOON
+              </span>
+              <h3 className="text-xl sm:text-2xl font-black text-white drop-shadow-md tracking-tight">
+                슬반생몰 오픈 준비 중
+              </h3>
+            </div>
+            <div className="w-11 h-11 rounded-2xl bg-white/15 backdrop-blur-md border border-white/30 flex items-center justify-center shadow-lg text-[#E8DEC8]">
+              <ShoppingBagIcon className="w-6 h-6" />
+            </div>
+          </div>
+        </div>
+
+        {/* 본문 콘텐츠 영역 */}
+        <div className="p-5 sm:p-6 space-y-4 text-center">
+          
+          {/* 설명 문구 */}
+          <div className="space-y-1.5">
+            <p className="text-xs sm:text-sm font-semibold text-[#C5A880] tracking-wide">
+              우리 아이를 위한 프리미엄 큐레이션 쇼핑몰
+            </p>
+            <p className="text-xs text-gray-600 leading-relaxed max-w-xs mx-auto">
+              영양 전문가가 엄선한 안전한 프리미엄 먹거리와 케어 용품, 슬반생 등록 회원만을 위한 특별한 혜택을 정성껏 준비하고 있습니다.
+            </p>
+          </div>
+
+          {/* 오픈 혜택 프리뷰 3개 카드 */}
+          <div className="grid grid-cols-3 gap-2 text-left pt-1">
+            <div className="bg-[#FAF8F5] p-2.5 rounded-xl border border-[#EAE4D7]/80 flex flex-col justify-between">
+              <div className="w-7 h-7 rounded-lg bg-[#EBF5F2] text-[#144A42] flex items-center justify-center mb-1.5">
+                <GiftIcon className="w-4 h-4" />
+              </div>
+              <div>
+                <p className="text-[11px] font-bold text-gray-900 leading-tight">5만원 쿠폰</p>
+                <p className="text-[9px] text-gray-500 mt-0.5">신규 가입 즉시</p>
+              </div>
+            </div>
+
+            <div className="bg-[#FAF8F5] p-2.5 rounded-xl border border-[#EAE4D7]/80 flex flex-col justify-between">
+              <div className="w-7 h-7 rounded-lg bg-[#F8F2E8] text-[#C5A880] flex items-center justify-center mb-1.5">
+                <SparklesIcon className="w-4 h-4" />
+              </div>
+              <div>
+                <p className="text-[11px] font-bold text-gray-900 leading-tight">무료 배송</p>
+                <p className="text-[9px] text-gray-500 mt-0.5">전 상품 무조건</p>
+              </div>
+            </div>
+
+            <div className="bg-[#FAF8F5] p-2.5 rounded-xl border border-[#EAE4D7]/80 flex flex-col justify-between">
+              <div className="w-7 h-7 rounded-lg bg-[#EBF5F2] text-[#144A42] flex items-center justify-center mb-1.5">
+                <PawIcon className="w-4 h-4" />
+              </div>
+              <div>
+                <p className="text-[11px] font-bold text-gray-900 leading-tight">최대 20%</p>
+                <p className="text-[9px] text-gray-500 mt-0.5">슬반생 등록 회원</p>
+              </div>
+            </div>
+          </div>
+
+          {/* 오픈 알림 신청 폼 */}
+          <div className="bg-[#F4F8F6] p-3.5 rounded-xl border border-[#D1E6DF] text-left">
+            {!isNotified ? (
+              <form onSubmit={handleNotifySubmit} className="space-y-2">
+                <div className="flex items-center gap-1.5 text-xs font-bold text-[#144A42]">
+                  <BellIcon className="w-3.5 h-3.5 text-[#144A42]" />
+                  <span>오픈 알림 & 쿠폰팩 사전 신청</span>
+                </div>
+                <p className="text-[11px] text-gray-600">
+                  휴대폰 번호를 남겨주시면 런칭 당일 가장 먼저 시크릿 쿠폰을 보내드립니다.
+                </p>
+                <div className="flex gap-2 pt-0.5">
+                  <input
+                    type="tel"
+                    placeholder="010-0000-0000"
+                    value={phone}
+                    onChange={(e) => setPhone(formatPhoneNumber(e.target.value))}
+                    maxLength={13}
+                    className="flex-1 px-3 py-1.5 text-xs bg-white border border-[#BCD9CF] rounded-lg focus:outline-none focus:border-[#144A42] font-medium"
+                    required
+                  />
+                  <button
+                    type="submit"
+                    disabled={isSubmitting}
+                    className="px-3.5 py-1.5 bg-[#144A42] text-white text-xs font-bold rounded-lg hover:bg-[#0E352F] transition shrink-0 cursor-pointer disabled:opacity-50"
+                  >
+                    {isSubmitting ? '신청 중...' : '알림 신청'}
+                  </button>
+                </div>
+              </form>
+            ) : (
+              <div className="text-center py-2 space-y-1">
+                <p className="text-xs font-bold text-[#144A42] flex items-center justify-center gap-1">
+                  <CheckIcon className="w-4 h-4 text-[#144A42]" />
+                  오픈 알림 신청이 완료되었습니다!
+                </p>
+                <p className="text-[11px] text-gray-600">
+                  그랜드 오픈 시 <span className="font-semibold text-[#144A42]">{phone}</span> 번호로 가장 먼저 쿠폰과 함께 안내해 드릴게요.
+                </p>
+              </div>
+            )}
+          </div>
+
+          {/* 하단 버튼 액션 */}
+          <div className="pt-1 space-y-2">
+            <button
+              type="button"
+              onClick={onClose}
+              className="w-full py-3 bg-[#144A42] hover:bg-[#0E352F] text-white font-bold text-sm rounded-xl transition shadow-md cursor-pointer flex items-center justify-center gap-1.5"
+            >
+              <span>확인했습니다</span>
+            </button>
+
+            {onNavigate && (
+              <button
+                type="button"
+                onClick={() => {
+                  onClose();
+                  onNavigate('membership');
+                }}
+                className="text-xs text-gray-500 hover:text-[#144A42] underline transition"
+              >
+                슬반생 멤버십 혜택 먼저 둘러보기 →
+              </button>
+            )}
+          </div>
+
+        </div>
+      </div>
+    </div>
+  );
+}
+

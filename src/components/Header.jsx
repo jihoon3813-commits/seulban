@@ -11,7 +11,8 @@ export default function Header({
   activeTab, 
   onOpenApplyModal,
   onOpenMembershipModal,
-  onOpenAdmin
+  onOpenAdmin,
+  onOpenMallModal
 }) {
   const [isScrolled, setIsScrolled] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -122,16 +123,16 @@ export default function Header({
               </div>
             )}
 
-            {/* Shopping Mall External Link */}
-            <a 
-              href="https://mall.seulbanlife.com" 
-              target="_blank" 
-              rel="noreferrer"
-              className="flex items-center gap-1.5 text-xs sm:text-sm font-medium px-3 py-1.5 border border-[#1F2C27] text-[#1F2C27] hover:bg-[#1F2C27] hover:text-white transition"
+            {/* Shopping Mall Modal Trigger Button */}
+            <button 
+              type="button"
+              onClick={onOpenMallModal}
+              className="flex items-center gap-1.5 text-xs sm:text-sm font-medium px-3 py-1.5 border border-[#1F2C27] text-[#1F2C27] hover:bg-[#1F2C27] hover:text-white transition cursor-pointer"
+              title="슬반생몰 바로가기 (오픈 준비 중)"
             >
               <ShoppingBagIcon className="w-3.5 h-3.5" />
               <span>슬반생몰</span>
-            </a>
+            </button>
           </div>
 
           {/* Mobile Hamburger Button */}
@@ -168,6 +169,26 @@ export default function Header({
                   {item.label}
                 </button>
               ))}
+            </div>
+
+            {/* Mobile Mall Button */}
+            <div className="pt-1">
+              <button
+                type="button"
+                onClick={() => {
+                  setMobileMenuOpen(false);
+                  if (onOpenMallModal) onOpenMallModal();
+                }}
+                className="w-full flex items-center justify-between px-3.5 py-2.5 bg-[#FAF8F5] hover:bg-[#EBF5F2] border border-[#144A42]/20 text-[#144A42] transition rounded-none"
+              >
+                <div className="flex items-center gap-2">
+                  <ShoppingBagIcon className="w-4 h-4 text-[#144A42]" />
+                  <span className="text-xs font-bold">슬반생몰 쇼핑</span>
+                </div>
+                <span className="text-[10px] bg-[#C5A880] text-[#144A42] font-bold px-2 py-0.5 rounded-full">
+                  준비중
+                </span>
+              </button>
             </div>
             
             <div className="flex items-center justify-between pt-1">

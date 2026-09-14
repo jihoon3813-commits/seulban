@@ -2,7 +2,7 @@ import React from 'react';
 import { SparklesIcon, CheckIcon, ArrowRight, ShieldCheckIcon } from '../components/Icons';
 import { MEMBERSHIP_PERKS } from '../data/mockData';
 
-export default function MembershipPage({ onOpenMembershipModal }) {
+export default function MembershipPage({ onOpenMembershipModal, onOpenMallModal }) {
   return (
     <div className="w-full">
       {/* Top Banner Image */}
@@ -94,10 +94,21 @@ export default function MembershipPage({ onOpenMembershipModal }) {
                   <td className="py-2.5 px-3 sm:py-3.5 sm:px-4 text-center text-gray-400">정가 적용</td>
                   <td className="py-2.5 px-3 sm:py-3.5 sm:px-4 text-center font-bold text-[#144A42] bg-[#F2F8F6]">주중 최대 30% 할인 & 1견 무료</td>
                 </tr>
-                <tr>
-                  <td className="py-2.5 px-3 sm:py-3.5 sm:px-4 font-medium">슬반생몰 쇼핑</td>
+                <tr 
+                  onClick={onOpenMallModal}
+                  className="cursor-pointer hover:bg-[#F9F7F2] transition group"
+                  title="슬반생몰 오픈 준비 현황 보기"
+                >
+                  <td className="py-2.5 px-3 sm:py-3.5 sm:px-4 font-medium flex items-center justify-between">
+                    <span>슬반생몰 쇼핑</span>
+                    <span className="text-[10px] bg-[#EBF5F2] text-[#144A42] px-1.5 py-0.5 rounded font-bold group-hover:bg-[#144A42] group-hover:text-white transition">
+                      오픈준비중
+                    </span>
+                  </td>
                   <td className="py-2.5 px-3 sm:py-3.5 sm:px-4 text-center text-gray-400">첫구매 3,000원</td>
-                  <td className="py-2.5 px-3 sm:py-3.5 sm:px-4 text-center font-bold text-[#144A42] bg-[#F2F8F6]">매월 50,000원 전용 쿠폰팩</td>
+                  <td className="py-2.5 px-3 sm:py-3.5 sm:px-4 text-center font-bold text-[#144A42] bg-[#F2F8F6] group-hover:bg-[#E2EFEA] transition">
+                    매월 50,000원 전용 쿠폰팩
+                  </td>
                 </tr>
                 <tr>
                   <td className="py-2.5 px-3 sm:py-3.5 sm:px-4 font-medium">24시 응급 & 장례</td>
