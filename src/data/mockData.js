@@ -12,7 +12,7 @@ export const BRAND_INFO = {
 
   // === SEO & 사이트 최적화 설정 ===
   // 1. 대표 이미지 (카카오톡, 페이스북 등 SNS 공유 시 1200*630)
-  ogImage: "https://res.cloudinary.com/lyjyvy54/image/upload/v1789268626/ChatGPT_Image_2026%EB%85%84_9%EC%9B%94_13%EC%9D%BC_%EC%98%A4%ED%9B%84_12_03_30_6_e9hvro.png",
+  ogImage: "https://res.cloudinary.com/lyjyvy54/image/upload/v1789367946/%EB%8C%80%ED%91%9C_%EC%8A%AC%EB%B0%98%EC%83%9D_idznik.png",
   // 2. 파비콘 (브라우저 탭 아이콘)
   favicon: "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23144A42'><circle cx='12' cy='12' r='10'/><path d='M10 8c0 .5-.3 1-.7 1.3-.4.3-.8.7-.8 1.2 0 .8.7 1.5 1.5 1.5h4c.8 0 1.5-.7 1.5-1.5 0-.5-.4-.9-.8-1.2-.4-.3-.7-.8-.7-1.3' fill='white'/><circle cx='8.5' cy='6.5' r='1.5' fill='white'/><circle cx='15.5' cy='6.5' r='1.5' fill='white'/></svg>",
   // 3. 사이트 메타 타이틀
