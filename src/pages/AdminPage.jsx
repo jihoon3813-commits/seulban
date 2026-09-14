@@ -1,10 +1,11 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
   LogoEmblem, PawIcon, HeartIcon, HomeIcon, ScissorsIcon, 
   StethoscopeIcon, FlowerIcon, SparklesIcon, ShieldCheckIcon, 
   CheckIcon, XIcon, SearchIcon, PhoneIcon, MapPinIcon, 
   ArrowRight, ClockIcon, UserIcon, ExternalLinkIcon,
-  KakaoIcon, HeadphoneIcon, MessageSquare, FileTextIcon
+  KakaoIcon, HeadphoneIcon, MessageSquare, FileTextIcon,
+  RefreshCwIcon
 } from '../components/Icons';
 import { compressImage } from '../utils/imageCompressor';
 import { BRAND_INFO } from '../data/mockData';
@@ -36,6 +37,7 @@ export default function AdminPage({
   consultations = [],
   onDeleteConsultation,
   onUpdateConsultStatus,
+  onRefreshData,
   showToast
 }) {
   // Admin Authentication State
@@ -271,6 +273,19 @@ export default function AdminPage({
     ...BRAND_INFO,
     ...(brandInfo || {})
   }));
+
+  // 메뉴 탭 이동 시 최신 데이터 자동 동기화 및 폼 새로고침
+  useEffect(() => {
+    if (onRefreshData) {
+      onRefreshData();
+    }
+    if (brandInfo) {
+      setBrandForm({
+        ...BRAND_INFO,
+        ...brandInfo
+      });
+    }
+  }, [currentTab]);
 
   React.useEffect(() => {
     if (brandInfo) {
@@ -644,10 +659,25 @@ export default function AdminPage({
             </div>
           </div>
 
-          <div className="flex items-center gap-3 text-xs">
+          <div className="flex items-center gap-2 sm:gap-3 text-xs">
+            <button
+              onClick={() => {
+                if (onRefreshData) onRefreshData();
+                if (brandInfo) {
+                  setBrandForm({ ...BRAND_INFO, ...brandInfo });
+                }
+                showToast?.('최신 데이터로 새로고침되었습니다.');
+              }}
+              className="px-3 py-1.5 bg-gray-100 hover:bg-gray-200 text-gray-700 border border-gray-300 font-semibold flex items-center gap-1.5 transition cursor-pointer"
+              title="최신 데이터 새로고침"
+            >
+              <RefreshCwIcon className="w-3.5 h-3.5 text-gray-600" />
+              <span className="hidden sm:inline">새로고침</span>
+            </button>
+
             <button
               onClick={() => setCurrentTab('consultations')}
-              className="px-3 py-1.5 bg-amber-50 hover:bg-amber-100 text-amber-900 border border-amber-300 font-bold flex items-center gap-1.5 transition"
+              className="px-3 py-1.5 bg-amber-50 hover:bg-amber-100 text-amber-900 border border-amber-300 font-bold flex items-center gap-1.5 transition cursor-pointer"
             >
               <HeadphoneIcon className="w-3.5 h-3.5 text-amber-700" />
               <span>빠른상담 {consultations.length}건</span>
@@ -655,7 +685,7 @@ export default function AdminPage({
 
             <button
               onClick={handleLogout}
-              className="px-3 py-1.5 bg-gray-100 hover:bg-gray-200 text-gray-700 border border-gray-300 transition font-semibold"
+              className="px-3 py-1.5 bg-gray-100 hover:bg-gray-200 text-gray-700 border border-gray-300 transition font-semibold cursor-pointer"
             >
               로그아웃
             </button>

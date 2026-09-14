@@ -334,6 +334,28 @@ export default function App() {
     showToast(`상담 처리 상태가 [${newStatus === 'COMPLETED' ? '상담 완료' : '상담 대기'}]로 변경되었습니다.`);
   };
 
+  // 관리자 메뉴 전환 및 수동 새로고침 시 최신 데이터 동기화
+  const handleRefreshAdminData = () => {
+    try {
+      const p = localStorage.getItem('seulban_partners');
+      if (p) setLocalPartners(JSON.parse(p));
+      const a = localStorage.getItem('seulban_applications');
+      if (a) setLocalApplications(JSON.parse(a));
+      const c = localStorage.getItem('seulban_consultations');
+      if (c) setLocalConsultations(JSON.parse(c));
+      const b = localStorage.getItem('seulban_brand');
+      if (b) setLocalBrandInfo(JSON.parse(b));
+      const pop = localStorage.getItem('seulban_popups');
+      if (pop) setLocalPopups(JSON.parse(pop));
+      const ad = localStorage.getItem('seulban_adoption');
+      if (ad) setLocalAdoptionList(JSON.parse(ad));
+      const tr = localStorage.getItem('seulban_travel');
+      if (tr) setLocalTravelList(JSON.parse(tr));
+    } catch (e) {
+      console.error('Error refreshing admin data:', e);
+    }
+  };
+
   // 1. 동물등록 신청 접수 (Convex DB 연동 + 사용자별 스코프 영구 보존)
   const handleApplySuccess = async (newApp, newPet) => {
     const ownerEmail = user?.email || newApp.ownerEmail || '';
@@ -911,6 +933,7 @@ export default function App() {
           consultations={consultations}
           onDeleteConsultation={handleDeleteConsultation}
           onUpdateConsultStatus={handleUpdateConsultStatus}
+          onRefreshData={handleRefreshAdminData}
           showToast={showToast}
         />
       </div>
