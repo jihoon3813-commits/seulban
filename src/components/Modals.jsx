@@ -312,8 +312,8 @@ export function ApplyRegistrationModal({ isOpen, onClose, onApplySuccess, user }
   ];
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-2.5 sm:p-4 bg-black/60 backdrop-blur-sm animate-fade-in">
-      <div className="bg-white w-full max-w-xl shadow-2xl overflow-hidden flex flex-col max-h-[92vh] border border-[#DDD5C7]">
+    <div className="fixed inset-0 z-[100] flex items-center justify-center p-3 sm:p-6 bg-black/80 backdrop-blur-sm animate-fade-in overflow-y-auto">
+      <div className="bg-white w-full max-w-xl shadow-2xl overflow-hidden flex flex-col max-h-[86vh] my-auto border border-[#DDD5C7]">
         
         {/* Header */}
         <div className="bg-[#144A42] text-white px-4 sm:px-6 py-3 sm:py-4 flex items-center justify-between">
@@ -926,7 +926,7 @@ export function ApplyRegistrationModal({ isOpen, onClose, onApplySuccess, user }
 
       {/* 카카오 우편번호 검색 레이어 모달 */}
       {isPostcodeModalOpen && (
-        <div className="fixed inset-0 z-[70] flex items-center justify-center p-3 sm:p-4 bg-black/70 backdrop-blur-xs animate-fade-in">
+        <div className="fixed inset-0 z-[110] flex items-center justify-center p-3 sm:p-6 bg-black/85 backdrop-blur-sm animate-fade-in overflow-y-auto">
           <div className="bg-white w-full max-w-lg shadow-2xl overflow-hidden flex flex-col border border-[#144A42]">
             <div className="bg-[#144A42] text-white px-4 py-3 flex items-center justify-between">
               <div className="flex items-center gap-2">
@@ -992,8 +992,8 @@ export function MembershipModal({ isOpen, onClose, onLeadSubmit }) {
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-2.5 sm:p-4 bg-black/60 backdrop-blur-sm animate-fade-in">
-      <div className="bg-white text-[#1D2522] w-full max-w-2xl shadow-2xl border border-[#DDD5C7] overflow-hidden flex flex-col max-h-[92vh]">
+    <div className="fixed inset-0 z-[100] flex items-center justify-center p-3 sm:p-6 bg-black/80 backdrop-blur-sm animate-fade-in overflow-y-auto">
+      <div className="bg-white text-[#1D2522] w-full max-w-2xl shadow-2xl border border-[#DDD5C7] overflow-hidden flex flex-col max-h-[86vh] my-auto">
         
         {/* Modal Top */}
         <div className="px-4 sm:px-6 py-3 sm:py-5 bg-[#144A42] text-white flex items-center justify-between">
@@ -1159,8 +1159,8 @@ export function PartnerModal({ partner, isOpen, onClose, onToggleBookmark, isBoo
   if (!isOpen || !partner) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fade-in">
-      <div className="bg-white w-full max-w-lg shadow-2xl overflow-hidden flex flex-col max-h-[90vh] border border-[#DDD5C7]">
+    <div className="fixed inset-0 z-[100] flex items-center justify-center p-3 sm:p-6 bg-black/80 backdrop-blur-sm animate-fade-in overflow-y-auto">
+      <div className="bg-white w-full max-w-lg shadow-2xl overflow-hidden flex flex-col max-h-[86vh] my-auto border border-[#DDD5C7]">
         
         {/* Header with category tag */}
         <div className="p-6 bg-[#FAF8F5] border-b border-[#ECE6DA] flex items-start justify-between">
@@ -1341,8 +1341,8 @@ export function LoginModal({ isOpen, onClose, onLogin, initialMode = 'login' }) 
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm animate-fade-in">
-      <div className="bg-white w-full max-w-md shadow-2xl p-6 sm:p-7 border border-[#ECE5D8] max-h-[92vh] overflow-y-auto">
+    <div className="fixed inset-0 z-[100] flex items-center justify-center p-3 sm:p-6 bg-black/80 backdrop-blur-sm animate-fade-in overflow-y-auto">
+      <div className="bg-white w-full max-w-md shadow-2xl p-6 sm:p-7 border border-[#ECE5D8] max-h-[86vh] my-auto overflow-y-auto">
         
         {/* Header */}
         <div className="flex justify-between items-start mb-5 pb-3 border-b border-[#F0EBE0]">
@@ -1505,8 +1505,8 @@ export function AdminModal({ isOpen, onClose, applications, onUpdateAppStatus })
   ];
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm animate-fade-in">
-      <div className="bg-white w-full max-w-4xl shadow-2xl overflow-hidden flex flex-col max-h-[92vh] border border-[#DDD5C7]">
+    <div className="fixed inset-0 z-[100] flex items-center justify-center p-3 sm:p-6 bg-black/80 backdrop-blur-sm animate-fade-in overflow-y-auto">
+      <div className="bg-white w-full max-w-4xl shadow-2xl overflow-hidden flex flex-col max-h-[86vh] my-auto border border-[#DDD5C7]">
         
         {/* Admin Header */}
         <div className="bg-[#111716] text-white px-6 py-4 flex items-center justify-between border-b border-[#23312E]">
@@ -1676,7 +1676,7 @@ export function MainPopupModal({ popups = [], onNavigate }) {
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-fade-in">
+    <div className="fixed inset-0 z-[100] flex items-center justify-center p-3 sm:p-6 bg-black/80 backdrop-blur-sm animate-fade-in overflow-y-auto">
       <div className="relative w-full max-w-[340px] sm:max-w-[380px] bg-[#111716] shadow-2xl overflow-hidden flex flex-col border border-[#2E3F3B]">
         
         {/* 상단: 복수 팝업 인디케이터 (2개 이상인 경우) & 닫기 버튼 */}
@@ -1829,7 +1829,7 @@ export function MallPreparingModal({ isOpen, onClose, user, onNavigate }) {
 
   return (
     <div 
-      className="fixed inset-0 z-50 bg-black/70 backdrop-blur-xs flex items-center justify-center p-3 sm:p-4 animate-fade-in"
+      className="fixed inset-0 z-[100] bg-black/80 backdrop-blur-sm flex items-center justify-center p-3 sm:p-6 animate-fade-in overflow-y-auto"
       onClick={onClose}
     >
       <div 
@@ -2057,8 +2057,8 @@ export function QuickConsultModal({ isOpen, onClose, onSubmitConsult, brandInfo,
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/70 backdrop-blur-xs animate-fade-in">
-      <div className="bg-white text-[#1D2522] w-full max-w-lg shadow-2xl border border-[#DDD5C7] overflow-hidden flex flex-col max-h-[92vh]">
+    <div className="fixed inset-0 z-[100] flex items-center justify-center p-3 sm:p-6 bg-black/80 backdrop-blur-sm animate-fade-in overflow-y-auto">
+      <div className="bg-white text-[#1D2522] w-full max-w-lg shadow-2xl border border-[#DDD5C7] overflow-hidden flex flex-col max-h-[86vh] my-auto">
         
         {/* Modal Header */}
         <div className="px-5 py-4 bg-[#144A42] text-white flex items-center justify-between">
@@ -2225,8 +2225,8 @@ export function PolicyViewerModal({ isOpen, onClose, type = 'privacy', brandInfo
   const content = isPrivacy ? (info.privacyPolicy || BRAND_INFO.privacyPolicy) : (info.termsOfService || BRAND_INFO.termsOfService);
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/70 backdrop-blur-xs animate-fade-in">
-      <div className="bg-white text-[#1D2522] w-full max-w-2xl shadow-2xl border border-[#DDD5C7] overflow-hidden flex flex-col max-h-[85vh]">
+    <div className="fixed inset-0 z-[100] flex items-center justify-center p-3 sm:p-6 bg-black/80 backdrop-blur-sm animate-fade-in overflow-y-auto">
+      <div className="bg-white text-[#1D2522] w-full max-w-2xl shadow-2xl border border-[#DDD5C7] overflow-hidden flex flex-col max-h-[85vh] my-auto">
         
         {/* Header */}
         <div className="px-5 py-4 bg-[#144A42] text-white flex items-center justify-between">

@@ -128,7 +128,7 @@ export default function FarewellPage() {
 
       {/* Consult Modal */}
       {consultOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fade-in">
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 sm:p-6 bg-black/80 backdrop-blur-sm animate-fade-in overflow-y-auto">
           <div className="bg-white w-full max-w-md p-6 shadow-2xl border border-[#E8E2D5]">
             <h3 className="text-lg font-bold text-[#144A42] mb-1">반려동물 장례 및 안치 상담 접수</h3>
             <p className="text-xs text-gray-500 mb-4">전담 장례 지도사가 바로 확인 후 전화 안내를 드립니다.</p>

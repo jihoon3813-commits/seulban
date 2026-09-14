@@ -1062,8 +1062,8 @@ export default function AdminPage({
 
             {/* Modal: 동물등록 신청서 상세 수정 */}
             {isEditAppOpen && editingApp && (
-              <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fade-in">
-                <div className="bg-white w-full max-w-lg shadow-2xl p-6 border border-[#ECE5D8] max-h-[90vh] overflow-y-auto">
+              <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 sm:p-6 bg-black/80 backdrop-blur-sm animate-fade-in overflow-y-auto">
+                <div className="bg-white w-full max-w-lg shadow-2xl p-6 border border-[#ECE5D8] max-h-[85vh] my-auto overflow-y-auto">
                   <div className="flex justify-between items-center mb-5 pb-3 border-b border-gray-100">
                     <div>
                       <h3 className="font-bold text-base text-[#144A42]">동물등록 신청서 정보 수정</h3>
@@ -1431,8 +1431,8 @@ export default function AdminPage({
 
             {/* Modal: 신규 팝업 등록 */}
             {isAddPopupOpen && (
-              <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fade-in">
-                <div className="bg-white w-full max-w-xl shadow-2xl p-6 border border-[#ECE5D8] max-h-[90vh] overflow-y-auto">
+              <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 sm:p-6 bg-black/80 backdrop-blur-sm animate-fade-in overflow-y-auto">
+                <div className="bg-white w-full max-w-xl shadow-2xl p-6 border border-[#ECE5D8] max-h-[85vh] my-auto overflow-y-auto">
                   <div className="flex justify-between items-center mb-5 pb-3 border-b border-gray-100">
                     <div className="flex items-center gap-2">
                       <SparklesIcon className="w-5 h-5 text-[#C5A880]" />
@@ -1789,8 +1789,8 @@ export default function AdminPage({
 
             {/* Modal: 신규 제휴처 등록 */}
             {isAddPartnerOpen && (
-              <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fade-in">
-                <div className="bg-white w-full max-w-lg shadow-2xl p-6 border border-[#ECE5D8] max-h-[90vh] overflow-y-auto">
+              <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 sm:p-6 bg-black/80 backdrop-blur-sm animate-fade-in overflow-y-auto">
+                <div className="bg-white w-full max-w-lg shadow-2xl p-6 border border-[#ECE5D8] max-h-[85vh] my-auto overflow-y-auto">
                   <div className="flex justify-between items-center mb-5 pb-3 border-b border-gray-100">
                     <h3 className="font-bold text-base text-[#144A42]">신규 제휴처 추가 등록</h3>
                     <button onClick={() => setIsAddPartnerOpen(false)} className="p-1 text-gray-400 hover:text-gray-700">
@@ -1999,8 +1999,8 @@ export default function AdminPage({
 
             {/* Modal: 제휴처 정보 수정 */}
             {isEditPartnerOpen && editingPartner && (
-              <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fade-in">
-                <div className="bg-white w-full max-w-lg shadow-2xl p-6 border border-[#ECE5D8] max-h-[90vh] overflow-y-auto">
+              <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 sm:p-6 bg-black/80 backdrop-blur-sm animate-fade-in overflow-y-auto">
+                <div className="bg-white w-full max-w-lg shadow-2xl p-6 border border-[#ECE5D8] max-h-[85vh] my-auto overflow-y-auto">
                   <div className="flex justify-between items-center mb-5 pb-3 border-b border-gray-100">
                     <div>
                       <h3 className="font-bold text-base text-[#144A42]">제휴처 정보 수정</h3>
@@ -2333,8 +2333,8 @@ export default function AdminPage({
 
             {/* Modal: 입양 동물 추가 */}
             {isAddAdoptionOpen && (
-              <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fade-in">
-                <div className="bg-white w-full max-w-lg shadow-2xl p-6 border border-[#ECE5D8] max-h-[90vh] overflow-y-auto">
+              <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 sm:p-6 bg-black/80 backdrop-blur-sm animate-fade-in overflow-y-auto">
+                <div className="bg-white w-full max-w-lg shadow-2xl p-6 border border-[#ECE5D8] max-h-[85vh] my-auto overflow-y-auto">
                   <div className="flex justify-between items-center mb-5 pb-3 border-b border-gray-100">
                     <h3 className="font-bold text-base text-[#144A42]">신규 입양 동물 등록</h3>
                     <button onClick={() => setIsAddAdoptionOpen(false)} className="p-1 text-gray-400 hover:text-gray-700">
@@ -2530,8 +2530,8 @@ export default function AdminPage({
 
             {/* Modal: 입양 동물 정보 수정 */}
             {isEditAdoptionOpen && editingAdoption && (
-              <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fade-in">
-                <div className="bg-white w-full max-w-lg shadow-2xl p-6 border border-[#ECE5D8] max-h-[90vh] overflow-y-auto">
+              <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 sm:p-6 bg-black/80 backdrop-blur-sm animate-fade-in overflow-y-auto">
+                <div className="bg-white w-full max-w-lg shadow-2xl p-6 border border-[#ECE5D8] max-h-[85vh] my-auto overflow-y-auto">
                   <div className="flex justify-between items-center mb-5 pb-3 border-b border-gray-100">
                     <div>
                       <h3 className="font-bold text-base text-[#144A42]">입양 동물 정보 수정</h3>
@@ -2846,8 +2846,8 @@ export default function AdminPage({
 
             {/* Modal: 숙소 추가 */}
             {isAddTravelOpen && (
-              <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fade-in">
-                <div className="bg-white w-full max-w-lg shadow-2xl p-6 border border-[#ECE5D8] max-h-[90vh] overflow-y-auto">
+              <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 sm:p-6 bg-black/80 backdrop-blur-sm animate-fade-in overflow-y-auto">
+                <div className="bg-white w-full max-w-lg shadow-2xl p-6 border border-[#ECE5D8] max-h-[85vh] my-auto overflow-y-auto">
                   <div className="flex justify-between items-center mb-5 pb-3 border-b border-gray-100">
                     <h3 className="font-bold text-base text-[#144A42]">신규 동반 숙소 등록</h3>
                     <button onClick={() => setIsAddTravelOpen(false)} className="p-1 text-gray-400 hover:text-gray-700">
@@ -3047,8 +3047,8 @@ export default function AdminPage({
 
             {/* Modal: 반려여행 숙소 정보 수정 */}
             {isEditTravelOpen && editingTravel && (
-              <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fade-in">
-                <div className="bg-white w-full max-w-lg shadow-2xl p-6 border border-[#ECE5D8] max-h-[90vh] overflow-y-auto">
+              <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 sm:p-6 bg-black/80 backdrop-blur-sm animate-fade-in overflow-y-auto">
+                <div className="bg-white w-full max-w-lg shadow-2xl p-6 border border-[#ECE5D8] max-h-[85vh] my-auto overflow-y-auto">
                   <div className="flex justify-between items-center mb-5 pb-3 border-b border-gray-100">
                     <div>
                       <h3 className="font-bold text-base text-[#144A42]">동반 여행지 숙소 정보 수정</h3>

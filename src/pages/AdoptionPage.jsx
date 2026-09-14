@@ -151,7 +151,7 @@ export default function AdoptionPage({ adoptionList = ADOPTION_LIST }) {
 
       {/* Consult Modal */}
       {consultModalOpen && selectedAnimal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fade-in">
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 sm:p-6 bg-black/80 backdrop-blur-sm animate-fade-in overflow-y-auto">
           <div className="bg-white w-full max-w-md p-6 shadow-2xl border border-[#E8E2D5]">
             <h3 className="text-lg font-bold text-[#144A42] mb-1">
               '{selectedAnimal.name}' 입양 상담 신청
