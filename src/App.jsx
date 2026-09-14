@@ -1105,42 +1105,16 @@ export default function App() {
           </div>
         )}
 
-        {/* Floating Buttons: 세로 정렬(flex-col), 데스크톱 및 모바일 최적화 */}
-        <div className="flex flex-col items-end gap-2">
-          {/* 1. 빠른상담 버튼 */}
-          <button
-            type="button"
-            onClick={() => setQuickConsultOpen(true)}
-            className="flex items-center gap-1.5 px-3 py-2 sm:px-3.5 sm:py-2.5 bg-[#144A42] hover:bg-[#0D3832] text-white text-[11px] sm:text-xs font-bold shadow-lg sm:shadow-xl border border-[#C5A880]/70 sm:border-[#C5A880] transition-all transform hover:scale-105 active:scale-95 cursor-pointer rounded-full sm:rounded-none"
-            title="빠른 맞춤상담 신청"
-          >
-            <HeadphoneIcon className="w-3.5 h-3.5 text-[#C5A880]" />
-            <span>빠른상담</span>
-          </button>
-
-          {/* 2. 카톡상담 버튼 */}
-          <a
-            href={brandInfo.kakaoChannelUrl || BRAND_INFO.kakaoChannelUrl || "https://pf.kakao.com"}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="flex items-center gap-1.5 px-3 py-2 sm:px-3.5 sm:py-2.5 bg-[#FEE500] hover:bg-[#FADA0A] text-[#191919] text-[11px] sm:text-xs font-bold shadow-lg sm:shadow-xl border border-amber-300 transition-all transform hover:scale-105 active:scale-95 cursor-pointer rounded-full sm:rounded-none"
-            title="카카오톡 채널 1:1 상담"
-          >
-            <KakaoIcon className="w-3.5 h-3.5" />
-            <span>카톡상담</span>
-          </a>
-
-          {/* 3. 전체 상담센터(전화/접수) 토글 버튼 */}
-          <button
-            onClick={() => setFloatingMenuOpen(!floatingMenuOpen)}
-            className="w-11 h-11 sm:w-12 sm:h-12 bg-[#144A42] hover:bg-[#0D3832] text-white flex items-center justify-center shadow-2xl transition-all transform hover:scale-105 active:scale-95 border border-[#C5A880] cursor-pointer relative rounded-full sm:rounded-none"
-            aria-label="상담센터 열기/닫기"
-            title="전화 및 전체 상담 옵션"
-          >
-            <HeadphoneIcon className="w-5 h-5 text-[#C5A880]" />
-            <span className="absolute -top-1 -right-1 w-2.5 h-2.5 sm:w-3 sm:h-3 bg-red-500 rounded-full border-2 border-white"></span>
-          </button>
-        </div>
+        {/* Floating Toggle Button (상담센터 전체 옵션 팝업) */}
+        <button
+          onClick={() => setFloatingMenuOpen(!floatingMenuOpen)}
+          className="w-13 h-13 sm:w-14 sm:h-14 p-3 bg-[#144A42] hover:bg-[#0D3832] text-white flex items-center justify-center shadow-2xl transition-all transform hover:scale-105 active:scale-95 border border-[#C5A880] cursor-pointer relative"
+          aria-label="상담 플로팅 버튼"
+          title="슬반생 상담센터"
+        >
+          <HeadphoneIcon className="w-6 h-6 text-[#C5A880]" />
+          <span className="absolute -top-1 -right-1 w-3 h-3 bg-red-500 rounded-full border-2 border-white"></span>
+        </button>
       </div>
 
       {/* Modals */}
