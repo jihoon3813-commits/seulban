@@ -499,6 +499,7 @@ export default function AdminPage({
     { id: 'adoption', label: '안심입양 관리', icon: HeartIcon, badge: adoptionList.length },
     { id: 'travel', label: '반려여행 관리', icon: HomeIcon, badge: travelList.length },
     { id: 'brand', label: '사이트·SEO 설정', icon: ShieldCheckIcon },
+    { id: 'policy', label: '약관·개인정보·상담동의', icon: FileTextIcon },
     { id: 'settings', label: '보안·계정설정', icon: ShieldCheckIcon },
   ];
 
@@ -4143,6 +4144,162 @@ export default function AdminPage({
                 >
                   <CheckIcon className="w-4 h-4 text-[#C5A880]" />
                   <span>사이트 설정 & SEO 저장하기</span>
+                </button>
+              </div>
+
+            </form>
+          </div>
+        )}
+
+        {/* ========================================================
+            TAB: 약관 · 개인정보처리방침 · 상담동의 전용 관리 (POLICY)
+            ======================================================== */}
+        {currentTab === 'policy' && (
+          <div className="space-y-6 max-w-4xl animate-fade-in">
+            <div>
+              <span className="text-xs font-bold tracking-widest text-[#B48B55] uppercase">TERMS & PRIVACY POLICIES</span>
+              <h2 className="text-2xl sm:text-3xl font-extrabold text-[#142C27] tracking-tight">
+                약관 및 개인정보 동의 문구 설정
+              </h2>
+              <p className="text-xs text-[#6B7973] mt-1">
+                사이트 푸터의 개인정보처리방침/이용약관 전문 및 빠른상담 신청 시 고객 동의 문구, 카카오톡 채널 링크를 직접 수정하고 관리합니다.
+              </p>
+            </div>
+
+            <form onSubmit={(e) => {
+              e.preventDefault();
+              onUpdateBrandInfo(brandForm);
+              showToast('약관, 개인정보처리방침 및 상담 동의 설정이 저장되었습니다.');
+            }} className="space-y-6 text-xs">
+              
+              {/* 1. 카카오 채널 및 소셜 상담 링크 */}
+              <div className="bg-white p-6 sm:p-7 border border-[#E2DDD3] shadow-xs space-y-4">
+                <div className="border-b border-gray-100 pb-3 flex items-center justify-between">
+                  <div>
+                    <h3 className="text-sm font-bold text-[#142C27] flex items-center gap-1.5">
+                      <KakaoIcon className="w-4 h-4 text-[#FEE500] fill-amber-500" />
+                      <span>카카오톡 채널 상담 및 고객 접점 URL</span>
+                    </h3>
+                    <p className="text-[11px] text-gray-500 mt-0.5">
+                      우측 하단 플로팅 메뉴의 [카톡 1:1 실시간 상담] 클릭 시 연결될 카카오톡 채널 링크입니다.
+                    </p>
+                  </div>
+                  <span className="text-[10px] bg-amber-50 text-amber-800 px-2 py-0.5 border border-amber-200 font-bold">
+                    플로팅 버튼 연동
+                  </span>
+                </div>
+
+                <div>
+                  <label className="block font-bold mb-1 text-gray-800">카카오톡 채널 상담 링크 (URL) *</label>
+                  <input
+                    type="url"
+                    value={brandForm.kakaoChannelUrl || ''}
+                    onChange={(e) => setBrandForm({ ...brandForm, kakaoChannelUrl: e.target.value })}
+                    placeholder="https://pf.kakao.com/_xxxxxx/chat"
+                    className="w-full px-3.5 py-2.5 border border-gray-300 focus:border-[#144A42] focus:outline-none font-mono"
+                    required
+                  />
+                  <p className="text-[11px] text-gray-400 mt-1">
+                    * 카카오 비즈니스 채널 1:1 채팅 URL 또는 오픈채팅방 링크를 입력하시면 방문자가 즉시 카톡으로 상담할 수 있습니다.
+                  </p>
+                </div>
+              </div>
+
+              {/* 2. 빠른 상담 신청 시 개인정보 동의 문구 */}
+              <div className="bg-white p-6 sm:p-7 border border-[#E2DDD3] shadow-xs space-y-4">
+                <div className="border-b border-gray-100 pb-3 flex items-center justify-between">
+                  <div>
+                    <h3 className="text-sm font-bold text-[#142C27] flex items-center gap-1.5">
+                      <HeadphoneIcon className="w-4 h-4 text-[#144A42]" />
+                      <span>빠른상담 신청 시 개인정보 수집 및 이용 동의 문구</span>
+                    </h3>
+                    <p className="text-[11px] text-gray-500 mt-0.5">
+                      고객이 빠른상담 모달에서 성함과 연락처를 남길 때 표시되는 법적 필수 동의 안내문입니다.
+                    </p>
+                  </div>
+                  <span className="text-[10px] bg-emerald-50 text-emerald-800 px-2 py-0.5 border border-emerald-200 font-bold">
+                    개인정보보호법 준수
+                  </span>
+                </div>
+
+                <div>
+                  <label className="block font-bold mb-1 text-gray-800">동의 안내 문구 (직접 수정 가능) *</label>
+                  <textarea
+                    rows={3}
+                    value={brandForm.consultConsent || ''}
+                    onChange={(e) => setBrandForm({ ...brandForm, consultConsent: e.target.value })}
+                    placeholder="슬반생은 빠른 맞춤 상담 및 서비스 안내를 위해 성함, 연락처, 문의 내용을 수집·이용하며, 상담 완료 및 목적 달성 후 관계 법령에 따라 안전하게 파기합니다."
+                    className="w-full px-3.5 py-2.5 border border-gray-300 focus:border-[#144A42] focus:outline-none leading-relaxed text-xs"
+                    required
+                  />
+                </div>
+              </div>
+
+              {/* 3. 개인정보처리방침 전문 수정 */}
+              <div className="bg-white p-6 sm:p-7 border border-[#E2DDD3] shadow-xs space-y-4">
+                <div className="border-b border-gray-100 pb-3 flex items-center justify-between">
+                  <div>
+                    <h3 className="text-sm font-bold text-[#142C27] flex items-center gap-1.5">
+                      <ShieldCheckIcon className="w-4 h-4 text-[#144A42]" />
+                      <span>개인정보처리방침 전문 관리</span>
+                    </h3>
+                    <p className="text-[11px] text-gray-500 mt-0.5">
+                      푸터 하단의 [개인정보처리방침] 클릭 시 팝업 뷰어에 노출되는 정식 전문입니다.
+                    </p>
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block font-bold mb-1 text-gray-800">개인정보처리방침 내용 *</label>
+                  <textarea
+                    rows={10}
+                    value={brandForm.privacyPolicy || ''}
+                    onChange={(e) => setBrandForm({ ...brandForm, privacyPolicy: e.target.value })}
+                    placeholder="개인정보처리방침 전문을 입력하세요..."
+                    className="w-full px-3.5 py-2.5 border border-gray-300 focus:border-[#144A42] focus:outline-none leading-relaxed font-sans text-[11px]"
+                    required
+                  />
+                </div>
+              </div>
+
+              {/* 4. 서비스 이용약관 전문 수정 */}
+              <div className="bg-white p-6 sm:p-7 border border-[#E2DDD3] shadow-xs space-y-4">
+                <div className="border-b border-gray-100 pb-3 flex items-center justify-between">
+                  <div>
+                    <h3 className="text-sm font-bold text-[#142C27] flex items-center gap-1.5">
+                      <FileTextIcon className="w-4 h-4 text-[#144A42]" />
+                      <span>서비스 이용약관 전문 관리</span>
+                    </h3>
+                    <p className="text-[11px] text-gray-500 mt-0.5">
+                      푸터 하단의 [이용약관] 클릭 시 팝업 뷰어에 노출되는 정식 약관입니다.
+                    </p>
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block font-bold mb-1 text-gray-800">이용약관 내용 *</label>
+                  <textarea
+                    rows={10}
+                    value={brandForm.termsOfService || ''}
+                    onChange={(e) => setBrandForm({ ...brandForm, termsOfService: e.target.value })}
+                    placeholder="서비스 이용약관 전문을 입력하세요..."
+                    className="w-full px-3.5 py-2.5 border border-gray-300 focus:border-[#144A42] focus:outline-none leading-relaxed font-sans text-[11px]"
+                    required
+                  />
+                </div>
+              </div>
+
+              {/* 하단 저장 버튼 Bar */}
+              <div className="bg-[#FAF8F5] p-4 border border-[#E2DDD3] flex items-center justify-between">
+                <span className="text-xs text-gray-500">
+                  저장 즉시 이용자 푸터 팝업 및 빠른상담 창에 실시간 반영됩니다.
+                </span>
+                <button
+                  type="submit"
+                  className="px-6 py-3 bg-[#144A42] text-white font-bold text-xs sm:text-sm hover:bg-[#0D3832] transition shadow-md flex items-center gap-2 cursor-pointer"
+                >
+                  <CheckIcon className="w-4 h-4 text-[#C5A880]" />
+                  <span>약관 및 개인정보 설정 저장하기</span>
                 </button>
               </div>
 
