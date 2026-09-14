@@ -4,7 +4,7 @@ import {
   StethoscopeIcon, FlowerIcon, SparklesIcon, ShieldCheckIcon, 
   CheckIcon, XIcon, SearchIcon, PhoneIcon, MapPinIcon, 
   ArrowRight, ClockIcon, UserIcon, ExternalLinkIcon,
-  KakaoIcon, HeadphoneIcon, MessageSquare
+  KakaoIcon, HeadphoneIcon, MessageSquare, FileTextIcon
 } from '../components/Icons';
 import { compressImage } from '../utils/imageCompressor';
 import { BRAND_INFO } from '../data/mockData';
