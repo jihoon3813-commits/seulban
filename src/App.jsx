@@ -21,6 +21,7 @@ import {
   MainPopupModal,
   MallPreparingModal
 } from './components/Modals';
+import { updateSeoMeta } from './utils/seoHelper';
 
 import { PhoneIcon, SparklesIcon, PawIcon, MessageSquare } from './components/Icons';
 import { useQuery, useMutation } from 'convex/react';
@@ -258,6 +259,13 @@ export default function App() {
     return saved ? JSON.parse(saved) : BRAND_INFO;
   });
   const brandInfo = convexBrand || localBrandInfo;
+
+  // Real-time SEO Meta and Favicon synchronization
+  useEffect(() => {
+    if (brandInfo) {
+      updateSeoMeta(brandInfo);
+    }
+  }, [brandInfo]);
 
   // Popups State
   const [localPopups, setLocalPopups] = useState(() => {

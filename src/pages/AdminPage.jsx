@@ -6,6 +6,7 @@ import {
   ArrowRight, ClockIcon, UserIcon, ExternalLinkIcon
 } from '../components/Icons';
 import { compressImage } from '../utils/imageCompressor';
+import { BRAND_INFO } from '../data/mockData';
 
 export default function AdminPage({
   onNavigateHome,
@@ -261,8 +262,70 @@ export default function AdminPage({
     confirmPwd: ''
   });
 
-  // Brand edit state
-  const [brandForm, setBrandForm] = useState({ ...brandInfo });
+  // Brand & SEO edit state
+  const [brandForm, setBrandForm] = useState(() => ({
+    ogImage: BRAND_INFO.ogImage,
+    favicon: BRAND_INFO.favicon,
+    siteTitle: BRAND_INFO.siteTitle,
+    siteDescription: BRAND_INFO.siteDescription,
+    keywords: BRAND_INFO.keywords,
+    canonicalUrl: BRAND_INFO.canonicalUrl,
+    robots: BRAND_INFO.robots,
+    author: BRAND_INFO.author,
+    phone1: BRAND_INFO.phone1,
+    phone2: BRAND_INFO.phone2,
+    email: BRAND_INFO.email,
+    address: BRAND_INFO.address,
+    bizNumber: BRAND_INFO.bizNumber,
+    mallUrl: BRAND_INFO.mallUrl,
+    ...(brandInfo || {})
+  }));
+
+  React.useEffect(() => {
+    if (brandInfo) {
+      setBrandForm(prev => ({
+        ...prev,
+        ...brandInfo
+      }));
+    }
+  }, [brandInfo]);
+
+  // SEO Settings Sub-tabs and upload modes
+  const [seoInnerTab, setSeoInnerTab] = useState('seo'); // 'seo' | 'preview' | 'company'
+  const [ogImageMode, setOgImageMode] = useState('upload'); // 'upload' | 'url'
+  const [faviconMode, setFaviconMode] = useState('upload'); // 'upload' | 'url'
+
+  const handleOgImageUpload = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    try {
+      // 1200x630 ratio compressed image
+      const compressed = await compressImage(file, 1200, 630, 0.85);
+      setBrandForm(prev => ({ ...prev, ogImage: compressed }));
+    } catch (err) {
+      const reader = new FileReader();
+      reader.onload = (uploadEvent) => {
+        setBrandForm(prev => ({ ...prev, ogImage: uploadEvent.target.result }));
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const handleFaviconUpload = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    try {
+      // 128x128 favicon
+      const compressed = await compressImage(file, 128, 128, 0.9);
+      setBrandForm(prev => ({ ...prev, favicon: compressed }));
+    } catch (err) {
+      const reader = new FileReader();
+      reader.onload = (uploadEvent) => {
+        setBrandForm(prev => ({ ...prev, favicon: uploadEvent.target.result }));
+      };
+      reader.readAsDataURL(file);
+    }
+  };
 
   // Handle Login
   const handleLogin = (e) => {
@@ -461,7 +524,7 @@ export default function AdminPage({
                 { id: 'partners', label: `제휴처 관리 (${partners.length})` },
                 { id: 'adoption', label: `안심입양 관리 (${adoptionList.length})` },
                 { id: 'travel', label: `반려여행 관리 (${travelList.length})` },
-                { id: 'brand', label: '브랜드·고객센터' },
+                { id: 'brand', label: '사이트·SEO 설정' },
                 { id: 'settings', label: '보안·계정설정' },
               ].map((tab) => (
                 <button
@@ -507,7 +570,7 @@ export default function AdminPage({
             { id: 'partners', label: '제휴처' },
             { id: 'adoption', label: '안심입양' },
             { id: 'travel', label: '반려여행' },
-            { id: 'brand', label: '브랜드정보' },
+            { id: 'brand', label: '사이트·SEO' },
             { id: 'settings', label: '비밀번호설정' },
           ].map((tab) => (
             <button
@@ -3067,90 +3130,534 @@ export default function AdminPage({
         )}
 
         {/* ========================================================
-            TAB 6: 브랜드 및 고객센터 설정 (BRAND)
+            TAB 6: 사이트 설정 & SEO 최적화 (BRAND & SEO)
             ======================================================== */}
         {currentTab === 'brand' && (
-          <div className="space-y-6 max-w-3xl animate-fade-in">
-            <div>
-              <span className="text-xs font-bold tracking-widest text-[#B48B55] uppercase">COMPANY INFO</span>
-              <h2 className="text-2xl sm:text-3xl font-extrabold text-[#142C27] tracking-tight">
-                브랜드 및 고객센터 정보 설정
-              </h2>
-              <p className="text-xs text-[#6B7973] mt-1">
-                웹사이트 상단바, 푸터, 긴급 전화 플로팅 버튼에 노출되는 연락처 및 사업자 정보를 관리합니다.
-              </p>
+          <div className="space-y-6 max-w-4xl animate-fade-in">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+              <div>
+                <span className="text-xs font-bold tracking-widest text-[#B48B55] uppercase">SITE & SEO SETTINGS</span>
+                <h2 className="text-2xl sm:text-3xl font-extrabold text-[#142C27] tracking-tight">
+                  사이트 설정 & SEO 최적화
+                </h2>
+                <p className="text-xs text-[#6B7973] mt-1">
+                  카카오톡 공유 대표 이미지(1200×630), 파비콘, 사이트 설명 문구, 포털 검색엔진(SEO) 최적화 메타태그를 관리합니다.
+                </p>
+              </div>
+
+              {/* Sub-tab Pills */}
+              <div className="flex items-center bg-[#FAF8F5] p-1 border border-[#E2DDD3] text-xs">
+                <button
+                  type="button"
+                  onClick={() => setSeoInnerTab('seo')}
+                  className={`px-3.5 py-1.5 font-bold transition ${
+                    seoInnerTab === 'seo' ? 'bg-[#144A42] text-white shadow-xs' : 'text-gray-600 hover:text-black'
+                  }`}
+                >
+                  SEO·대표이미지·파비콘
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setSeoInnerTab('preview')}
+                  className={`px-3.5 py-1.5 font-bold transition flex items-center gap-1 ${
+                    seoInnerTab === 'preview' ? 'bg-[#144A42] text-white shadow-xs' : 'text-gray-600 hover:text-black'
+                  }`}
+                >
+                  <span>미리보기 시뮬레이터</span>
+                  <span className="w-1.5 h-1.5 rounded-full bg-[#C5A880]"></span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setSeoInnerTab('company')}
+                  className={`px-3.5 py-1.5 font-bold transition ${
+                    seoInnerTab === 'company' ? 'bg-[#144A42] text-white shadow-xs' : 'text-gray-600 hover:text-black'
+                  }`}
+                >
+                  회사·고객센터 정보
+                </button>
+              </div>
             </div>
 
             <form onSubmit={(e) => {
               e.preventDefault();
               onUpdateBrandInfo(brandForm);
-              showToast('브랜드 및 고객센터 정보가 업데이트되었습니다.');
-            }} className="bg-white p-6 sm:p-8 border border-[#E2DDD3] shadow-xs space-y-5 text-xs">
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div>
-                  <label className="block font-bold mb-1">일반 고객센터 전화번호</label>
-                  <input
-                    type="text"
-                    value={brandForm.phone1}
-                    onChange={(e) => setBrandForm({...brandForm, phone1: e.target.value})}
-                    className="w-full px-3.5 py-2.5 border border-gray-300 focus:border-[#144A42] focus:outline-none"
-                    required
-                  />
+              showToast('사이트 설정 및 SEO 정보가 저장되었습니다. 브라우저에 실시간 반영됩니다.');
+            }} className="space-y-6">
+
+              {/* ----------------------------------------------------
+                  SUB-TAB 1: SEO, 대표이미지 (1200x630), 파비콘, 설명문구
+                  ---------------------------------------------------- */}
+              {seoInnerTab === 'seo' && (
+                <div className="space-y-6">
+                  
+                  {/* 1. 대표 이미지 (카카오톡/SNS 공유 1200x630) */}
+                  <div className="bg-white p-6 sm:p-7 border border-[#E2DDD3] shadow-xs space-y-4">
+                    <div className="flex items-center justify-between border-b border-gray-100 pb-3">
+                      <div>
+                        <div className="flex items-center gap-2">
+                          <h3 className="text-sm font-bold text-[#142C27]">
+                            대표 이미지 (카카오톡·SNS 공유용 OG Image)
+                          </h3>
+                          <span className="px-2 py-0.5 bg-[#EBF5F2] text-[#144A42] text-[11px] font-bold rounded-sm border border-[#144A42]/20">
+                            권장 규격 1200 × 630 px (1.91:1 비율)
+                          </span>
+                        </div>
+                        <p className="text-[11px] text-gray-500 mt-0.5">
+                          카카오톡 채팅방, 페이스북, 인스타그램, 슬랙 등 링크를 전송했을 때 말풍선 상단에 뜨는 고해상도 대표 이미지입니다.
+                        </p>
+                      </div>
+                      
+                      {/* Mode Toggle */}
+                      <div className="flex text-xs border border-gray-200">
+                        <button
+                          type="button"
+                          onClick={() => setOgImageMode('upload')}
+                          className={`px-2.5 py-1 ${ogImageMode === 'upload' ? 'bg-[#144A42] text-white font-bold' : 'bg-gray-50 text-gray-600'}`}
+                        >
+                          파일 업로드
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => setOgImageMode('url')}
+                          className={`px-2.5 py-1 ${ogImageMode === 'url' ? 'bg-[#144A42] text-white font-bold' : 'bg-gray-50 text-gray-600'}`}
+                        >
+                          URL 입력
+                        </button>
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-12 gap-5 items-start">
+                      {/* Left: Input controls */}
+                      <div className="md:col-span-6 space-y-3">
+                        {ogImageMode === 'upload' ? (
+                          <div className="space-y-2">
+                            <label className="block text-xs font-semibold text-gray-700">
+                              이미지 파일 선택 (JPG, PNG, WebP)
+                            </label>
+                            <input
+                              type="file"
+                              accept="image/*"
+                              onChange={handleOgImageUpload}
+                              className="w-full text-xs text-gray-500 file:mr-3 file:py-2 file:px-4 file:border-0 file:text-xs file:font-semibold file:bg-[#144A42] file:text-white hover:file:bg-[#0D3832] cursor-pointer"
+                            />
+                            <p className="text-[11px] text-gray-400">
+                              * 선택하신 이미지는 1200×630 해상도에 최적화되어 자동 리사이징 및 압축됩니다.
+                            </p>
+                          </div>
+                        ) : (
+                          <div className="space-y-1">
+                            <label className="block text-xs font-semibold text-gray-700">대표 이미지 웹 URL</label>
+                            <input
+                              type="url"
+                              value={brandForm.ogImage || ''}
+                              onChange={(e) => setBrandForm({ ...brandForm, ogImage: e.target.value })}
+                              placeholder="https://..."
+                              className="w-full px-3.5 py-2 text-xs border border-gray-300 focus:border-[#144A42] focus:outline-none"
+                            />
+                          </div>
+                        )}
+
+                        <div className="p-3 bg-[#FAF8F5] border border-[#ECE5D8] text-[11px] text-gray-600 space-y-1">
+                          <span className="font-bold text-[#144A42]">💡 카카오톡 공유 꿀팁</span>
+                          <p>
+                            카카오톡은 1200×630 (1.91:1) 비율의 이미지를 가장 왜곡 없이 선명하게 보여줍니다. 텍스트가 들어간 배너를 사용할 경우 중앙에 배치하면 모바일 화면에서도 잘리지 않습니다.
+                          </p>
+                        </div>
+                      </div>
+
+                      {/* Right: 1200x630 Aspect Ratio Preview */}
+                      <div className="md:col-span-6">
+                        <span className="block text-[11px] font-bold text-gray-500 mb-1">
+                          현재 설정된 대표 이미지 미리보기 (1200 × 630)
+                        </span>
+                        <div className="relative aspect-[1200/630] w-full bg-[#1F2C27] rounded-md overflow-hidden border border-[#E2DDD3] shadow-inner flex items-center justify-center">
+                          {brandForm.ogImage ? (
+                            <img
+                              src={brandForm.ogImage}
+                              alt="대표 이미지 미리보기"
+                              className="w-full h-full object-cover"
+                            />
+                          ) : (
+                            <span className="text-xs text-gray-400">등록된 대표 이미지가 없습니다.</span>
+                          )}
+                          <div className="absolute top-2 right-2 bg-black/60 backdrop-blur-xs text-white text-[10px] px-2 py-0.5 rounded font-mono">
+                            1200 × 630
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* 2. 파비콘 (Favicon) & 브라우저 탭 설정 */}
+                  <div className="bg-white p-6 sm:p-7 border border-[#E2DDD3] shadow-xs space-y-4">
+                    <div className="flex items-center justify-between border-b border-gray-100 pb-3">
+                      <div>
+                        <div className="flex items-center gap-2">
+                          <h3 className="text-sm font-bold text-[#142C27]">
+                            파비콘 (Favicon - 브라우저 탭 아이콘)
+                          </h3>
+                          <span className="px-2 py-0.5 bg-[#F2EDE2] text-[#8C6D3F] text-[11px] font-bold rounded-sm border border-[#C5A880]/30">
+                            SVG, PNG, ICO 지원
+                          </span>
+                        </div>
+                        <p className="text-[11px] text-gray-500 mt-0.5">
+                          인터넷 브라우저 탭, 즐겨찾기(북마크), 모바일 홈 화면 추가 시 표시되는 대표 아이콘입니다.
+                        </p>
+                      </div>
+
+                      {/* Favicon Mode Toggle */}
+                      <div className="flex text-xs border border-gray-200">
+                        <button
+                          type="button"
+                          onClick={() => setFaviconMode('upload')}
+                          className={`px-2.5 py-1 ${faviconMode === 'upload' ? 'bg-[#144A42] text-white font-bold' : 'bg-gray-50 text-gray-600'}`}
+                        >
+                          파일 업로드
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => setFaviconMode('url')}
+                          className={`px-2.5 py-1 ${faviconMode === 'url' ? 'bg-[#144A42] text-white font-bold' : 'bg-gray-50 text-gray-600'}`}
+                        >
+                          URL 입력
+                        </button>
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-12 gap-5 items-center">
+                      <div className="md:col-span-6 space-y-3">
+                        {faviconMode === 'upload' ? (
+                          <div className="space-y-1">
+                            <label className="block text-xs font-semibold text-gray-700">파비콘 이미지 파일 선택</label>
+                            <input
+                              type="file"
+                              accept="image/*"
+                              onChange={handleFaviconUpload}
+                              className="w-full text-xs text-gray-500 file:mr-3 file:py-1.5 file:px-3 file:border-0 file:text-xs file:font-semibold file:bg-[#144A42] file:text-white hover:file:bg-[#0D3832] cursor-pointer"
+                            />
+                          </div>
+                        ) : (
+                          <div className="space-y-1">
+                            <label className="block text-xs font-semibold text-gray-700">파비콘 이미지 URL 또는 DataURL</label>
+                            <input
+                              type="text"
+                              value={brandForm.favicon || ''}
+                              onChange={(e) => setBrandForm({ ...brandForm, favicon: e.target.value })}
+                              placeholder="/favicon.svg 또는 https://..."
+                              className="w-full px-3.5 py-2 text-xs border border-gray-300 focus:border-[#144A42] focus:outline-none font-mono"
+                            />
+                          </div>
+                        )}
+                      </div>
+
+                      {/* Favicon Browser Tab Mockup */}
+                      <div className="md:col-span-6">
+                        <span className="block text-[11px] font-bold text-gray-500 mb-1.5">
+                          브라우저 탭 실시간 미리보기
+                        </span>
+                        <div className="bg-[#DFE1E5] pt-2 px-2 pb-0 rounded-t-lg border border-gray-300">
+                          <div className="bg-white px-3 py-2 rounded-t-md shadow-xs flex items-center gap-2 max-w-[240px] border-t border-x border-gray-300">
+                            <img
+                              src={brandForm.favicon || '/favicon.svg'}
+                              alt="파비콘"
+                              className="w-4 h-4 object-contain shrink-0"
+                            />
+                            <span className="text-xs text-gray-800 font-medium truncate">
+                              {brandForm.siteTitle || '슬반생 | 슬기로운 반려생활'}
+                            </span>
+                            <span className="text-gray-400 hover:text-black text-xs ml-auto">×</span>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* 3. 사이트 설명 문구 & SEO 메타데이터 */}
+                  <div className="bg-white p-6 sm:p-7 border border-[#E2DDD3] shadow-xs space-y-4">
+                    <div className="border-b border-gray-100 pb-3">
+                      <h3 className="text-sm font-bold text-[#142C27]">
+                        사이트 기본 설명 문구 & 검색엔진 최적화 (SEO)
+                      </h3>
+                      <p className="text-[11px] text-gray-500 mt-0.5">
+                        네이버, 구글, 다음 등 포털 검색결과 스니펫과 카카오톡 공유 카드 본문에 표기되는 안내 문구입니다.
+                      </p>
+                    </div>
+
+                    <div className="space-y-4 text-xs">
+                      {/* Site Title */}
+                      <div>
+                        <div className="flex justify-between items-center mb-1">
+                          <label className="font-bold text-gray-800">사이트 메타 타이틀 (Title Tag) *</label>
+                          <span className="text-[11px] text-gray-400">
+                            {(brandForm.siteTitle || '').length}자 (권장 30~50자)
+                          </span>
+                        </div>
+                        <input
+                          type="text"
+                          value={brandForm.siteTitle || ''}
+                          onChange={(e) => setBrandForm({ ...brandForm, siteTitle: e.target.value })}
+                          className="w-full px-3.5 py-2.5 border border-gray-300 focus:border-[#144A42] focus:outline-none font-semibold text-gray-800"
+                          placeholder="슬반생 | 슬기로운 반려생활 - 동물등록부터 평생케어까지"
+                          required
+                        />
+                      </div>
+
+                      {/* Site Description */}
+                      <div>
+                        <div className="flex justify-between items-center mb-1">
+                          <label className="font-bold text-gray-800">사이트 설명 문구 (Meta Description) *</label>
+                          <div className="flex items-center gap-1.5">
+                            <span className={`text-[11px] font-semibold ${
+                              (brandForm.siteDescription || '').length >= 60 && (brandForm.siteDescription || '').length <= 130
+                                ? 'text-emerald-600'
+                                : 'text-amber-600'
+                            }`}>
+                              {(brandForm.siteDescription || '').length}자
+                            </span>
+                            <span className="text-[10px] bg-gray-100 px-1.5 py-0.5 text-gray-500">
+                              포털 권장: 80~120자
+                            </span>
+                          </div>
+                        </div>
+                        <textarea
+                          rows={3}
+                          value={brandForm.siteDescription || ''}
+                          onChange={(e) => setBrandForm({ ...brandForm, siteDescription: e.target.value })}
+                          className="w-full px-3.5 py-2.5 border border-gray-300 focus:border-[#144A42] focus:outline-none leading-relaxed"
+                          placeholder="반려동물 평생의 동반자, 슬반생! 모바일 동물등록 3분 완료부터 제휴 병원·펜션 30% 멤버십 혜택, 24시 긴급상담, 안심입양, 장례케어까지 우리 아이의 처음부터 끝까지 함께합니다."
+                          required
+                        />
+                        <p className="text-[11px] text-gray-400 mt-1">
+                          * 검색 사용자의 시선을 사로잡는 구체적인 혜택과 키워드를 조합하면 클릭률(CTR)이 대폭 상승합니다.
+                        </p>
+                      </div>
+
+                      {/* Keywords */}
+                      <div>
+                        <label className="block font-bold mb-1 text-gray-800">
+                          검색엔진 최적화 키워드 (Meta Keywords - 쉼표로 구분)
+                        </label>
+                        <input
+                          type="text"
+                          value={brandForm.keywords || ''}
+                          onChange={(e) => setBrandForm({ ...brandForm, keywords: e.target.value })}
+                          placeholder="슬반생, 슬기로운반려생활, 동물등록, 강아지등록, 외장칩..."
+                          className="w-full px-3.5 py-2.5 border border-gray-300 focus:border-[#144A42] focus:outline-none text-gray-700"
+                        />
+                      </div>
+
+                      {/* Canonical URL & Robots */}
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div>
+                          <label className="block font-bold mb-1 text-gray-800">사이트 대표 URL (Canonical / OG URL)</label>
+                          <input
+                            type="url"
+                            value={brandForm.canonicalUrl || 'https://www.seulbanlife.com'}
+                            onChange={(e) => setBrandForm({ ...brandForm, canonicalUrl: e.target.value })}
+                            className="w-full px-3.5 py-2.5 border border-gray-300 focus:border-[#144A42] focus:outline-none"
+                            required
+                          />
+                        </div>
+
+                        <div>
+                          <label className="block font-bold mb-1 text-gray-800">검색 로봇 색인 제어 (Robots)</label>
+                          <select
+                            value={brandForm.robots || 'index, follow'}
+                            onChange={(e) => setBrandForm({ ...brandForm, robots: e.target.value })}
+                            className="w-full px-3.5 py-2.5 border border-gray-300 focus:border-[#144A42] focus:outline-none bg-white"
+                          >
+                            <option value="index, follow">index, follow (검색엔진 색인 및 수집 허용 - 권장)</option>
+                            <option value="noindex, nofollow">noindex, nofollow (검색엔진 노출 완전 차단)</option>
+                          </select>
+                        </div>
+                      </div>
+
+                    </div>
+                  </div>
+
                 </div>
+              )}
 
-                <div>
-                  <label className="block font-bold mb-1">24시 긴급 응급/장례 직통번호</label>
-                  <input
-                    type="text"
-                    value={brandForm.phone2}
-                    onChange={(e) => setBrandForm({...brandForm, phone2: e.target.value})}
-                    className="w-full px-3.5 py-2.5 border border-gray-300 focus:border-[#144A42] focus:outline-none"
-                    required
-                  />
+              {/* ----------------------------------------------------
+                  SUB-TAB 2: 실시간 소셜 & 포털 검색 시뮬레이터 (미리보기)
+                  ---------------------------------------------------- */}
+              {seoInnerTab === 'preview' && (
+                <div className="space-y-6">
+                  
+                  {/* 1. 카카오톡 말풍선 공유 미리보기 */}
+                  <div className="bg-[#B2C7D9] p-6 sm:p-8 rounded-lg shadow-xs space-y-3">
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs font-bold text-[#2A3744] flex items-center gap-1.5">
+                        <span className="w-2.5 h-2.5 bg-[#FEE500] rounded-full"></span>
+                        카카오톡 링크 공유 말풍선 시뮬레이터 (1200×630 OG Image 연동)
+                      </span>
+                      <span className="text-[11px] bg-white/70 px-2 py-0.5 rounded text-gray-600 font-medium">
+                        채팅방 실제 표시 뷰
+                      </span>
+                    </div>
+
+                    {/* Kakao Bubble Card */}
+                    <div className="max-w-sm bg-white rounded-xl overflow-hidden shadow-md border border-black/5 mx-auto">
+                      {/* 1200x630 Image Container */}
+                      <div className="aspect-[1200/630] w-full bg-[#144A42] relative overflow-hidden">
+                        {brandForm.ogImage ? (
+                          <img
+                            src={brandForm.ogImage}
+                            alt="카톡 미리보기"
+                            className="w-full h-full object-cover"
+                          />
+                        ) : (
+                          <div className="flex items-center justify-center h-full text-white text-xs">
+                            대표 이미지 없음 (1200×630)
+                          </div>
+                        )}
+                      </div>
+
+                      {/* Content Box */}
+                      <div className="p-3.5 space-y-1">
+                        <h4 className="text-sm font-bold text-gray-900 leading-snug line-clamp-1">
+                          {brandForm.siteTitle || '슬반생 | 슬기로운 반려생활'}
+                        </h4>
+                        <p className="text-xs text-gray-600 leading-relaxed line-clamp-2">
+                          {brandForm.siteDescription || '우리 아이의 오늘부터 모든 내일까지'}
+                        </p>
+                        <span className="text-[11px] text-gray-400 block pt-1">
+                          {(brandForm.canonicalUrl || 'https://www.seulbanlife.com').replace(/^https?:\/\//, '')}
+                        </span>
+                      </div>
+                    </div>
+
+                    <p className="text-center text-[11px] text-gray-600">
+                      친구에게 슬반생 링크를 전송하면 위와 같이 신뢰도 높은 카드 형태로 전송됩니다.
+                    </p>
+                  </div>
+
+                  {/* 2. 네이버 & 구글 포털 검색결과 스니펫 시뮬레이터 */}
+                  <div className="bg-white p-6 sm:p-8 border border-[#E2DDD3] shadow-xs space-y-4">
+                    <div className="border-b border-gray-100 pb-3 flex items-center justify-between">
+                      <h3 className="text-sm font-bold text-[#142C27]">
+                        네이버 / 구글 포털 검색결과 스니펫 시뮬레이터
+                      </h3>
+                      <span className="text-[11px] text-gray-400 font-mono">SERP Preview</span>
+                    </div>
+
+                    {/* Google / Naver Result Box */}
+                    <div className="p-4 sm:p-5 bg-[#FAF8F5] border border-[#E5E0D5] rounded space-y-2">
+                      <div className="flex items-center gap-2 text-xs text-gray-700">
+                        <img
+                          src={brandForm.favicon || '/favicon.svg'}
+                          alt="파비콘"
+                          className="w-4 h-4 object-contain"
+                        />
+                        <span className="font-semibold">{brandForm.fullName || '슬기로운 반려생활'}</span>
+                        <span className="text-gray-400">›</span>
+                        <span className="text-gray-400 text-[11px]">{brandForm.canonicalUrl || 'https://www.seulbanlife.com'}</span>
+                      </div>
+
+                      <a 
+                        href="#preview" 
+                        onClick={(e) => e.preventDefault()}
+                        className="text-base sm:text-lg font-semibold text-[#1A0DAB] hover:underline block leading-snug cursor-pointer"
+                      >
+                        {brandForm.siteTitle || '슬반생 | 슬기로운 반려생활 - 동물등록부터 평생케어까지'}
+                      </a>
+
+                      <p className="text-xs text-[#4D5156] leading-relaxed line-clamp-2">
+                        {brandForm.siteDescription || '모바일 동물등록, 건강·의료, 미용, 반려여행, 입양, 아름다운 이별까지. 반려동물의 평생을 함께하는 슬반생입니다.'}
+                      </p>
+                    </div>
+
+                    <div className="text-[11px] text-gray-500 bg-gray-50 p-3 rounded">
+                      💡 포털 사이트(네이버 웹마스터도구, 구글 서치콘솔)는 위 메타데이터를 기반으로 색인하여 검색 사용자에게 사이트를 추천합니다.
+                    </div>
+                  </div>
+
                 </div>
-              </div>
+              )}
 
-              <div>
-                <label className="block font-bold mb-1">대표 이메일 주소</label>
-                <input
-                  type="email"
-                  value={brandForm.email}
-                  onChange={(e) => setBrandForm({...brandForm, email: e.target.value})}
-                  className="w-full px-3.5 py-2.5 border border-gray-300 focus:border-[#144A42] focus:outline-none"
-                  required
-                />
-              </div>
+              {/* ----------------------------------------------------
+                  SUB-TAB 3: 기존 회사 정보 & 고객센터 정보
+                  ---------------------------------------------------- */}
+              {seoInnerTab === 'company' && (
+                <div className="bg-white p-6 sm:p-8 border border-[#E2DDD3] shadow-xs space-y-5 text-xs">
+                  <div className="border-b border-gray-100 pb-3">
+                    <h3 className="text-sm font-bold text-[#142C27]">회사 기본 및 고객센터 연락처</h3>
+                    <p className="text-[11px] text-gray-500 mt-0.5">푸터와 고객센터 플로팅 상담창에 노출되는 연락처입니다.</p>
+                  </div>
 
-              <div>
-                <label className="block font-bold mb-1">슬반생몰 쇼핑몰 외부 URL</label>
-                <input
-                  type="url"
-                  value={brandForm.mallUrl}
-                  onChange={(e) => setBrandForm({...brandForm, mallUrl: e.target.value})}
-                  className="w-full px-3.5 py-2.5 border border-gray-300 focus:border-[#144A42] focus:outline-none"
-                  required
-                />
-              </div>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                      <label className="block font-bold mb-1">일반 고객센터 전화번호</label>
+                      <input
+                        type="text"
+                        value={brandForm.phone1 || ''}
+                        onChange={(e) => setBrandForm({...brandForm, phone1: e.target.value})}
+                        className="w-full px-3.5 py-2.5 border border-gray-300 focus:border-[#144A42] focus:outline-none"
+                        required
+                      />
+                    </div>
 
-              <div>
-                <label className="block font-bold mb-1">회사 주소</label>
-                <input
-                  type="text"
-                  value={brandForm.address}
-                  onChange={(e) => setBrandForm({...brandForm, address: e.target.value})}
-                  className="w-full px-3.5 py-2.5 border border-gray-300 focus:border-[#144A42] focus:outline-none"
-                  required
-                />
-              </div>
+                    <div>
+                      <label className="block font-bold mb-1">24시 긴급 응급/장례 직통번호</label>
+                      <input
+                        type="text"
+                        value={brandForm.phone2 || ''}
+                        onChange={(e) => setBrandForm({...brandForm, phone2: e.target.value})}
+                        className="w-full px-3.5 py-2.5 border border-gray-300 focus:border-[#144A42] focus:outline-none"
+                        required
+                      />
+                    </div>
+                  </div>
 
-              <div className="pt-2">
+                  <div>
+                    <label className="block font-bold mb-1">대표 이메일 주소</label>
+                    <input
+                      type="email"
+                      value={brandForm.email || ''}
+                      onChange={(e) => setBrandForm({...brandForm, email: e.target.value})}
+                      className="w-full px-3.5 py-2.5 border border-gray-300 focus:border-[#144A42] focus:outline-none"
+                      required
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block font-bold mb-1">슬반생몰 쇼핑몰 외부 URL</label>
+                    <input
+                      type="url"
+                      value={brandForm.mallUrl || ''}
+                      onChange={(e) => setBrandForm({...brandForm, mallUrl: e.target.value})}
+                      className="w-full px-3.5 py-2.5 border border-gray-300 focus:border-[#144A42] focus:outline-none"
+                      required
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block font-bold mb-1">회사 주소</label>
+                    <input
+                      type="text"
+                      value={brandForm.address || ''}
+                      onChange={(e) => setBrandForm({...brandForm, address: e.target.value})}
+                      className="w-full px-3.5 py-2.5 border border-gray-300 focus:border-[#144A42] focus:outline-none"
+                      required
+                    />
+                  </div>
+                </div>
+              )}
+
+              {/* 하단 저장 버튼 Bar */}
+              <div className="bg-[#FAF8F5] p-4 border border-[#E2DDD3] flex items-center justify-between">
+                <span className="text-xs text-gray-500">
+                  변경 사항은 저장 즉시 Convex 데이터베이스와 브라우저 DOM 메타태그에 실시간 동기화됩니다.
+                </span>
                 <button
                   type="submit"
-                  className="px-6 py-3 bg-[#144A42] text-white font-bold hover:bg-[#0D3832] transition shadow-xs"
+                  className="px-6 py-3 bg-[#144A42] text-white font-bold text-xs sm:text-sm hover:bg-[#0D3832] transition shadow-md flex items-center gap-2 cursor-pointer"
                 >
-                  기본 정보 저장하기
+                  <CheckIcon className="w-4 h-4 text-[#C5A880]" />
+                  <span>사이트 설정 & SEO 저장하기</span>
                 </button>
               </div>
+
             </form>
           </div>
         )}

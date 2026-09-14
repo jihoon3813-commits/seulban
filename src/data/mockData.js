@@ -9,6 +9,24 @@ export const BRAND_INFO = {
   address: "서울특별시 강남구 테헤란로 123 슬반생 빌딩 5층",
   bizNumber: "123-45-67890",
   mallUrl: "https://mall.seulbanlife.com",
+
+  // === SEO & 사이트 최적화 설정 ===
+  // 1. 대표 이미지 (카카오톡, 페이스북 등 SNS 공유 시 1200*630)
+  ogImage: "https://res.cloudinary.com/lyjyvy54/image/upload/v1789268626/ChatGPT_Image_2026%EB%85%84_9%EC%9B%94_13%EC%9D%BC_%EC%98%A4%ED%9B%84_12_03_30_6_e9hvro.png",
+  // 2. 파비콘 (브라우저 탭 아이콘)
+  favicon: "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23144A42'><circle cx='12' cy='12' r='10'/><path d='M10 8c0 .5-.3 1-.7 1.3-.4.3-.8.7-.8 1.2 0 .8.7 1.5 1.5 1.5h4c.8 0 1.5-.7 1.5-1.5 0-.5-.4-.9-.8-1.2-.4-.3-.7-.8-.7-1.3' fill='white'/><circle cx='8.5' cy='6.5' r='1.5' fill='white'/><circle cx='15.5' cy='6.5' r='1.5' fill='white'/></svg>",
+  // 3. 사이트 메타 타이틀
+  siteTitle: "슬반생 | 슬기로운 반려생활 - 동물등록부터 평생케어까지",
+  // 4. 사이트 설명 문구 (포털 검색 & 카카오톡 요약)
+  siteDescription: "반려동물 평생의 동반자, 슬반생! 모바일 동물등록 3분 완료부터 제휴 병원·펜션 30% 멤버십 혜택, 24시 긴급상담, 안심입양, 장례케어까지 우리 아이의 처음부터 끝까지 함께합니다.",
+  // 5. 검색엔진 최적화 키워드
+  keywords: "슬반생, 슬기로운반려생활, 동물등록, 강아지등록, 고양이등록, 외장칩, 반려동물등록, 펫케어, 반려동물병원할인, 반려동물여행, 24시동물응급, 안심입양, 반려동물장례",
+  // 6. 대표 사이트 URL
+  canonicalUrl: "https://www.seulbanlife.com",
+  // 7. 검색 로봇 제어
+  robots: "index, follow",
+  // 8. 작성자 / 소유자
+  author: "주식회사 슬기로운 반려생활"
 };
 
 // 6 Core Life-Cycle Services
