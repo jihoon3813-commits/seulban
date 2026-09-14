@@ -262,36 +262,24 @@ export default function AdminPage({
     confirmPwd: ''
   });
 
-  // Brand & SEO edit state
+  // Brand, SEO & Footer edit state
   const [brandForm, setBrandForm] = useState(() => ({
-    ogImage: BRAND_INFO.ogImage,
-    favicon: BRAND_INFO.favicon,
-    siteTitle: BRAND_INFO.siteTitle,
-    siteDescription: BRAND_INFO.siteDescription,
-    keywords: BRAND_INFO.keywords,
-    canonicalUrl: BRAND_INFO.canonicalUrl,
-    robots: BRAND_INFO.robots,
-    author: BRAND_INFO.author,
-    phone1: BRAND_INFO.phone1,
-    phone2: BRAND_INFO.phone2,
-    email: BRAND_INFO.email,
-    address: BRAND_INFO.address,
-    bizNumber: BRAND_INFO.bizNumber,
-    mallUrl: BRAND_INFO.mallUrl,
+    ...BRAND_INFO,
     ...(brandInfo || {})
   }));
 
   React.useEffect(() => {
     if (brandInfo) {
       setBrandForm(prev => ({
+        ...BRAND_INFO,
         ...prev,
         ...brandInfo
       }));
     }
   }, [brandInfo]);
 
-  // SEO Settings Sub-tabs and upload modes
-  const [seoInnerTab, setSeoInnerTab] = useState('seo'); // 'seo' | 'preview' | 'company'
+  // SEO & Footer Settings Sub-tabs: 'seo' | 'preview' | 'footer'
+  const [seoInnerTab, setSeoInnerTab] = useState('seo');
   const [ogImageMode, setOgImageMode] = useState('upload'); // 'upload' | 'url'
   const [faviconMode, setFaviconMode] = useState('upload'); // 'upload' | 'url'
 
@@ -3168,12 +3156,13 @@ export default function AdminPage({
                 </button>
                 <button
                   type="button"
-                  onClick={() => setSeoInnerTab('company')}
-                  className={`px-3.5 py-1.5 font-bold transition ${
-                    seoInnerTab === 'company' ? 'bg-[#144A42] text-white shadow-xs' : 'text-gray-600 hover:text-black'
+                  onClick={() => setSeoInnerTab('footer')}
+                  className={`px-3.5 py-1.5 font-bold transition flex items-center gap-1.5 ${
+                    seoInnerTab === 'footer' ? 'bg-[#144A42] text-white shadow-xs' : 'text-gray-600 hover:text-black'
                   }`}
                 >
-                  회사·고객센터 정보
+                  <span>푸터정보 관리</span>
+                  <span className="w-1.5 h-1.5 rounded-full bg-[#D4AF7A]"></span>
                 </button>
               </div>
             </div>
@@ -3576,71 +3565,347 @@ export default function AdminPage({
               )}
 
               {/* ----------------------------------------------------
-                  SUB-TAB 3: 기존 회사 정보 & 고객센터 정보
+                  SUB-TAB 3: 푸터정보 관리 (푸터의 모든 정보 수정 가능)
                   ---------------------------------------------------- */}
-              {seoInnerTab === 'company' && (
-                <div className="bg-white p-6 sm:p-8 border border-[#E2DDD3] shadow-xs space-y-5 text-xs">
-                  <div className="border-b border-gray-100 pb-3">
-                    <h3 className="text-sm font-bold text-[#142C27]">회사 기본 및 고객센터 연락처</h3>
-                    <p className="text-[11px] text-gray-500 mt-0.5">푸터와 고객센터 플로팅 상담창에 노출되는 연락처입니다.</p>
+              {seoInnerTab === 'footer' && (
+                <div className="space-y-6 animate-fade-in">
+                  
+                  {/* 1. 사업자 및 법인 정보 */}
+                  <div className="bg-white p-6 sm:p-8 border border-[#E2DDD3] shadow-xs space-y-5 text-xs">
+                    <div className="border-b border-gray-100 pb-3 flex items-center justify-between">
+                      <div>
+                        <h3 className="text-sm font-bold text-[#142C27] flex items-center gap-1.5">
+                          <span>🏢 사업자 및 회사 기본 정보</span>
+                        </h3>
+                        <p className="text-[11px] text-gray-500 mt-0.5">
+                          푸터 좌측 하단에 법적으로 표기되는 전자상거래 사업자 등록 정보입니다.
+                        </p>
+                      </div>
+                      <span className="text-[10px] bg-[#FAF8F5] text-gray-600 px-2 py-0.5 border border-gray-200">
+                        전자상거래법 필수 표기
+                      </span>
+                    </div>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                      <div>
+                        <label className="block font-bold mb-1 text-gray-800">상호 / 법인명 *</label>
+                        <input
+                          type="text"
+                          value={brandForm.companyName || ''}
+                          onChange={(e) => setBrandForm({ ...brandForm, companyName: e.target.value })}
+                          placeholder="주식회사 슬기로운 반려생활"
+                          className="w-full px-3.5 py-2.5 border border-gray-300 focus:border-[#144A42] focus:outline-none"
+                          required
+                        />
+                      </div>
+
+                      <div>
+                        <label className="block font-bold mb-1 text-gray-800">대표자 성명 *</label>
+                        <input
+                          type="text"
+                          value={brandForm.ceoName || ''}
+                          onChange={(e) => setBrandForm({ ...brandForm, ceoName: e.target.value })}
+                          placeholder="김대표"
+                          className="w-full px-3.5 py-2.5 border border-gray-300 focus:border-[#144A42] focus:outline-none"
+                          required
+                        />
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                      <div>
+                        <label className="block font-bold mb-1 text-gray-800">사업자등록번호 *</label>
+                        <input
+                          type="text"
+                          value={brandForm.bizNumber || ''}
+                          onChange={(e) => setBrandForm({ ...brandForm, bizNumber: e.target.value })}
+                          placeholder="123-45-67890"
+                          className="w-full px-3.5 py-2.5 border border-gray-300 focus:border-[#144A42] focus:outline-none"
+                          required
+                        />
+                      </div>
+
+                      <div>
+                        <label className="block font-bold mb-1 text-gray-800">통신판매업신고번호 *</label>
+                        <input
+                          type="text"
+                          value={brandForm.telecomNumber || ''}
+                          onChange={(e) => setBrandForm({ ...brandForm, telecomNumber: e.target.value })}
+                          placeholder="2026-서울강남-0123호"
+                          className="w-full px-3.5 py-2.5 border border-gray-300 focus:border-[#144A42] focus:outline-none"
+                          required
+                        />
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                      <div className="sm:col-span-2">
+                        <label className="block font-bold mb-1 text-gray-800">사업장 주소 *</label>
+                        <input
+                          type="text"
+                          value={brandForm.address || ''}
+                          onChange={(e) => setBrandForm({ ...brandForm, address: e.target.value })}
+                          placeholder="서울특별시 강남구 테헤란로 123 슬반생 타워 5층"
+                          className="w-full px-3.5 py-2.5 border border-gray-300 focus:border-[#144A42] focus:outline-none"
+                          required
+                        />
+                      </div>
+
+                      <div>
+                        <label className="block font-bold mb-1 text-gray-800">개인정보보호책임자 *</label>
+                        <input
+                          type="text"
+                          value={brandForm.cpoName || ''}
+                          onChange={(e) => setBrandForm({ ...brandForm, cpoName: e.target.value })}
+                          placeholder="박슬기"
+                          className="w-full px-3.5 py-2.5 border border-gray-300 focus:border-[#144A42] focus:outline-none"
+                          required
+                        />
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                      <div>
+                        <label className="block font-bold mb-1 text-gray-800">대표 이메일 주소 *</label>
+                        <input
+                          type="email"
+                          value={brandForm.email || ''}
+                          onChange={(e) => setBrandForm({ ...brandForm, email: e.target.value })}
+                          placeholder="contact@seulbanlife.com"
+                          className="w-full px-3.5 py-2.5 border border-gray-300 focus:border-[#144A42] focus:outline-none"
+                          required
+                        />
+                      </div>
+
+                      <div>
+                        <label className="block font-bold mb-1 text-gray-800">호스팅 제공자</label>
+                        <input
+                          type="text"
+                          value={brandForm.hostingProvider || ''}
+                          onChange={(e) => setBrandForm({ ...brandForm, hostingProvider: e.target.value })}
+                          placeholder="슬반생 클라우드"
+                          className="w-full px-3.5 py-2.5 border border-gray-300 focus:border-[#144A42] focus:outline-none"
+                        />
+                      </div>
+                    </div>
+
+                    <div>
+                      <label className="block font-bold mb-1 text-gray-800">통신판매중개자 법적 면책 고지 문구</label>
+                      <textarea
+                        rows={2}
+                        value={brandForm.disclaimer || ''}
+                        onChange={(e) => setBrandForm({ ...brandForm, disclaimer: e.target.value })}
+                        placeholder="슬반생은 통신판매중개자이며 통신판매의 당사자가 아닙니다. 제휴사가 제공하는 상품 및 서비스의 거래와 관련한 책임은 각 제공자에게 있습니다."
+                        className="w-full px-3.5 py-2.5 border border-gray-300 focus:border-[#144A42] focus:outline-none leading-relaxed text-gray-600"
+                      />
+                    </div>
                   </div>
 
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  {/* 2. 고객센터 및 24시 긴급상담 안내 */}
+                  <div className="bg-white p-6 sm:p-8 border border-[#E2DDD3] shadow-xs space-y-5 text-xs">
+                    <div className="border-b border-gray-100 pb-3 flex items-center justify-between">
+                      <div>
+                        <h3 className="text-sm font-bold text-[#142C27] flex items-center gap-1.5">
+                          <span>📞 고객센터 및 긴급안내 설정</span>
+                        </h3>
+                        <p className="text-[11px] text-gray-500 mt-0.5">
+                          푸터 우측 고객센터 안내 박스와 모바일 플로팅 상담창에 노출되는 연락처입니다.
+                        </p>
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                      <div>
+                        <label className="block font-bold mb-1 text-gray-800">고객센터 블록 타이틀</label>
+                        <input
+                          type="text"
+                          value={brandForm.csTitle || ''}
+                          onChange={(e) => setBrandForm({ ...brandForm, csTitle: e.target.value })}
+                          placeholder="고객센터 및 제휴상담"
+                          className="w-full px-3.5 py-2.5 border border-gray-300 focus:border-[#144A42] focus:outline-none"
+                        />
+                      </div>
+
+                      <div>
+                        <label className="block font-bold mb-1 text-gray-800">대표 고객센터 전화번호 *</label>
+                        <input
+                          type="text"
+                          value={brandForm.phone1 || ''}
+                          onChange={(e) => setBrandForm({ ...brandForm, phone1: e.target.value })}
+                          placeholder="010-3545-6982"
+                          className="w-full px-3.5 py-2.5 border border-gray-300 focus:border-[#144A42] focus:outline-none font-semibold text-[#144A42]"
+                          required
+                        />
+                      </div>
+
+                      <div>
+                        <label className="block font-bold mb-1 text-gray-800">24시 긴급 직통 라벨</label>
+                        <input
+                          type="text"
+                          value={brandForm.phone2Label || ''}
+                          onChange={(e) => setBrandForm({ ...brandForm, phone2Label: e.target.value })}
+                          placeholder="야간/응급 직통"
+                          className="w-full px-3.5 py-2.5 border border-gray-300 focus:border-[#144A42] focus:outline-none"
+                        />
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                      <div>
+                        <label className="block font-bold mb-1 text-gray-800">24시 긴급 응급/장례 직통번호 *</label>
+                        <input
+                          type="text"
+                          value={brandForm.phone2 || ''}
+                          onChange={(e) => setBrandForm({ ...brandForm, phone2: e.target.value })}
+                          placeholder="010-8880-6982"
+                          className="w-full px-3.5 py-2.5 border border-gray-300 focus:border-[#144A42] focus:outline-none font-semibold text-[#144A42]"
+                          required
+                        />
+                      </div>
+
+                      <div>
+                        <label className="block font-bold mb-1 text-gray-800">슬반생몰 쇼핑몰 외부 URL</label>
+                        <input
+                          type="url"
+                          value={brandForm.mallUrl || ''}
+                          onChange={(e) => setBrandForm({ ...brandForm, mallUrl: e.target.value })}
+                          placeholder="https://mall.seulbanlife.com"
+                          className="w-full px-3.5 py-2.5 border border-gray-300 focus:border-[#144A42] focus:outline-none"
+                        />
+                      </div>
+                    </div>
+
                     <div>
-                      <label className="block font-bold mb-1">일반 고객센터 전화번호</label>
+                      <label className="block font-bold mb-1 text-gray-800">
+                        운영시간 및 긴급상담 지원 안내 문구 (줄바꿈 가능)
+                      </label>
+                      <textarea
+                        rows={3}
+                        value={brandForm.csHours || ''}
+                        onChange={(e) => setBrandForm({ ...brandForm, csHours: e.target.value })}
+                        placeholder="평일 09:00 - 18:00 (점심시간 12:00 - 13:00)&#10;동물등록 및 24시 긴급상담 연중무휴 지원"
+                        className="w-full px-3.5 py-2.5 border border-gray-300 focus:border-[#144A42] focus:outline-none leading-relaxed font-sans"
+                      />
+                    </div>
+                  </div>
+
+                  {/* 3. 저작권 및 정책/약관 링크 */}
+                  <div className="bg-white p-6 sm:p-8 border border-[#E2DDD3] shadow-xs space-y-5 text-xs">
+                    <div className="border-b border-gray-100 pb-3">
+                      <h3 className="text-sm font-bold text-[#142C27] flex items-center gap-1.5">
+                        <span>⚖️ 저작권 표기 및 약관 링크</span>
+                      </h3>
+                      <p className="text-[11px] text-gray-500 mt-0.5">
+                        푸터 최하단 바에 표기되는 저작권 카피라이트 문구와 정책 링크입니다.
+                      </p>
+                    </div>
+
+                    <div>
+                      <label className="block font-bold mb-1 text-gray-800">저작권(Copyright) 표기 문구 *</label>
                       <input
                         type="text"
-                        value={brandForm.phone1 || ''}
-                        onChange={(e) => setBrandForm({...brandForm, phone1: e.target.value})}
+                        value={brandForm.copyright || ''}
+                        onChange={(e) => setBrandForm({ ...brandForm, copyright: e.target.value })}
+                        placeholder="© 2026 Seulban Life Inc. All rights reserved."
                         className="w-full px-3.5 py-2.5 border border-gray-300 focus:border-[#144A42] focus:outline-none"
                         required
                       />
                     </div>
 
-                    <div>
-                      <label className="block font-bold mb-1">24시 긴급 응급/장례 직통번호</label>
-                      <input
-                        type="text"
-                        value={brandForm.phone2 || ''}
-                        onChange={(e) => setBrandForm({...brandForm, phone2: e.target.value})}
-                        className="w-full px-3.5 py-2.5 border border-gray-300 focus:border-[#144A42] focus:outline-none"
-                        required
-                      />
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                      <div>
+                        <label className="block font-bold mb-1 text-gray-800">개인정보처리방침 링크</label>
+                        <input
+                          type="text"
+                          value={brandForm.privacyUrl || ''}
+                          onChange={(e) => setBrandForm({ ...brandForm, privacyUrl: e.target.value })}
+                          placeholder="#privacy"
+                          className="w-full px-3.5 py-2 border border-gray-300 focus:border-[#144A42] focus:outline-none font-mono"
+                        />
+                      </div>
+
+                      <div>
+                        <label className="block font-bold mb-1 text-gray-800">이용약관 링크</label>
+                        <input
+                          type="text"
+                          value={brandForm.termsUrl || ''}
+                          onChange={(e) => setBrandForm({ ...brandForm, termsUrl: e.target.value })}
+                          placeholder="#terms"
+                          className="w-full px-3.5 py-2 border border-gray-300 focus:border-[#144A42] focus:outline-none font-mono"
+                        />
+                      </div>
+
+                      <div>
+                        <label className="block font-bold mb-1 text-gray-800">마케팅 수신동의 링크</label>
+                        <input
+                          type="text"
+                          value={brandForm.marketingUrl || ''}
+                          onChange={(e) => setBrandForm({ ...brandForm, marketingUrl: e.target.value })}
+                          placeholder="#marketing"
+                          className="w-full px-3.5 py-2 border border-gray-300 focus:border-[#144A42] focus:outline-none font-mono"
+                        />
+                      </div>
                     </div>
                   </div>
 
-                  <div>
-                    <label className="block font-bold mb-1">대표 이메일 주소</label>
-                    <input
-                      type="email"
-                      value={brandForm.email || ''}
-                      onChange={(e) => setBrandForm({...brandForm, email: e.target.value})}
-                      className="w-full px-3.5 py-2.5 border border-gray-300 focus:border-[#144A42] focus:outline-none"
-                      required
-                    />
+                  {/* 4. 실시간 푸터 다크 테마 미리보기 (Live Footer Preview) */}
+                  <div className="bg-[#0B100F] p-6 sm:p-8 rounded-lg shadow-xl border border-[#1F2B28] space-y-4">
+                    <div className="flex items-center justify-between border-b border-[#1E2926] pb-3">
+                      <span className="text-xs font-bold text-[#E8DEC8] flex items-center gap-1.5">
+                        <span className="w-2 h-2 bg-[#D4AF7A] rounded-full"></span>
+                        실시간 푸터 렌더링 미리보기
+                      </span>
+                      <span className="text-[10px] bg-[#182220] text-[#A6B2AD] px-2 py-0.5 border border-[#23312E]">
+                        다크 테마 실제 노출 뷰
+                      </span>
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6 text-[11px] leading-relaxed text-[#8E9B95] pt-1">
+                      <div className="md:col-span-2 space-y-1">
+                        <p className="text-white font-bold text-xs mb-1">{brandForm.companyName || '주식회사 슬기로운 반려생활'}</p>
+                        <p>
+                          대표자: {brandForm.ceoName || '김대표'} | 사업자등록번호: {brandForm.bizNumber || '123-45-67890'} | 통신판매업: {brandForm.telecomNumber || '2026-서울강남-0123호'}
+                        </p>
+                        <p>
+                          주소: {brandForm.address || '서울특별시 강남구 테헤란로 123 슬반생 타워 5층'} | 개인정보책임자: {brandForm.cpoName || '박슬기'}
+                        </p>
+                        <p>
+                          이메일: {brandForm.email || 'contact@seulbanlife.com'} | 호스팅: {brandForm.hostingProvider || '슬반생 클라우드'}
+                        </p>
+                        <p className="text-[#64726C] text-[10px] pt-1">
+                          {brandForm.disclaimer || '슬반생은 통신판매중개자이며 통신판매의 당사자가 아닙니다.'}
+                        </p>
+                      </div>
+
+                      <div className="bg-[#182220] p-3.5 border border-[#23312E] space-y-1">
+                        <p className="text-white font-semibold text-xs flex items-center gap-1">
+                          <PhoneIcon className="w-3.5 h-3.5 text-[#D4AF7A]" />
+                          {brandForm.csTitle || '고객센터 및 제휴상담'}
+                        </p>
+                        <div className="text-sm font-bold text-[#E8DEC8]">
+                          {brandForm.phone1 || '010-3545-6982'}
+                        </div>
+                        <div className="text-[11px] text-[#A6B2AD]">
+                          {brandForm.phone2Label || '야간/응급'}: {brandForm.phone2 || '010-8880-6982'}
+                        </div>
+                        <p className="text-[10px] text-[#71807A] whitespace-pre-line pt-0.5 leading-tight">
+                          {brandForm.csHours || '평일 09:00 - 18:00'}
+                        </p>
+                      </div>
+                    </div>
+
+                    <div className="pt-3 border-t border-[#1C2624] flex flex-col sm:flex-row items-center justify-between text-[11px] text-[#6B7973] gap-2">
+                      <div className="flex items-center gap-3">
+                        <span className="underline hover:text-white">개인정보처리방침</span>
+                        <span>이용약관</span>
+                        <span>마케팅 수신동의</span>
+                      </div>
+                      <div>
+                        {brandForm.copyright || '© 2026 Seulban Life Inc. All rights reserved.'}
+                      </div>
+                    </div>
                   </div>
 
-                  <div>
-                    <label className="block font-bold mb-1">슬반생몰 쇼핑몰 외부 URL</label>
-                    <input
-                      type="url"
-                      value={brandForm.mallUrl || ''}
-                      onChange={(e) => setBrandForm({...brandForm, mallUrl: e.target.value})}
-                      className="w-full px-3.5 py-2.5 border border-gray-300 focus:border-[#144A42] focus:outline-none"
-                      required
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block font-bold mb-1">회사 주소</label>
-                    <input
-                      type="text"
-                      value={brandForm.address || ''}
-                      onChange={(e) => setBrandForm({...brandForm, address: e.target.value})}
-                      className="w-full px-3.5 py-2.5 border border-gray-300 focus:border-[#144A42] focus:outline-none"
-                      required
-                    />
-                  </div>
                 </div>
               )}
 

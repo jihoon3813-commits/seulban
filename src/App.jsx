@@ -969,6 +969,7 @@ export default function App() {
       <Footer 
         onOpenAdmin={handleOpenAdmin}
         onNavigate={handleNavigate}
+        brandInfo={brandInfo}
       />
 
       {/* Mobile Fixed Bottom Navigation (기획서 5.2 모바일 5대 내비게이션) */}

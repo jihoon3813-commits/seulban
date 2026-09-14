@@ -26,7 +26,22 @@ export const BRAND_INFO = {
   // 7. 검색 로봇 제어
   robots: "index, follow",
   // 8. 작성자 / 소유자
-  author: "주식회사 슬기로운 반려생활"
+  author: "주식회사 슬기로운 반려생활",
+
+  // === 푸터 상세 정보 (모든 정보 수정 가능) ===
+  companyName: "주식회사 슬기로운 반려생활",
+  ceoName: "김대표",
+  telecomNumber: "2026-서울강남-0123호",
+  cpoName: "박슬기",
+  hostingProvider: "슬반생 클라우드",
+  disclaimer: "슬반생은 통신판매중개자이며 통신판매의 당사자가 아닙니다. 제휴사가 제공하는 상품 및 서비스의 거래와 관련한 책임은 각 제공자에게 있습니다.",
+  csTitle: "고객센터 및 제휴상담",
+  phone2Label: "야간/응급 직통",
+  csHours: "평일 09:00 - 18:00 (점심시간 12:00 - 13:00)\n동물등록 및 24시 긴급상담 연중무휴 지원",
+  copyright: "© 2026 Seulban Life Inc. All rights reserved.",
+  privacyUrl: "#privacy",
+  termsUrl: "#terms",
+  marketingUrl: "#marketing"
 };
 
 // 6 Core Life-Cycle Services
