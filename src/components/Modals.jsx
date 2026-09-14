@@ -3,7 +3,7 @@ import {
   XIcon, CheckIcon, ShieldCheckIcon, PawIcon, ArrowRight, 
   PhoneIcon, MapPinIcon, HeartIcon, SparklesIcon, FileTextIcon, 
   ClockIcon, StethoscopeIcon, UserIcon, CameraIcon, SearchIcon,
-  LogoEmblem, ShoppingBagIcon, GiftIcon, BellIcon
+  LogoEmblem, ShoppingBagIcon, GiftIcon, BellIcon, KakaoIcon, HeadphoneIcon
 } from './Icons';
 import { BRAND_INFO, MEMBERSHIP_PERKS, REG_FAQS } from '../data/mockData';
 import { compressImage } from '../utils/imageCompressor';
@@ -1997,3 +1997,275 @@ export function MallPreparingModal({ isOpen, onClose, user, onNavigate }) {
   );
 }
 
+// 6. 빠른 상담 신청 모달 (QuickConsultModal)
+export function QuickConsultModal({ isOpen, onClose, onSubmitConsult, brandInfo, user }) {
+  const info = { ...BRAND_INFO, ...(brandInfo || {}) };
+  const [formData, setFormData] = useState({
+    name: user?.name || '',
+    phone: user?.phone || '',
+    serviceType: '동물등록 상담',
+    message: '',
+    agreed: true
+  });
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isDone, setIsDone] = useState(false);
+  const [showConsentModal, setShowConsentModal] = useState(false);
+
+  useEffect(() => {
+    if (isOpen) {
+      setIsDone(false);
+      setFormData(prev => ({
+        ...prev,
+        name: user?.name || prev.name,
+        phone: user?.phone || prev.phone
+      }));
+    }
+  }, [isOpen, user]);
+
+  if (!isOpen) return null;
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    if (!formData.name.trim()) {
+      alert('성함을 입력해 주세요.');
+      return;
+    }
+    if (!formData.phone.trim() || formData.phone.length < 9) {
+      alert('연락처를 올바르게 입력해 주세요.');
+      return;
+    }
+    if (!formData.agreed) {
+      alert('개인정보 수집 및 이용에 동의해 주세요.');
+      return;
+    }
+
+    setIsSubmitting(true);
+    try {
+      if (onSubmitConsult) {
+        await onSubmitConsult({
+          ...formData,
+          createdAt: new Date().toISOString()
+        });
+      }
+      setIsDone(true);
+    } catch (err) {
+      console.error(err);
+      alert('상담 신청 처리 중 오류가 발생했습니다.');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/70 backdrop-blur-xs animate-fade-in">
+      <div className="bg-white text-[#1D2522] w-full max-w-lg shadow-2xl border border-[#DDD5C7] overflow-hidden flex flex-col max-h-[92vh]">
+        
+        {/* Modal Header */}
+        <div className="px-5 py-4 bg-[#144A42] text-white flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <HeadphoneIcon className="w-5 h-5 text-[#E6CAA4]" />
+            <div>
+              <span className="font-bold text-base text-white">슬반생 1:1 빠른 맞춤상담</span>
+              <p className="text-[11px] text-[#A3CCC3]">반려동물 전문가가 빠르고 친절하게 안내해 드립니다</p>
+            </div>
+          </div>
+          <button 
+            type="button" 
+            onClick={onClose} 
+            className="p-1 text-white/70 hover:text-white transition cursor-pointer"
+            aria-label="닫기"
+          >
+            <XIcon className="w-5 h-5" />
+          </button>
+        </div>
+
+        {/* Modal Body */}
+        <div className="p-5 sm:p-6 overflow-y-auto space-y-4 text-xs">
+          {!isDone ? (
+            <form onSubmit={handleSubmit} className="space-y-4">
+              
+              {/* 긴급/야간 유선 안내 박스 */}
+              <div className="bg-[#FAF8F5] p-3.5 border border-[#EAE2D5] flex items-center justify-between gap-2">
+                <div>
+                  <span className="text-[11px] font-bold text-[#8A6D3B] block">급한 문의나 야간 응급 안내는?</span>
+                  <p className="text-xs font-semibold text-[#144A42]">
+                    직통 전화: {info.phone1 || BRAND_INFO.phone1} (24시 {info.phone2 || BRAND_INFO.phone2})
+                  </p>
+                </div>
+                <a
+                  href={`tel:${info.phone1 || BRAND_INFO.phone1}`}
+                  className="px-3 py-1.5 bg-[#144A42] text-white text-[11px] font-bold shrink-0 hover:bg-[#0E352F] transition flex items-center gap-1"
+                >
+                  <PhoneIcon className="w-3 h-3 text-[#E6CAA4]" />
+                  <span>전화걸기</span>
+                </a>
+              </div>
+
+              {/* 입력 폼 */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div>
+                  <label className="block font-bold text-gray-800 mb-1">성함 / 보호자명 *</label>
+                  <input
+                    type="text"
+                    value={formData.name}
+                    onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                    placeholder="홍길동"
+                    className="w-full px-3.5 py-2.5 border border-gray-300 focus:border-[#144A42] focus:outline-none text-xs"
+                    required
+                  />
+                </div>
+                <div>
+                  <label className="block font-bold text-gray-800 mb-1">연락처 *</label>
+                  <input
+                    type="tel"
+                    value={formData.phone}
+                    onChange={(e) => setFormData({ ...formData, phone: formatPhoneNumber(e.target.value) })}
+                    placeholder="010-0000-0000"
+                    className="w-full px-3.5 py-2.5 border border-gray-300 focus:border-[#144A42] focus:outline-none text-xs"
+                    required
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="block font-bold text-gray-800 mb-1">상담 희망 분야</label>
+                <select
+                  value={formData.serviceType}
+                  onChange={(e) => setFormData({ ...formData, serviceType: e.target.value })}
+                  className="w-full px-3.5 py-2.5 border border-gray-300 focus:border-[#144A42] focus:outline-none text-xs bg-white"
+                >
+                  <option value="동물등록 상담">동물등록 및 외장칩 목걸이 신청</option>
+                  <option value="VIP 멤버십 가입 혜택">VIP 멤버십 제휴 할인 혜택</option>
+                  <option value="제휴 동물병원/미용실 이용">제휴 동물병원 및 미용 예약</option>
+                  <option value="반려동물 동반 여행/숙소">반려동물 동반 여행·독채 펜션</option>
+                  <option value="안심입양 문의">안심입양 상담 및 절차</option>
+                  <option value="장례/메모리얼 케어">24시 장례 및 메모리얼 상담</option>
+                  <option value="기타 제휴 및 일반 문의">기타 일반 및 제휴 문의</option>
+                </select>
+              </div>
+
+              <div>
+                <label className="block font-bold text-gray-800 mb-1">문의 및 요청사항 (선택)</label>
+                <textarea
+                  rows={3}
+                  value={formData.message}
+                  onChange={(e) => setFormData({ ...formData, message: e.target.value })}
+                  placeholder="궁금하신 점이나 아이의 특이사항을 적어주시면 더 정확한 상담이 가능합니다."
+                  className="w-full px-3.5 py-2 border border-gray-300 focus:border-[#144A42] focus:outline-none text-xs leading-relaxed"
+                />
+              </div>
+
+              {/* 개인정보 수집 동의 체크박스 및 전문 보기 */}
+              <div className="bg-[#FAF8F5] p-3.5 border border-[#ECE5D8] space-y-2">
+                <div className="flex items-start gap-2">
+                  <input
+                    type="checkbox"
+                    id="consult-agree"
+                    checked={formData.agreed}
+                    onChange={(e) => setFormData({ ...formData, agreed: e.target.checked })}
+                    className="mt-0.5 accent-[#144A42] w-4 h-4 cursor-pointer"
+                    required
+                  />
+                  <div className="flex-1">
+                    <label htmlFor="consult-agree" className="font-bold text-gray-800 cursor-pointer">
+                      [필수] 개인정보 수집 및 이용 동의
+                    </label>
+                    <p className="text-[11px] text-gray-500 mt-1 leading-relaxed">
+                      {info.consultConsent || "슬반생은 빠른 맞춤 상담 및 서비스 안내를 위해 성함, 연락처, 문의 내용을 수집·이용하며, 상담 완료 및 목적 달성 후 안전하게 파기합니다."}
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              <div className="pt-2">
+                <button
+                  type="submit"
+                  disabled={isSubmitting}
+                  className="w-full py-3.5 bg-[#144A42] hover:bg-[#0D3832] text-white font-bold text-sm transition shadow-md flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
+                >
+                  <HeadphoneIcon className="w-4 h-4 text-[#C5A880]" />
+                  <span>{isSubmitting ? '상담 신청 접수 중...' : '빠른 상담 신청하기'}</span>
+                </button>
+              </div>
+            </form>
+          ) : (
+            <div className="py-8 text-center space-y-3">
+              <div className="w-14 h-14 bg-[#EAF5F2] text-[#144A42] flex items-center justify-center mx-auto rounded-full">
+                <CheckIcon className="w-8 h-8" />
+              </div>
+              <h4 className="text-xl font-bold text-[#144A42]">상담 신청이 접수되었습니다!</h4>
+              <p className="text-xs text-gray-600 max-w-sm mx-auto leading-relaxed">
+                접수해주신 연락처(<span className="font-bold text-[#144A42]">{formData.phone}</span>)로 
+                담당 전문 상담사가 빠른 시일 내에 연락드리겠습니다.
+              </p>
+              <div className="pt-4">
+                <button
+                  type="button"
+                  onClick={onClose}
+                  className="px-6 py-2.5 bg-[#144A42] text-white font-bold text-xs hover:bg-[#0E352F] transition"
+                >
+                  확인 및 닫기
+                </button>
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// 7. 개인정보처리방침 & 이용약관 전용 팝업 뷰어 (PolicyViewerModal)
+export function PolicyViewerModal({ isOpen, onClose, type = 'privacy', brandInfo }) {
+  const info = { ...BRAND_INFO, ...(brandInfo || {}) };
+  if (!isOpen) return null;
+
+  const isPrivacy = type === 'privacy';
+  const title = isPrivacy ? '개인정보처리방침' : '이용약관';
+  const content = isPrivacy ? (info.privacyPolicy || BRAND_INFO.privacyPolicy) : (info.termsOfService || BRAND_INFO.termsOfService);
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/70 backdrop-blur-xs animate-fade-in">
+      <div className="bg-white text-[#1D2522] w-full max-w-2xl shadow-2xl border border-[#DDD5C7] overflow-hidden flex flex-col max-h-[85vh]">
+        
+        {/* Header */}
+        <div className="px-5 py-4 bg-[#144A42] text-white flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <ShieldCheckIcon className="w-5 h-5 text-[#E6CAA4]" />
+            <span className="font-bold text-base text-white">{info.companyName || '주식회사 슬기로운 반려생활'} {title}</span>
+          </div>
+          <button 
+            type="button" 
+            onClick={onClose} 
+            className="p-1 text-white/70 hover:text-white transition cursor-pointer"
+            aria-label="닫기"
+          >
+            <XIcon className="w-5 h-5" />
+          </button>
+        </div>
+
+        {/* Content */}
+        <div className="p-5 sm:p-6 overflow-y-auto space-y-4 text-xs leading-relaxed text-gray-700 bg-white">
+          <div className="bg-[#FAF8F5] p-3 border border-[#EAE2D5] text-[11px] text-[#78664D]">
+            본 방침은 {info.companyName || '주식회사 슬기로운 반려생활'}의 모든 서비스 이용자에게 적용됩니다.
+          </div>
+          <div className="whitespace-pre-line font-sans text-gray-800 space-y-2">
+            {content}
+          </div>
+        </div>
+
+        {/* Footer */}
+        <div className="p-3 bg-[#FAF8F5] border-t border-gray-200 flex justify-end">
+          <button
+            type="button"
+            onClick={onClose}
+            className="px-5 py-2 bg-[#144A42] text-white text-xs font-bold hover:bg-[#0E352F] transition cursor-pointer"
+          >
+            확인했습니다
+          </button>
+        </div>
+
+      </div>
+    </div>
+  );
+}

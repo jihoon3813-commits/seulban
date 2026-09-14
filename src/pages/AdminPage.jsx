@@ -3,7 +3,8 @@ import {
   LogoEmblem, PawIcon, HeartIcon, HomeIcon, ScissorsIcon, 
   StethoscopeIcon, FlowerIcon, SparklesIcon, ShieldCheckIcon, 
   CheckIcon, XIcon, SearchIcon, PhoneIcon, MapPinIcon, 
-  ArrowRight, ClockIcon, UserIcon, ExternalLinkIcon
+  ArrowRight, ClockIcon, UserIcon, ExternalLinkIcon,
+  KakaoIcon, HeadphoneIcon, MessageSquare
 } from '../components/Icons';
 import { compressImage } from '../utils/imageCompressor';
 import { BRAND_INFO } from '../data/mockData';
@@ -32,6 +33,9 @@ export default function AdminPage({
   onTogglePopup,
   brandInfo,
   onUpdateBrandInfo,
+  consultations = [],
+  onDeleteConsultation,
+  onUpdateConsultStatus,
   showToast
 }) {
   // Admin Authentication State
@@ -484,100 +488,181 @@ export default function AdminPage({
     );
   }
 
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+
+  const menuItems = [
+    { id: 'dashboard', label: '대시보드 요약', icon: SparklesIcon },
+    { id: 'consultations', label: '빠른상담 내역', icon: HeadphoneIcon, badge: consultations.length, badgeColor: 'bg-amber-500 text-white' },
+    { id: 'applications', label: '동물등록 관리', icon: PawIcon, badge: applications.length, badgeColor: 'bg-emerald-600 text-white' },
+    { id: 'popups', label: '팝업 관리', icon: SparklesIcon, badge: popups.length },
+    { id: 'partners', label: '제휴처 관리', icon: StethoscopeIcon, badge: partners.length },
+    { id: 'adoption', label: '안심입양 관리', icon: HeartIcon, badge: adoptionList.length },
+    { id: 'travel', label: '반려여행 관리', icon: HomeIcon, badge: travelList.length },
+    { id: 'brand', label: '사이트·SEO 설정', icon: ShieldCheckIcon },
+    { id: 'settings', label: '보안·계정설정', icon: ShieldCheckIcon },
+  ];
+
   // Logged-in Admin Dashboard View
   return (
-    <div className="min-h-screen bg-[#F4F0E8] text-[#1D2522] flex flex-col">
+    <div className="min-h-screen bg-[#F4F0E8] text-[#1D2522] flex">
       
-      {/* Admin Top Navigation Bar */}
-      <header className="bg-[#142C27] text-white border-b border-[#22443C] sticky top-0 z-40 shadow-sm">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
-          <div className="flex items-center gap-4">
-            <div 
-              className="flex items-center gap-2.5 cursor-pointer group" 
-              onClick={() => setCurrentTab('dashboard')}
-              title="슬반생 관리자 대시보드"
-            >
-              <LogoEmblem bright={true} className="h-9 sm:h-10 w-auto group-hover:scale-105 transition-transform" />
-              <span className="text-[11px] px-2 py-0.5 bg-[#2A4D45] text-[#D4AF7A] font-bold tracking-wider border border-[#3E655B] rounded-sm uppercase">
-                ADMIN
+      {/* Mobile Sidebar Overlay */}
+      {sidebarOpen && (
+        <div 
+          onClick={() => setSidebarOpen(false)} 
+          className="fixed inset-0 z-40 bg-black/60 backdrop-blur-xs lg:hidden"
+        />
+      )}
+
+      {/* Left Sidebar Navigation (시원하고 직관적인 좌측 사이드바) */}
+      <aside className={`
+        fixed lg:sticky top-0 left-0 z-50 h-screen w-64 bg-[#112420] text-gray-300 border-r border-[#1D3D35] flex flex-col transition-transform duration-200 ease-in-out shrink-0
+        ${sidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
+      `}>
+        {/* Brand Header */}
+        <div className="p-5 border-b border-[#1C3A33] flex items-center justify-between">
+          <div 
+            className="flex items-center gap-2.5 cursor-pointer group"
+            onClick={() => { setCurrentTab('dashboard'); setSidebarOpen(false); }}
+          >
+            <LogoEmblem bright={true} className="h-9 w-auto group-hover:scale-105 transition-transform" />
+            <div>
+              <span className="text-xs font-extrabold text-white tracking-tight block">
+                슬반생 관리자
+              </span>
+              <span className="text-[10px] text-[#D4AF7A] font-bold tracking-wider uppercase">
+                ADMIN SYSTEM
               </span>
             </div>
-
-            {/* Menu Tabs in Header */}
-            <nav className="hidden lg:flex items-center gap-1 ml-6 text-xs font-semibold">
-              {[
-                { id: 'dashboard', label: '대시보드 요약' },
-                { id: 'applications', label: `동물등록 관리 (${applications.length})` },
-                { id: 'popups', label: `팝업 관리 (${popups.length})` },
-                { id: 'partners', label: `제휴처 관리 (${partners.length})` },
-                { id: 'adoption', label: `안심입양 관리 (${adoptionList.length})` },
-                { id: 'travel', label: `반려여행 관리 (${travelList.length})` },
-                { id: 'brand', label: '사이트·SEO 설정' },
-                { id: 'settings', label: '보안·계정설정' },
-              ].map((tab) => (
-                <button
-                  key={tab.id}
-                  onClick={() => setCurrentTab(tab.id)}
-                  className={`px-3 py-2 transition border-b-2 ${
-                    currentTab === tab.id
-                      ? 'border-[#D4AF7A] text-[#D4AF7A] bg-white/5 font-bold'
-                      : 'border-transparent text-gray-300 hover:text-white hover:bg-white/5'
-                  }`}
-                >
-                  {tab.label}
-                </button>
-              ))}
-            </nav>
           </div>
-          <div className="flex items-center gap-3 text-xs">
-            <a
-              href="/"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="px-3 py-1.5 bg-[#1F3D36] hover:bg-[#284E45] text-gray-200 border border-[#2D564D] flex items-center gap-1.5 transition cursor-pointer"
-              title="사용자 화면 새 창으로 열기"
-            >
-              <ExternalLinkIcon className="w-3.5 h-3.5" />
-              <span>사용자 화면 보기</span>
-            </a>
+          <button 
+            type="button" 
+            onClick={() => setSidebarOpen(false)}
+            className="lg:hidden p-1.5 text-gray-400 hover:text-white"
+          >
+            <XIcon className="w-5 h-5" />
+          </button>
+        </div>
+
+        {/* Menu Items List */}
+        <nav className="flex-1 px-3 py-4 space-y-1.5 overflow-y-auto no-scrollbar">
+          <div className="px-3 pb-2 text-[10px] font-bold text-gray-400 uppercase tracking-widest">
+            메인 관리 메뉴
+          </div>
+
+          {menuItems.map((item) => {
+            const Icon = item.icon;
+            const isActive = currentTab === item.id;
+            return (
+              <button
+                key={item.id}
+                onClick={() => {
+                  setCurrentTab(item.id);
+                  setSidebarOpen(false);
+                }}
+                className={`w-full flex items-center justify-between px-3.5 py-3 rounded-lg text-xs font-semibold transition cursor-pointer ${
+                  isActive
+                    ? 'bg-[#D4AF7A] text-[#142C27] font-bold shadow-sm'
+                    : 'text-gray-300 hover:bg-white/5 hover:text-white'
+                }`}
+              >
+                <div className="flex items-center gap-3">
+                  <Icon className={`w-4 h-4 ${isActive ? 'text-[#142C27]' : 'text-[#A3CCC3]'}`} />
+                  <span>{item.label}</span>
+                </div>
+                {item.badge !== undefined && (
+                  <span className={`text-[11px] px-2 py-0.5 rounded-full font-bold ${
+                    item.badgeColor 
+                      ? item.badgeColor 
+                      : (isActive ? 'bg-[#142C27]/20 text-[#142C27]' : 'bg-[#1D3D35] text-gray-300')
+                  }`}>
+                    {item.badge}
+                  </span>
+                )}
+              </button>
+            );
+          })}
+        </nav>
+
+        {/* User Account / Bottom Controls */}
+        <div className="p-4 border-t border-[#1C3A33] space-y-3 bg-[#0D1D1A]">
+          <div className="flex items-center justify-between text-xs">
+            <div className="flex items-center gap-2">
+              <div className="w-7 h-7 rounded-full bg-[#1D3D35] text-[#D4AF7A] flex items-center justify-center font-bold text-xs">
+                {adminUsername.slice(0, 1).toUpperCase()}
+              </div>
+              <div>
+                <p className="text-white font-bold leading-tight">{adminUsername}</p>
+                <p className="text-[10px] text-emerald-400">보안 관리자 접속 중</p>
+              </div>
+            </div>
             <button
               onClick={handleLogout}
-              className="px-3 py-1.5 bg-red-900/40 hover:bg-red-900/70 text-red-200 border border-red-700/50 transition font-semibold"
+              className="text-[11px] text-red-400 hover:text-red-300 hover:underline"
             >
               로그아웃
             </button>
           </div>
-        </div>
 
-        {/* Mobile Tab Scroll Menu */}
-        <div className="lg:hidden flex overflow-x-auto no-scrollbar px-4 py-2 bg-[#0F221E] border-t border-[#1C3A33] text-xs gap-2">
-          {[
-            { id: 'dashboard', label: '대시보드' },
-            { id: 'applications', label: '동물등록' },
-            { id: 'popups', label: '팝업관리' },
-            { id: 'partners', label: '제휴처' },
-            { id: 'adoption', label: '안심입양' },
-            { id: 'travel', label: '반려여행' },
-            { id: 'brand', label: '사이트·SEO' },
-            { id: 'settings', label: '비밀번호설정' },
-          ].map((tab) => (
+          <a
+            href="/"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="w-full py-2 bg-[#18342E] hover:bg-[#20443C] text-gray-200 border border-[#274F45] text-xs font-medium flex items-center justify-center gap-1.5 transition rounded-sm cursor-pointer"
+            title="사용자 화면 새 창으로 열기"
+          >
+            <ExternalLinkIcon className="w-3.5 h-3.5 text-[#D4AF7A]" />
+            <span>슬반생 서비스 홈 열기</span>
+          </a>
+        </div>
+      </aside>
+
+      {/* Main Content Area with Header */}
+      <div className="flex-1 flex flex-col min-w-0">
+        
+        {/* Top Header Bar for Mobile & Search/Quick Actions */}
+        <header className="bg-white border-b border-[#E2DDD3] sticky top-0 z-30 px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between shadow-xs">
+          <div className="flex items-center gap-3">
             <button
-              key={tab.id}
-              onClick={() => setCurrentTab(tab.id)}
-              className={`px-3 py-1.5 whitespace-nowrap ${
-                currentTab === tab.id
-                  ? 'bg-[#D4AF7A] text-[#142C27] font-bold'
-                  : 'bg-[#18312B] text-gray-300'
-              }`}
+              type="button"
+              onClick={() => setSidebarOpen(true)}
+              className="lg:hidden p-2 text-gray-600 hover:text-black hover:bg-gray-100 rounded-md"
+              aria-label="메뉴 열기"
             >
-              {tab.label}
+              <div className="w-5 h-0.5 bg-gray-700 mb-1"></div>
+              <div className="w-5 h-0.5 bg-gray-700 mb-1"></div>
+              <div className="w-5 h-0.5 bg-gray-700"></div>
             </button>
-          ))}
-        </div>
-      </header>
+            <div className="flex items-center gap-2">
+              <span className="text-xs font-bold px-2 py-0.5 bg-[#EAF3F0] text-[#144A42] border border-[#144A42]/20 rounded-sm">
+                관리 콘솔
+              </span>
+              <span className="text-sm font-black text-[#142C27] hidden sm:inline">
+                {menuItems.find(m => m.id === currentTab)?.label || '관리자 콘솔'}
+              </span>
+            </div>
+          </div>
 
-      {/* Main Content Area */}
-      <main className="max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-8 py-8 flex-1">
+          <div className="flex items-center gap-3 text-xs">
+            <button
+              onClick={() => setCurrentTab('consultations')}
+              className="px-3 py-1.5 bg-amber-50 hover:bg-amber-100 text-amber-900 border border-amber-300 font-bold flex items-center gap-1.5 transition"
+            >
+              <HeadphoneIcon className="w-3.5 h-3.5 text-amber-700" />
+              <span>빠른상담 {consultations.length}건</span>
+            </button>
+
+            <button
+              onClick={handleLogout}
+              className="px-3 py-1.5 bg-gray-100 hover:bg-gray-200 text-gray-700 border border-gray-300 transition font-semibold"
+            >
+              로그아웃
+            </button>
+          </div>
+        </header>
+
+        {/* Content Body */}
+        <main className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 flex-1">
         
         {/* ========================================================
             TAB 1: 대시보드 (DASHBOARD)
@@ -610,39 +695,53 @@ export default function AdminPage({
             </div>
 
             {/* KPI Cards */}
-            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4">
-              <div className="bg-white p-6 border border-[#E2DDD3] shadow-xs">
-                <span className="text-xs text-gray-500 font-medium">동물등록 접수 총계</span>
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4">
+              <div 
+                onClick={() => setCurrentTab('consultations')}
+                className="bg-white p-5 border border-[#E2DDD3] shadow-xs cursor-pointer hover:border-amber-500 transition"
+              >
+                <span className="text-xs text-gray-500 font-medium">빠른상담 접수</span>
+                <p className="text-3xl font-black text-amber-700 mt-2">{consultations.length}건</p>
+                <div className="mt-3 flex items-center gap-1.5 text-[11px] text-amber-800 bg-amber-50 px-2 py-1 w-fit">
+                  <span>대기: {consultations.filter(c => c.status !== 'COMPLETED').length}건</span>
+                </div>
+              </div>
+
+              <div 
+                onClick={() => setCurrentTab('applications')}
+                className="bg-white p-5 border border-[#E2DDD3] shadow-xs cursor-pointer hover:border-[#144A42] transition"
+              >
+                <span className="text-xs text-gray-500 font-medium">동물등록 신청</span>
                 <p className="text-3xl font-black text-[#144A42] mt-2">{applications.length}건</p>
-                <div className="mt-3 flex items-center gap-1.5 text-[11px] text-amber-700 bg-amber-50 px-2 py-1 w-fit">
+                <div className="mt-3 flex items-center gap-1.5 text-[11px] text-emerald-800 bg-emerald-50 px-2 py-1 w-fit">
                   <span>검수 대기: {applications.filter(a => a.statusCode === 'SUBMITTED' || a.statusCode === 'REVIEWING').length}건</span>
                 </div>
               </div>
 
               <div 
                 onClick={() => setCurrentTab('popups')}
-                className="bg-white p-6 border border-[#E2DDD3] shadow-xs cursor-pointer hover:border-[#144A42] transition"
+                className="bg-white p-5 border border-[#E2DDD3] shadow-xs cursor-pointer hover:border-[#144A42] transition"
               >
                 <span className="text-xs text-gray-500 font-medium">메인 팝업 관리</span>
                 <p className="text-3xl font-black text-[#144A42] mt-2">{popups.length}개</p>
                 <div className="mt-3 flex items-center gap-1.5 text-[11px] text-emerald-800 bg-emerald-50 px-2 py-1 w-fit">
-                  <span>노출 활성: {popups.filter(p => p.active !== false).length}개 (3:4)</span>
+                  <span>활성: {popups.filter(p => p.active !== false).length}개 (3:4)</span>
                 </div>
               </div>
 
-              <div className="bg-white p-6 border border-[#E2DDD3] shadow-xs">
+              <div className="bg-white p-5 border border-[#E2DDD3] shadow-xs">
                 <span className="text-xs text-gray-500 font-medium">등록 제휴처</span>
                 <p className="text-3xl font-black text-[#144A42] mt-2">{partners.length}곳</p>
-                <p className="text-[11px] text-gray-500 mt-3">병원, 미용, 스파 제휴</p>
+                <p className="text-[11px] text-gray-500 mt-3">병원, 미용, 스파</p>
               </div>
 
-              <div className="bg-white p-6 border border-[#E2DDD3] shadow-xs">
+              <div className="bg-white p-5 border border-[#E2DDD3] shadow-xs">
                 <span className="text-xs text-gray-500 font-medium">안심 입양 등록</span>
                 <p className="text-3xl font-black text-[#144A42] mt-2">{adoptionList.length}마리</p>
-                <p className="text-[11px] text-gray-500 mt-3">공인 보호센터 연계</p>
+                <p className="text-[11px] text-gray-500 mt-3">보호센터 연계</p>
               </div>
 
-              <div className="bg-white p-6 border border-[#E2DDD3] shadow-xs">
+              <div className="bg-white p-5 border border-[#E2DDD3] shadow-xs">
                 <span className="text-xs text-gray-500 font-medium">엄선 동반 여행지</span>
                 <p className="text-3xl font-black text-[#144A42] mt-2">{travelList.length}곳</p>
                 <p className="text-[11px] text-gray-500 mt-3">리조트, 독채펜션</p>
@@ -3134,7 +3233,7 @@ export default function AdminPage({
               </div>
 
               {/* Sub-tab Pills */}
-              <div className="flex items-center bg-[#FAF8F5] p-1 border border-[#E2DDD3] text-xs">
+              <div className="flex items-center bg-[#FAF8F5] p-1 border border-[#E2DDD3] text-xs flex-wrap gap-1">
                 <button
                   type="button"
                   onClick={() => setSeoInnerTab('seo')}
@@ -3163,6 +3262,16 @@ export default function AdminPage({
                 >
                   <span>푸터정보 관리</span>
                   <span className="w-1.5 h-1.5 rounded-full bg-[#D4AF7A]"></span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setSeoInnerTab('policy')}
+                  className={`px-3.5 py-1.5 font-bold transition flex items-center gap-1.5 ${
+                    seoInnerTab === 'policy' ? 'bg-[#144A42] text-white shadow-xs' : 'text-gray-600 hover:text-black'
+                  }`}
+                >
+                  <ShieldCheckIcon className="w-3.5 h-3.5 text-[#E6CAA4]" />
+                  <span>약관·개인정보·동의문구</span>
                 </button>
               </div>
             </div>
@@ -3812,9 +3921,9 @@ export default function AdminPage({
                       />
                     </div>
 
-                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                       <div>
-                        <label className="block font-bold mb-1 text-gray-800">개인정보처리방침 링크</label>
+                        <label className="block font-bold mb-1 text-gray-800">개인정보처리방침 링크 URL (기본 팝업 뷰어 연결 권장)</label>
                         <input
                           type="text"
                           value={brandForm.privacyUrl || ''}
@@ -3825,23 +3934,12 @@ export default function AdminPage({
                       </div>
 
                       <div>
-                        <label className="block font-bold mb-1 text-gray-800">이용약관 링크</label>
+                        <label className="block font-bold mb-1 text-gray-800">이용약관 링크 URL (기본 팝업 뷰어 연결 권장)</label>
                         <input
                           type="text"
                           value={brandForm.termsUrl || ''}
                           onChange={(e) => setBrandForm({ ...brandForm, termsUrl: e.target.value })}
                           placeholder="#terms"
-                          className="w-full px-3.5 py-2 border border-gray-300 focus:border-[#144A42] focus:outline-none font-mono"
-                        />
-                      </div>
-
-                      <div>
-                        <label className="block font-bold mb-1 text-gray-800">마케팅 수신동의 링크</label>
-                        <input
-                          type="text"
-                          value={brandForm.marketingUrl || ''}
-                          onChange={(e) => setBrandForm({ ...brandForm, marketingUrl: e.target.value })}
-                          placeholder="#marketing"
                           className="w-full px-3.5 py-2 border border-gray-300 focus:border-[#144A42] focus:outline-none font-mono"
                         />
                       </div>
@@ -3896,13 +3994,138 @@ export default function AdminPage({
 
                     <div className="pt-3 border-t border-[#1C2624] flex flex-col sm:flex-row items-center justify-between text-[11px] text-[#6B7973] gap-2">
                       <div className="flex items-center gap-3">
-                        <span className="underline hover:text-white">개인정보처리방침</span>
-                        <span>이용약관</span>
-                        <span>마케팅 수신동의</span>
+                        <span className="underline hover:text-white cursor-pointer">개인정보처리방침</span>
+                        <span className="hover:text-white cursor-pointer">이용약관</span>
                       </div>
                       <div>
                         {brandForm.copyright || '© 2026 Seulban Life Inc. All rights reserved.'}
                       </div>
+                    </div>
+                  </div>
+
+                </div>
+              )}
+
+              {/* ----------------------------------------------------
+                  SUB-TAB 4: 약관 및 개인정보 동의 문구 관리
+                  ---------------------------------------------------- */}
+              {seoInnerTab === 'policy' && (
+                <div className="space-y-6 animate-fade-in text-xs">
+                  
+                  {/* 1. 카카오 채널 및 소셜 상담 링크 */}
+                  <div className="bg-white p-6 sm:p-7 border border-[#E2DDD3] shadow-xs space-y-4">
+                    <div className="border-b border-gray-100 pb-3 flex items-center justify-between">
+                      <div>
+                        <h3 className="text-sm font-bold text-[#142C27] flex items-center gap-1.5">
+                          <KakaoIcon className="w-4 h-4 text-[#FEE500] fill-amber-500" />
+                          <span>카카오톡 채널 상담 및 고객 접점 URL</span>
+                        </h3>
+                        <p className="text-[11px] text-gray-500 mt-0.5">
+                          우측 하단 플로팅 메뉴의 [카톡 1:1 실시간 상담] 클릭 시 연결될 카카오톡 채널 링크입니다.
+                        </p>
+                      </div>
+                      <span className="text-[10px] bg-amber-50 text-amber-800 px-2 py-0.5 border border-amber-200">
+                        플로팅 버튼 연동
+                      </span>
+                    </div>
+
+                    <div>
+                      <label className="block font-bold mb-1 text-gray-800">카카오톡 채널 상담 링크 (URL) *</label>
+                      <input
+                        type="url"
+                        value={brandForm.kakaoChannelUrl || ''}
+                        onChange={(e) => setBrandForm({ ...brandForm, kakaoChannelUrl: e.target.value })}
+                        placeholder="https://pf.kakao.com/_xxxxxx/chat"
+                        className="w-full px-3.5 py-2.5 border border-gray-300 focus:border-[#144A42] focus:outline-none font-mono"
+                        required
+                      />
+                      <p className="text-[11px] text-gray-400 mt-1">
+                        * 카카오 비즈니스 채널 1:1 채팅 URL 또는 오픈채팅방 링크를 입력하시면 방문자가 즉시 카톡으로 상담할 수 있습니다.
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* 2. 빠른 상담 신청 시 개인정보 동의 문구 */}
+                  <div className="bg-white p-6 sm:p-7 border border-[#E2DDD3] shadow-xs space-y-4">
+                    <div className="border-b border-gray-100 pb-3 flex items-center justify-between">
+                      <div>
+                        <h3 className="text-sm font-bold text-[#142C27] flex items-center gap-1.5">
+                          <HeadphoneIcon className="w-4 h-4 text-[#144A42]" />
+                          <span>빠른상담 신청 시 개인정보 수집 및 이용 동의 문구</span>
+                        </h3>
+                        <p className="text-[11px] text-gray-500 mt-0.5">
+                          고객이 빠른상담 모달에서 성함과 연락처를 남길 때 표시되는 법적 필수 동의 안내문입니다.
+                        </p>
+                      </div>
+                      <span className="text-[10px] bg-emerald-50 text-emerald-800 px-2 py-0.5 border border-emerald-200">
+                        개인정보보호법 준수
+                      </span>
+                    </div>
+
+                    <div>
+                      <label className="block font-bold mb-1 text-gray-800">동의 안내 문구 (직접 수정 가능) *</label>
+                      <textarea
+                        rows={3}
+                        value={brandForm.consultConsent || ''}
+                        onChange={(e) => setBrandForm({ ...brandForm, consultConsent: e.target.value })}
+                        placeholder="슬반생은 빠른 맞춤 상담 및 서비스 안내를 위해 성함, 연락처, 문의 내용을 수집·이용하며, 상담 완료 및 목적 달성 후 관계 법령에 따라 안전하게 파기합니다."
+                        className="w-full px-3.5 py-2.5 border border-gray-300 focus:border-[#144A42] focus:outline-none leading-relaxed"
+                        required
+                      />
+                    </div>
+                  </div>
+
+                  {/* 3. 개인정보처리방침 전문 수정 */}
+                  <div className="bg-white p-6 sm:p-7 border border-[#E2DDD3] shadow-xs space-y-4">
+                    <div className="border-b border-gray-100 pb-3 flex items-center justify-between">
+                      <div>
+                        <h3 className="text-sm font-bold text-[#142C27] flex items-center gap-1.5">
+                          <ShieldCheckIcon className="w-4 h-4 text-[#144A42]" />
+                          <span>개인정보처리방침 전문 관리</span>
+                        </h3>
+                        <p className="text-[11px] text-gray-500 mt-0.5">
+                          푸터 하단의 [개인정보처리방침] 클릭 시 팝업 뷰어에 노출되는 정식 전문입니다.
+                        </p>
+                      </div>
+                    </div>
+
+                    <div>
+                      <label className="block font-bold mb-1 text-gray-800">개인정보처리방침 내용 *</label>
+                      <textarea
+                        rows={8}
+                        value={brandForm.privacyPolicy || ''}
+                        onChange={(e) => setBrandForm({ ...brandForm, privacyPolicy: e.target.value })}
+                        placeholder="개인정보처리방침 전문을 입력하세요..."
+                        className="w-full px-3.5 py-2.5 border border-gray-300 focus:border-[#144A42] focus:outline-none leading-relaxed font-sans text-[11px]"
+                        required
+                      />
+                    </div>
+                  </div>
+
+                  {/* 4. 서비스 이용약관 전문 수정 */}
+                  <div className="bg-white p-6 sm:p-7 border border-[#E2DDD3] shadow-xs space-y-4">
+                    <div className="border-b border-gray-100 pb-3 flex items-center justify-between">
+                      <div>
+                        <h3 className="text-sm font-bold text-[#142C27] flex items-center gap-1.5">
+                          <FileTextIcon className="w-4 h-4 text-[#144A42]" />
+                          <span>서비스 이용약관 전문 관리</span>
+                        </h3>
+                        <p className="text-[11px] text-gray-500 mt-0.5">
+                          푸터 하단의 [이용약관] 클릭 시 팝업 뷰어에 노출되는 정식 약관입니다.
+                        </p>
+                      </div>
+                    </div>
+
+                    <div>
+                      <label className="block font-bold mb-1 text-gray-800">이용약관 내용 *</label>
+                      <textarea
+                        rows={8}
+                        value={brandForm.termsOfService || ''}
+                        onChange={(e) => setBrandForm({ ...brandForm, termsOfService: e.target.value })}
+                        placeholder="서비스 이용약관 전문을 입력하세요..."
+                        className="w-full px-3.5 py-2.5 border border-gray-300 focus:border-[#144A42] focus:outline-none leading-relaxed font-sans text-[11px]"
+                        required
+                      />
                     </div>
                   </div>
 
@@ -4010,12 +4233,121 @@ export default function AdminPage({
           </div>
         )}
 
+        {/* ========================================================
+            TAB: 빠른 상담 신청 내역 관리 (CONSULTATIONS)
+            ======================================================== */}
+        {currentTab === 'consultations' && (
+          <div className="space-y-6 animate-fade-in">
+            <div className="flex flex-col sm:flex-row justify-between sm:items-center gap-4">
+              <div>
+                <span className="text-xs font-bold tracking-widest text-[#B48B55] uppercase">INQUIRIES & LEADS</span>
+                <h2 className="text-2xl sm:text-3xl font-extrabold text-[#142C27] tracking-tight flex items-center gap-2.5">
+                  <span>빠른 상담 신청 내역</span>
+                  <span className="text-sm px-2.5 py-0.5 bg-amber-100 text-amber-900 border border-amber-300 rounded-full font-bold">
+                    총 {consultations.length}건
+                  </span>
+                </h2>
+                <p className="text-xs text-[#6B7973] mt-1">
+                  고객이 플로팅 빠른상담 모달을 통해 접수한 1:1 상담 신청 건들을 조회하고 통화/상담 상태를 관리합니다.
+                </p>
+              </div>
+            </div>
+
+            {/* Inquiries Table */}
+            <div className="bg-white border border-[#E2DDD3] shadow-xs overflow-hidden">
+              {consultations.length === 0 ? (
+                <div className="py-16 text-center space-y-3">
+                  <div className="w-12 h-12 rounded-full bg-gray-100 text-gray-400 flex items-center justify-center mx-auto">
+                    <HeadphoneIcon className="w-6 h-6" />
+                  </div>
+                  <p className="text-sm font-bold text-gray-600">접수된 빠른상담 내역이 없습니다.</p>
+                  <p className="text-xs text-gray-400">사용자가 우측 하단 플로팅 메뉴로 상담을 신청하면 이곳에 실시간 표시됩니다.</p>
+                </div>
+              ) : (
+                <div className="overflow-x-auto">
+                  <table className="w-full text-left text-xs">
+                    <thead className="bg-[#FAF8F5] border-b border-[#E2DDD3] text-[#55645E]">
+                      <tr>
+                        <th className="p-3.5 font-bold">접수일시</th>
+                        <th className="p-3.5 font-bold">고객 성함</th>
+                        <th className="p-3.5 font-bold">연락처</th>
+                        <th className="p-3.5 font-bold">상담 희망 분야</th>
+                        <th className="p-3.5 font-bold">고객 문의 및 요청사항</th>
+                        <th className="p-3.5 font-bold text-center">처리 상태</th>
+                        <th className="p-3.5 font-bold text-center">관리</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-gray-100">
+                      {consultations.map((item, idx) => (
+                        <tr key={item.id || item._id || idx} className="hover:bg-gray-50/80 transition">
+                          <td className="p-3.5 text-gray-400 whitespace-nowrap font-mono text-[11px]">
+                            {item.createdAt ? item.createdAt.replace('T', ' ').slice(0, 16) : '최근 접수'}
+                          </td>
+                          <td className="p-3.5 font-bold text-[#142C27] whitespace-nowrap">
+                            {item.name}
+                          </td>
+                          <td className="p-3.5 font-semibold text-[#144A42] whitespace-nowrap">
+                            <a href={`tel:${item.phone}`} className="hover:underline flex items-center gap-1">
+                              <PhoneIcon className="w-3 h-3 text-[#B48B55]" />
+                              <span>{item.phone}</span>
+                            </a>
+                          </td>
+                          <td className="p-3.5 whitespace-nowrap">
+                            <span className="px-2.5 py-1 bg-[#EBF3FB] text-[#2563EB] font-bold text-[11px] rounded-sm">
+                              {item.serviceType || '일반 상담'}
+                            </span>
+                          </td>
+                          <td className="p-3.5 text-gray-600 max-w-xs break-all">
+                            {item.message || <span className="text-gray-400 italic">요청사항 없음</span>}
+                          </td>
+                          <td className="p-3.5 text-center whitespace-nowrap">
+                            <button
+                              onClick={() => {
+                                if (onUpdateConsultStatus) {
+                                  const nextStatus = item.status === 'COMPLETED' ? 'PENDING' : 'COMPLETED';
+                                  onUpdateConsultStatus(item.id || item._id, nextStatus);
+                                }
+                              }}
+                              className={`px-2.5 py-1 text-[11px] font-bold border rounded-sm transition cursor-pointer ${
+                                item.status === 'COMPLETED'
+                                  ? 'bg-emerald-50 text-emerald-800 border-emerald-300 hover:bg-emerald-100'
+                                  : 'bg-amber-50 text-amber-800 border-amber-300 hover:bg-amber-100'
+                              }`}
+                            >
+                              {item.status === 'COMPLETED' ? '✓ 상담 완료' : '● 상담 대기'}
+                            </button>
+                          </td>
+                          <td className="p-3.5 text-center whitespace-nowrap">
+                            <button
+                              onClick={() => {
+                                if (confirm(`[${item.name}] 님의 상담 내역을 삭제하시겠습니까?`)) {
+                                  if (onDeleteConsultation) {
+                                    onDeleteConsultation(item.id || item._id);
+                                  }
+                                }
+                              }}
+                              className="text-xs text-red-500 hover:text-red-700 underline cursor-pointer"
+                            >
+                              삭제
+                            </button>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+
       </main>
 
       {/* Admin Footer */}
       <footer className="bg-[#142C27] text-gray-400 text-xs py-4 border-t border-[#1C3B34] text-center">
         <span>© 2026 Seulban Life Management System. 모든 변경 사항은 실시간 반영됩니다.</span>
       </footer>
+    </div>
     </div>
   );
 }

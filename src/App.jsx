@@ -19,11 +19,13 @@ import {
   LoginModal, 
   AdminModal,
   MainPopupModal,
-  MallPreparingModal
+  MallPreparingModal,
+  QuickConsultModal,
+  PolicyViewerModal
 } from './components/Modals';
 import { updateSeoMeta } from './utils/seoHelper';
 
-import { PhoneIcon, SparklesIcon, PawIcon, MessageSquare } from './components/Icons';
+import { PhoneIcon, SparklesIcon, PawIcon, MessageSquare, KakaoIcon, HeadphoneIcon } from './components/Icons';
 import { useQuery, useMutation } from 'convex/react';
 import { api } from '../convex/_generated/api';
 import { 
@@ -274,6 +276,17 @@ export default function App() {
   });
   const popups = (convexPopups && convexPopups.length > 0) ? convexPopups : localPopups;
 
+  // Consultations State (빠른상담 신청 내역)
+  const [localConsultations, setLocalConsultations] = useState(() => {
+    try {
+      const saved = localStorage.getItem('seulban_consultations');
+      return saved ? JSON.parse(saved) : [];
+    } catch {
+      return [];
+    }
+  });
+  const consultations = localConsultations;
+
   // Modals
   const [applyModalOpen, setApplyModalOpen] = useState(false);
   const [membershipModalOpen, setMembershipModalOpen] = useState(false);
@@ -281,6 +294,8 @@ export default function App() {
   const [adminModalOpen, setAdminModalOpen] = useState(false);
   const [mallModalOpen, setMallModalOpen] = useState(false);
   const [selectedPartner, setSelectedPartner] = useState(null);
+  const [quickConsultOpen, setQuickConsultOpen] = useState(false);
+  const [policyModal, setPolicyModal] = useState({ isOpen: false, type: 'privacy' });
 
   // Floating consult widget state
   const [floatingMenuOpen, setFloatingMenuOpen] = useState(false);
@@ -291,6 +306,32 @@ export default function App() {
   const showToast = (message) => {
     setToast(message);
     setTimeout(() => setToast(null), 3000);
+  };
+
+  const handleAddConsultation = async (newConsult) => {
+    const item = {
+      id: `CS-${Date.now()}`,
+      status: 'PENDING',
+      ...newConsult
+    };
+    const updated = [item, ...localConsultations];
+    setLocalConsultations(updated);
+    localStorage.setItem('seulban_consultations', JSON.stringify(updated));
+    showToast('빠른 상담 신청이 성공적으로 접수되었습니다.');
+  };
+
+  const handleDeleteConsultation = (id) => {
+    const updated = localConsultations.filter(c => (c.id !== id && c._id !== id));
+    setLocalConsultations(updated);
+    localStorage.setItem('seulban_consultations', JSON.stringify(updated));
+    showToast('상담 신청 건이 삭제되었습니다.');
+  };
+
+  const handleUpdateConsultStatus = (id, newStatus) => {
+    const updated = localConsultations.map(c => (c.id === id || c._id === id) ? { ...c, status: newStatus } : c);
+    setLocalConsultations(updated);
+    localStorage.setItem('seulban_consultations', JSON.stringify(updated));
+    showToast(`상담 처리 상태가 [${newStatus === 'COMPLETED' ? '상담 완료' : '상담 대기'}]로 변경되었습니다.`);
   };
 
   // 1. 동물등록 신청 접수 (Convex DB 연동 + 사용자별 스코프 영구 보존)
@@ -867,6 +908,9 @@ export default function App() {
           onTogglePopup={handleTogglePopup}
           brandInfo={brandInfo}
           onUpdateBrandInfo={handleUpdateBrandInfo}
+          consultations={consultations}
+          onDeleteConsultation={handleDeleteConsultation}
+          onUpdateConsultStatus={handleUpdateConsultStatus}
           showToast={showToast}
         />
       </div>
@@ -970,6 +1014,7 @@ export default function App() {
         onOpenAdmin={handleOpenAdmin}
         onNavigate={handleNavigate}
         brandInfo={brandInfo}
+        onOpenPolicy={(type) => setPolicyModal({ isOpen: true, type })}
       />
 
       {/* Mobile Fixed Bottom Navigation (기획서 5.2 모바일 5대 내비게이션) */}
@@ -978,54 +1023,124 @@ export default function App() {
         onNavigate={handleNavigate}
       />
 
-      {/* Floating Action Button (우측 하단 상담 플로팅 버튼 기획서 6.3) */}
-      <div className="fixed right-5 bottom-20 md:bottom-8 z-30 flex flex-col items-end gap-2">
+      {/* Floating Action Buttons (빠른상담, 카톡상담, 전화상담 지원) */}
+      <div className="fixed right-4 sm:right-6 bottom-20 md:bottom-8 z-30 flex flex-col items-end gap-2.5">
         {floatingMenuOpen && (
-          <div className="bg-white p-4 shadow-2xl border border-[#ECE5D8] w-64 space-y-2.5 animate-fade-in text-xs">
+          <div className="bg-white p-4 shadow-2xl border border-[#ECE5D8] w-72 space-y-2.5 animate-fade-in text-xs">
             <div className="font-bold text-[#144A42] border-b border-gray-100 pb-2 flex justify-between items-center">
-              <span>슬반생 고객센터 & 긴급상담</span>
-              <span className="w-2 h-2 bg-emerald-500"></span>
+              <span className="flex items-center gap-1.5 font-extrabold text-xs">
+                <HeadphoneIcon className="w-4 h-4 text-[#C5A880]" />
+                <span>슬반생 원스톱 상담센터</span>
+              </span>
+              <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
             </div>
+
+            {/* 1. 빠른 맞춤상담 신청 버튼 */}
+            <button
+              type="button"
+              onClick={() => {
+                setFloatingMenuOpen(false);
+                setQuickConsultOpen(true);
+              }}
+              className="w-full p-2.5 bg-[#144A42] hover:bg-[#0D3832] text-white flex items-center justify-between transition shadow-xs group cursor-pointer"
+            >
+              <div className="flex items-center gap-2 text-left">
+                <HeadphoneIcon className="w-4 h-4 text-[#E6CAA4]" />
+                <div>
+                  <span className="font-bold text-xs block text-white">1:1 빠른 맞춤상담 신청</span>
+                  <p className="text-[10px] text-[#A3CCC3] font-normal">전문 상담사가 확인 후 즉시 연락</p>
+                </div>
+              </div>
+              <span className="text-[11px] font-bold text-[#E6CAA4] group-hover:translate-x-0.5 transition-transform">신청 →</span>
+            </button>
+
+            {/* 2. 카카오톡 실시간 채팅 상담 */}
+            <a
+              href={brandInfo.kakaoChannelUrl || BRAND_INFO.kakaoChannelUrl || "https://pf.kakao.com"}
+              target="_blank"
+              rel="noopener noreferrer"
+              onClick={() => setFloatingMenuOpen(false)}
+              className="flex items-center justify-between p-2.5 bg-[#FEE500] hover:bg-[#FADA0A] text-[#191919] font-bold transition shadow-xs"
+            >
+              <div className="flex items-center gap-2">
+                <KakaoIcon className="w-4 h-4 text-[#191919]" />
+                <div className="text-left">
+                  <span className="text-xs block">카톡 1:1 실시간 상담</span>
+                  <p className="text-[10px] text-neutral-600 font-normal">카카오톡 채널로 간편하게 문의</p>
+                </div>
+              </div>
+              <span className="text-[11px] font-bold">대화하기 →</span>
+            </a>
             
+            {/* 3. 일반 유선 전화상담 */}
             <a 
-              href={`tel:${BRAND_INFO.phone1}`}
+              href={`tel:${brandInfo.phone1 || BRAND_INFO.phone1}`}
               className="flex items-center gap-2 p-2.5 bg-[#FAF8F5] hover:bg-[#F3EFE6] transition text-[#2C3B35] font-semibold"
             >
               <PhoneIcon className="w-4 h-4 text-[#144A42]" />
               <div>
-                <span>일반 상담: {BRAND_INFO.phone1}</span>
+                <span>일반 상담: {brandInfo.phone1 || BRAND_INFO.phone1}</span>
                 <p className="text-[10px] text-gray-400 font-normal">평일 09:00 ~ 18:00</p>
               </div>
             </a>
 
+            {/* 4. 24시 긴급 응급/장례 직통 */}
             <a 
-              href={`tel:${BRAND_INFO.phone2}`}
+              href={`tel:${brandInfo.phone2 || BRAND_INFO.phone2}`}
               className="flex items-center gap-2 p-2.5 bg-[#EAF5F2] hover:bg-[#DCEDE9] transition text-[#144A42] font-semibold"
             >
               <PhoneIcon className="w-4 h-4 text-[#144A42]" />
               <div>
                 <span>24시 긴급 응급/장례 직통</span>
-                <p className="text-[10px] text-emerald-700 font-normal">연중무휴 24시간 실시간 지원</p>
+                <p className="text-[10px] text-emerald-700 font-normal">{brandInfo.phone2 || BRAND_INFO.phone2}</p>
               </div>
             </a>
 
             <button
               onClick={() => { setFloatingMenuOpen(false); setApplyModalOpen(true); }}
-              className="w-full py-2.5 bg-[#144A42] text-white font-bold text-center hover:bg-[#0D3832]"
+              className="w-full py-2.5 bg-[#FAF8F5] border border-[#DDD5C7] text-[#144A42] font-bold text-center hover:bg-[#F3EFE6] transition"
             >
-              동물등록 바로 신청하기
+              동물등록 바로 신청하기 →
             </button>
           </div>
         )}
 
-        <button
-          onClick={() => setFloatingMenuOpen(!floatingMenuOpen)}
-          className="w-13 h-13 p-3 bg-[#144A42] hover:bg-[#0D3832] text-white flex items-center justify-center shadow-xl transition-all transform hover:scale-105 border border-[#C5A880]"
-          aria-label="상담 플로팅 버튼"
-          title="상담 센터"
-        >
-          <PhoneIcon className="w-6 h-6 text-[#C5A880]" />
-        </button>
+        {/* Floating Toggle Button */}
+        <div className="flex items-center gap-2">
+          {/* Quick Consultation direct button badge on desktop */}
+          <button
+            type="button"
+            onClick={() => setQuickConsultOpen(true)}
+            className="hidden sm:flex items-center gap-1.5 px-3.5 py-2.5 bg-[#144A42] hover:bg-[#0D3832] text-white text-xs font-bold shadow-xl border border-[#C5A880] transition-all transform hover:scale-105 cursor-pointer"
+            title="빠른 맞춤상담"
+          >
+            <HeadphoneIcon className="w-3.5 h-3.5 text-[#C5A880]" />
+            <span>빠른상담</span>
+          </button>
+
+          {/* Kakao direct button badge on desktop */}
+          <a
+            href={brandInfo.kakaoChannelUrl || BRAND_INFO.kakaoChannelUrl || "https://pf.kakao.com"}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="hidden sm:flex items-center gap-1.5 px-3.5 py-2.5 bg-[#FEE500] hover:bg-[#FADA0A] text-[#191919] text-xs font-bold shadow-xl border border-amber-300 transition-all transform hover:scale-105 cursor-pointer"
+            title="카카오톡 채널 1:1 상담"
+          >
+            <KakaoIcon className="w-3.5 h-3.5" />
+            <span>카톡상담</span>
+          </a>
+
+          {/* Main Floating Trigger Button */}
+          <button
+            onClick={() => setFloatingMenuOpen(!floatingMenuOpen)}
+            className="w-13 h-13 p-3 bg-[#144A42] hover:bg-[#0D3832] text-white flex items-center justify-center shadow-2xl transition-all transform hover:scale-105 border border-[#C5A880] cursor-pointer relative"
+            aria-label="상담 플로팅 버튼"
+            title="슬반생 상담센터"
+          >
+            <HeadphoneIcon className="w-6 h-6 text-[#C5A880]" />
+            <span className="absolute -top-1 -right-1 w-3 h-3 bg-red-500 rounded-full border-2 border-white"></span>
+          </button>
+        </div>
       </div>
 
       {/* Modals */}
@@ -1071,6 +1186,23 @@ export default function App() {
         onClose={() => setMallModalOpen(false)}
         user={user}
         onNavigate={handleNavigate}
+      />
+
+      {/* 빠른 맞춤상담 모달 */}
+      <QuickConsultModal 
+        isOpen={quickConsultOpen}
+        onClose={() => setQuickConsultOpen(false)}
+        onSubmitConsult={handleAddConsultation}
+        brandInfo={brandInfo}
+        user={user}
+      />
+
+      {/* 개인정보처리방침 / 이용약관 전용 모달 */}
+      <PolicyViewerModal 
+        isOpen={policyModal.isOpen}
+        type={policyModal.type}
+        onClose={() => setPolicyModal({ isOpen: false, type: 'privacy' })}
+        brandInfo={brandInfo}
       />
 
       {/* 메인 3:4 팝업 (관리자에서 설정한 활성 팝업, 7일간 숨김 및 다크 백드롭 지원) */}

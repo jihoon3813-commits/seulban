@@ -2,7 +2,7 @@ import React from 'react';
 import { LogoEmblem, PhoneIcon } from './Icons';
 import { BRAND_INFO } from '../data/mockData';
 
-export default function Footer({ onOpenAdmin, onNavigate, brandInfo }) {
+export default function Footer({ onOpenAdmin, onNavigate, brandInfo, onOpenPolicy }) {
   const info = { ...BRAND_INFO, ...(brandInfo || {}) };
 
   return (
@@ -55,9 +55,20 @@ export default function Footer({ onOpenAdmin, onNavigate, brandInfo }) {
         {/* Bottom row: Copyright & Policy Links */}
         <div className="pt-6 border-t border-[#1C2624] flex flex-col sm:flex-row items-center justify-between text-xs text-[#6B7973] gap-4">
           <div className="flex items-center gap-4 flex-wrap">
-            <a href={info.privacyUrl || "#privacy"} className="hover:text-white underline">개인정보처리방침</a>
-            <a href={info.termsUrl || "#terms"} className="hover:text-white">이용약관</a>
-            <a href={info.marketingUrl || "#marketing"} className="hover:text-white">마케팅 수신동의</a>
+            <button 
+              type="button"
+              onClick={() => onOpenPolicy ? onOpenPolicy('privacy') : null} 
+              className="hover:text-white underline cursor-pointer"
+            >
+              개인정보처리방침
+            </button>
+            <button 
+              type="button"
+              onClick={() => onOpenPolicy ? onOpenPolicy('terms') : null} 
+              className="hover:text-white cursor-pointer"
+            >
+              이용약관
+            </button>
             <a
               href="?page=admin"
               target="_blank"

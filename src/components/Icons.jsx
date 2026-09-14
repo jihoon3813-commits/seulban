@@ -302,3 +302,19 @@ export const BellIcon = ({ className = "w-5 h-5", ...props }) => (
     <path d="M10.3 21a1.94 1.94 0 0 0 3.4 0" />
   </svg>
 );
+
+// 카카오톡 공식 심볼 아이콘
+export const KakaoIcon = ({ className = "w-5 h-5", ...props }) => (
+  <svg className={className} viewBox="0 0 24 24" fill="currentColor" {...props}>
+    <path d="M12 3c-5.52 0-10 3.58-10 8 0 2.83 1.83 5.32 4.6 6.7-.2.72-.73 2.61-.83 3.01-.13.51.19.5.39.37.27-.18 3.73-2.53 4.38-2.98.47.07.96.1 1.46.1 5.52 0 10-3.58 10-8s-4.48-8-10-8z"/>
+  </svg>
+);
+
+// 헤드셋/상담원 아이콘
+export const HeadphoneIcon = ({ className = "w-5 h-5", ...props }) => (
+  <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}>
+    <path d="M3 18v-6a9 9 0 0 1 18 0v6"/>
+    <path d="M21 19a2 2 0 0 1-2 2h-1a2 2 0 0 1-2-2v-3a2 2 0 0 1 2-2h3zM3 19a2 2 0 0 0 2 2h1a2 2 0 0 0 2-2v-3a2 2 0 0 0-2-2H3z"/>
+  </svg>
+);
+
