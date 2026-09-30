@@ -2448,10 +2448,13 @@ export default function AdminPage({
                           className="px-3 py-1.5 bg-white border border-gray-300 text-xs font-semibold focus:outline-none focus:border-[#144A42]"
                         >
                           <option value="ALL">전체 분류</option>
-                          <option value="carrier">이동가방/백팩</option>
-                          <option value="sling">슬링백/포대기</option>
+                          <option value="cat">고양이/스크래쳐(네코야)</option>
+                          <option value="carrier">이동가방/외출</option>
                           <option value="living">스텝/방석/하우스</option>
                           <option value="car">카시트/안전</option>
+                          <option value="food">식기/간식</option>
+                          <option value="care">산책/위생</option>
+                          <option value="other">기타</option>
                         </select>
                         <span className="text-xs text-gray-500 font-medium">
                           총 <strong>{(selectedShopPartner.products || []).length}</strong>개 품목 중 <strong>{

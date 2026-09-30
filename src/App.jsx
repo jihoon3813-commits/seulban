@@ -253,8 +253,8 @@ export default function App() {
           localStorage.setItem('seulban_partners', JSON.stringify(updated));
           return updated;
         } else if (pIndex !== -1 && defaultRedpuppy) {
-          // If stored products list is less than 20 (old mock data) or has mock images, sync with real RedPuppy products
-          if (!parsed[pIndex].products || parsed[pIndex].products.length < 20) {
+          // If stored products list is less than 500, sync with full RedPuppy products catalog (including 네코야)
+          if (!parsed[pIndex].products || parsed[pIndex].products.length < 500) {
             parsed[pIndex].products = defaultRedpuppy.products;
             parsed[pIndex].imageUrl = defaultRedpuppy.imageUrl;
             localStorage.setItem('seulban_partners', JSON.stringify(parsed));

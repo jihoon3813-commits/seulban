@@ -1295,6 +1295,10 @@ export function ShopPartnerModal({
     }
   }, [isOpen]);
 
+  useEffect(() => {
+    setVisibleCount(24);
+  }, [activeCategory, searchQuery]);
+
   if (!isOpen || !partner) return null;
 
   const isBookmarked = partner.id && bookmarks.includes(partner.id);
@@ -1303,10 +1307,12 @@ export function ShopPartnerModal({
 
   const categories = [
     { id: 'all', label: '전체 상품' },
+    { id: 'cat', label: '고양이·스크래쳐(네코야)' },
     { id: 'carrier', label: '이동가방/백팩' },
-    { id: 'sling', label: '슬링백/포대기' },
-    { id: 'living', label: '스텝/방석' },
-    { id: 'car', label: '카시트/안전' }
+    { id: 'living', label: '스텝/방석/하우스' },
+    { id: 'car', label: '카시트/안전' },
+    { id: 'food', label: '식기/간식' },
+    { id: 'care', label: '산책/위생' }
   ];
 
   const filteredProducts = visibleProducts.filter(item => {
