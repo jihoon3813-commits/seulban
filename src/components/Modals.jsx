@@ -1390,18 +1390,6 @@ export function ShopPartnerModal({
           </div>
 
           <div className="flex items-center gap-2">
-            {partner.shopUrl && (
-              <a
-                href={partner.shopUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="hidden sm:inline-flex items-center gap-1.5 px-3 py-1.5 bg-white/15 hover:bg-white/25 text-white text-xs font-semibold rounded-xs transition"
-                title="공식몰 새창 열기"
-              >
-                <span>공식몰 둘러보기</span>
-                <ExternalLinkIcon className="w-3.5 h-3.5" />
-              </a>
-            )}
             <button
               onClick={onClose}
               className="w-8 h-8 rounded-full bg-white/10 hover:bg-white/20 text-white flex items-center justify-center transition"
@@ -1412,24 +1400,13 @@ export function ShopPartnerModal({
         </div>
 
         {/* Member Benefit Notification Bar */}
-        <div className="bg-[#FAF6EC] px-4 py-2.5 sm:px-6 border-b border-[#EAE3D4] flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-xs">
+        <div className="bg-[#FAF6EC] px-4 py-2.5 sm:px-6 border-b border-[#EAE3D4] flex items-center justify-between gap-2 text-xs">
           <div className="flex items-center gap-2 text-[#6D4C1D] font-semibold">
             <SparklesIcon className="w-4 h-4 text-[#C5A880] flex-shrink-0" />
             <span>
               <strong>[슬반생 회원 혜택 인증 완료]</strong> 주문 시 정가 대비 <strong>{partner.discountRate || 25}% 특별 우대가</strong>로 주문 및 배송 접수됩니다.
             </span>
           </div>
-          {partner.shopUrl && (
-            <a
-              href={partner.shopUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="sm:hidden text-[11px] text-[#144A42] font-bold underline flex items-center gap-1"
-            >
-              <span>레드퍼피 공식몰 보기</span>
-              <ExternalLinkIcon className="w-3 h-3" />
-            </a>
-          )}
         </div>
 
         {/* Modal Body Switch by Step */}
@@ -1633,83 +1610,40 @@ export function ShopPartnerModal({
                 </div>
               </div>
 
-              {/* Real Detail Images Collapsible View */}
+              {/* Product Detail Images */}
               {selectedProduct.detailImages && selectedProduct.detailImages.length > 0 && (
-                <div className="bg-white border border-[#E8E1D3] shadow-xs overflow-hidden">
-                  <div className="p-3 sm:p-4 bg-[#FAF8F5] border-b border-[#EAE3D4] flex items-center justify-between">
-                    <div className="flex items-center gap-2">
-                      <span className="font-bold text-xs sm:text-sm text-[#142C27]">
-                        📸 실제 제품 상세 이미지 & 스펙
-                      </span>
-                      <span className="bg-[#144A42] text-white text-[10px] font-bold px-2 py-0.5 rounded-full">
-                        {selectedProduct.detailImages.length}장 등록됨
-                      </span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      {selectedProduct.sourceUrl && (
-                        <a
-                          href={selectedProduct.sourceUrl}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="text-[11px] text-[#144A42] hover:underline flex items-center gap-1 font-semibold"
-                        >
-                          <span>공식몰 원본</span>
-                          <ExternalLinkIcon className="w-3 h-3" />
-                        </a>
-                      )}
-                      <button
-                        type="button"
-                        onClick={() => setShowDetailImages(!showDetailImages)}
-                        className="px-2.5 py-1 bg-white border border-[#D5CDBD] text-[#144A42] hover:bg-[#FAF8F5] text-xs font-bold transition cursor-pointer"
-                      >
-                        {showDetailImages ? '▲ 상세이미지 접기' : '▼ 상세이미지 펼치기'}
-                      </button>
-                    </div>
-                  </div>
-
-                  {showDetailImages ? (
-                    <div className="p-3 sm:p-6 space-y-4 max-h-[550px] overflow-y-auto bg-gray-50/50">
-                      {selectedProduct.detailImages.map((imgUrl, idx) => (
-                        <div key={idx} className="bg-white border border-gray-200 shadow-xs max-w-xl mx-auto overflow-hidden">
-                          <img
-                            src={imgUrl}
-                            alt={`${selectedProduct.name} 상세컷 ${idx + 1}`}
-                            className="w-full h-auto object-contain mx-auto"
-                            loading="lazy"
-                          />
-                        </div>
-                      ))}
-                    </div>
+                <div className="space-y-3">
+                  {!showDetailImages ? (
+                    <button
+                      type="button"
+                      onClick={() => setShowDetailImages(true)}
+                      className="w-full py-3 bg-white hover:bg-[#FAF8F5] border border-[#D5CDBD] text-[#144A42] font-bold text-xs sm:text-sm flex items-center justify-center gap-1.5 transition shadow-xs cursor-pointer"
+                    >
+                      <span>상세 이미지 더보기 ▼</span>
+                    </button>
                   ) : (
-                    <div className="p-3 flex items-center gap-2 overflow-x-auto bg-[#FAF9F6]">
-                      {selectedProduct.detailImages.slice(0, 5).map((imgUrl, idx) => (
+                    <div className="bg-white border border-[#E8E1D3] shadow-xs overflow-hidden">
+                      <div className="p-2 sm:p-4 space-y-4 max-h-[600px] overflow-y-auto bg-gray-50/40 text-center">
+                        {selectedProduct.detailImages.map((imgUrl, idx) => (
+                          <div key={idx} className="bg-white border border-gray-200 shadow-xs max-w-xl mx-auto overflow-hidden">
+                            <img
+                              src={imgUrl}
+                              alt={`${selectedProduct.name} 상세컷 ${idx + 1}`}
+                              className="w-full h-auto object-contain mx-auto"
+                              loading="lazy"
+                            />
+                          </div>
+                        ))}
+                      </div>
+                      <div className="p-2.5 bg-[#FAF8F5] border-t border-[#EAE3D4] text-center">
                         <button
-                          key={idx}
                           type="button"
-                          onClick={() => setShowDetailImages(true)}
-                          className="w-16 h-16 sm:w-20 sm:h-20 flex-shrink-0 bg-white border border-gray-200 hover:border-[#144A42] overflow-hidden group/thumb relative transition cursor-pointer"
+                          onClick={() => setShowDetailImages(false)}
+                          className="px-5 py-2 bg-white border border-[#D5CDBD] hover:bg-gray-100 text-[#144A42] font-bold text-xs transition cursor-pointer"
                         >
-                          <img
-                            src={imgUrl}
-                            alt="미리보기"
-                            className="w-full h-full object-cover group-hover/thumb:scale-105 transition"
-                            loading="lazy"
-                          />
-                          {idx === 4 && selectedProduct.detailImages.length > 5 && (
-                            <div className="absolute inset-0 bg-black/60 text-white flex items-center justify-center font-bold text-xs">
-                              +{selectedProduct.detailImages.length - 4}
-                            </div>
-                          )}
+                          상세 이미지 접기 ▲
                         </button>
-                      ))}
-                      <button
-                        type="button"
-                        onClick={() => setShowDetailImages(true)}
-                        className="h-16 sm:h-20 px-3 bg-white border border-dashed border-[#C5BBAA] hover:bg-emerald-50 text-[11px] font-bold text-[#144A42] flex flex-col items-center justify-center gap-1 transition flex-shrink-0 cursor-pointer"
-                      >
-                        <span>전체 상세컷</span>
-                        <span>보기 ({selectedProduct.detailImages.length})</span>
-                      </button>
+                      </div>
                     </div>
                   )}
                 </div>
