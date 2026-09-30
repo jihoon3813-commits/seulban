@@ -246,13 +246,18 @@ export default function App() {
     if (saved) {
       try {
         const parsed = JSON.parse(saved);
-        const hasRedpuppy = parsed.some(p => p.id === 'p_redpuppy');
-        if (!hasRedpuppy) {
-          const redpuppy = PARTNER_LIST.find(p => p.id === 'p_redpuppy');
-          if (redpuppy) {
-            const updated = [redpuppy, ...parsed];
-            localStorage.setItem('seulban_partners', JSON.stringify(updated));
-            return updated;
+        const pIndex = parsed.findIndex(p => p.id === 'p_redpuppy');
+        const defaultRedpuppy = PARTNER_LIST.find(p => p.id === 'p_redpuppy');
+        if (pIndex === -1 && defaultRedpuppy) {
+          const updated = [defaultRedpuppy, ...parsed];
+          localStorage.setItem('seulban_partners', JSON.stringify(updated));
+          return updated;
+        } else if (pIndex !== -1 && defaultRedpuppy) {
+          // If stored products list is less than 20 (old mock data) or has mock images, sync with real RedPuppy products
+          if (!parsed[pIndex].products || parsed[pIndex].products.length < 20) {
+            parsed[pIndex].products = defaultRedpuppy.products;
+            parsed[pIndex].imageUrl = defaultRedpuppy.imageUrl;
+            localStorage.setItem('seulban_partners', JSON.stringify(parsed));
           }
         }
         return parsed;

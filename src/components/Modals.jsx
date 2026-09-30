@@ -1282,11 +1282,16 @@ export function ShopPartnerModal({
     }
   }, [user]);
 
+  const [showDetailImages, setShowDetailImages] = useState(false);
+  const [visibleCount, setVisibleCount] = useState(24);
+
   useEffect(() => {
     if (isOpen) {
       setOrderStep('browse');
       setSelectedProduct(null);
       setQuantity(1);
+      setShowDetailImages(false);
+      setVisibleCount(24);
     }
   }, [isOpen]);
 
@@ -1313,10 +1318,13 @@ export function ShopPartnerModal({
     return matchCat && matchSearch;
   });
 
+  const visibleProductsList = filteredProducts.slice(0, visibleCount);
+
   const handleSelectProduct = (prod) => {
     setSelectedProduct(prod);
     setSelectedOption(prod.options && prod.options.length > 0 ? prod.options[0] : '기본 단일 옵션');
     setQuantity(1);
+    setShowDetailImages(false);
     setOrderStep('checkout');
   };
 
@@ -1471,85 +1479,113 @@ export function ShopPartnerModal({
                   <p className="text-xs text-gray-400">다른 카테고리나 검색어로 확인해보세요.</p>
                 </div>
               ) : (
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-5">
-                  {filteredProducts.map((prod) => (
-                    <div 
-                      key={prod.id}
-                      className="bg-white border border-[#ECE5D8] shadow-xs hover:shadow-lg transition-all duration-300 flex flex-col justify-between group overflow-hidden"
-                    >
-                      <div>
-                        {/* Image */}
-                        <div className="relative aspect-[4/3] bg-gray-100 overflow-hidden border-b border-[#ECE5D8]">
-                          <img
-                            src={prod.thumbUrl}
-                            alt={prod.name}
-                            className="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-500"
-                          />
-                          <div className="absolute top-2.5 left-2.5 flex items-center gap-1.5">
-                            <span className="bg-[#E11D48] text-white text-[10px] font-extrabold px-2 py-0.5 shadow-xs">
-                              {prod.discountPercent || partner.discountRate || 25}% OFF
-                            </span>
-                            {prod.modelNo && (
-                              <span className="bg-black/60 backdrop-blur-xs text-white text-[9px] font-medium px-1.5 py-0.5">
-                                {prod.modelNo}
+                <div className="space-y-6">
+                  <div className="flex items-center justify-between text-xs text-gray-500 px-1 font-medium">
+                    <span>총 <strong>{filteredProducts.length}</strong>개 상품</span>
+                    {filteredProducts.length > visibleCount && (
+                      <span>현재 {Math.min(visibleCount, filteredProducts.length)}개 표시 중</span>
+                    )}
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-5">
+                    {visibleProductsList.map((prod) => (
+                      <div 
+                        key={prod.id}
+                        className="bg-white border border-[#ECE5D8] shadow-xs hover:shadow-lg transition-all duration-300 flex flex-col justify-between group overflow-hidden"
+                      >
+                        <div>
+                          {/* Image */}
+                          <div className="relative aspect-[4/3] bg-gray-100 overflow-hidden border-b border-[#ECE5D8]">
+                            <img
+                              src={prod.thumbUrl}
+                              alt={prod.name}
+                              className="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-500"
+                              loading="lazy"
+                            />
+                            <div className="absolute top-2.5 left-2.5 flex items-center gap-1.5 flex-wrap">
+                              <span className="bg-[#E11D48] text-white text-[10px] font-extrabold px-2 py-0.5 shadow-xs">
+                                {prod.discountPercent || partner.discountRate || 25}% OFF
                               </span>
+                              {prod.modelNo && (
+                                <span className="bg-black/60 backdrop-blur-xs text-white text-[9px] font-medium px-1.5 py-0.5">
+                                  {prod.modelNo}
+                                </span>
+                              )}
+                              {prod.detailImages && prod.detailImages.length > 0 && (
+                                <span className="bg-[#144A42]/90 backdrop-blur-xs text-[#FDE68A] text-[9px] font-bold px-1.5 py-0.5 shadow-xs">
+                                  상세컷 {prod.detailImages.length}
+                                </span>
+                              )}
+                            </div>
+                          </div>
+
+                          {/* Info */}
+                          <div className="p-4 space-y-2">
+                            <div className="text-[10px] font-bold text-[#8E764D] uppercase">
+                              {prod.categoryName || '반려용품'}
+                            </div>
+                            <h4 className="font-bold text-sm text-[#142C27] line-clamp-1 group-hover:text-[#144A42] transition">
+                              {prod.name}
+                            </h4>
+                            <p className="text-[11px] text-[#697872] line-clamp-2 leading-relaxed">
+                              {prod.desc}
+                            </p>
+
+                            {/* Options pills */}
+                            {prod.options && prod.options.length > 0 && (
+                              <div className="flex flex-wrap gap-1 pt-1">
+                                {prod.options.slice(0, 3).map((opt, i) => (
+                                  <span key={i} className="text-[9px] bg-[#F4F1EA] text-[#55635D] px-1.5 py-0.5">
+                                    {opt}
+                                  </span>
+                                ))}
+                                {prod.options.length > 3 && (
+                                  <span className="text-[9px] text-gray-400">+{prod.options.length - 3}</span>
+                                )}
+                              </div>
                             )}
                           </div>
                         </div>
 
-                        {/* Info */}
-                        <div className="p-4 space-y-2">
-                          <div className="text-[10px] font-bold text-[#8E764D] uppercase">
-                            {prod.categoryName || '반려용품'}
-                          </div>
-                          <h4 className="font-bold text-sm text-[#142C27] line-clamp-1 group-hover:text-[#144A42] transition">
-                            {prod.name}
-                          </h4>
-                          <p className="text-[11px] text-[#697872] line-clamp-2 leading-relaxed">
-                            {prod.desc}
-                          </p>
-
-                          {/* Options pills */}
-                          {prod.options && prod.options.length > 0 && (
-                            <div className="flex flex-wrap gap-1 pt-1">
-                              {prod.options.slice(0, 3).map((opt, i) => (
-                                <span key={i} className="text-[9px] bg-[#F4F1EA] text-[#55635D] px-1.5 py-0.5">
-                                  {opt}
-                                </span>
-                              ))}
-                              {prod.options.length > 3 && (
-                                <span className="text-[9px] text-gray-400">+{prod.options.length - 3}</span>
-                              )}
-                            </div>
-                          )}
-                        </div>
-                      </div>
-
-                      {/* Pricing & CTA */}
-                      <div className="p-4 pt-0">
-                        <div className="pt-3 border-t border-gray-100 flex items-baseline justify-between mb-3">
-                          <span className="text-xs text-gray-400 line-through">
-                            {prod.originalPrice.toLocaleString()}원
-                          </span>
-                          <div className="text-right">
-                            <span className="text-[10px] text-[#E11D48] font-bold block leading-none">슬반생 회원가</span>
-                            <span className="text-base sm:text-lg font-extrabold text-[#144A42]">
-                              {prod.salePrice.toLocaleString()}원
+                        {/* Pricing & CTA */}
+                        <div className="p-4 pt-0">
+                          <div className="pt-3 border-t border-gray-100 flex items-baseline justify-between mb-3">
+                            <span className="text-xs text-gray-400 line-through">
+                              {prod.originalPrice.toLocaleString()}원
                             </span>
+                            <div className="text-right">
+                              <span className="text-[10px] text-[#E11D48] font-bold block leading-none">슬반생 회원가</span>
+                              <span className="text-base sm:text-lg font-extrabold text-[#144A42]">
+                                {prod.salePrice.toLocaleString()}원
+                              </span>
+                            </div>
                           </div>
-                        </div>
 
-                        <button
-                          type="button"
-                          onClick={() => handleSelectProduct(prod)}
-                          className="w-full py-2.5 bg-[#144A42] hover:bg-[#0D3832] text-white font-bold text-xs flex items-center justify-center gap-1.5 shadow-xs transition"
-                        >
-                          <ShoppingBagIcon className="w-3.5 h-3.5 text-[#C5A880]" />
-                          <span>회원특가 바로 주문하기</span>
-                        </button>
+                          <button
+                            type="button"
+                            onClick={() => handleSelectProduct(prod)}
+                            className="w-full py-2.5 bg-[#144A42] hover:bg-[#0D3832] text-white font-bold text-xs flex items-center justify-center gap-1.5 shadow-xs transition"
+                          >
+                            <ShoppingBagIcon className="w-3.5 h-3.5 text-[#C5A880]" />
+                            <span>상세보기 & 회원특가 주문</span>
+                          </button>
+                        </div>
                       </div>
+                    ))}
+                  </div>
+
+                  {/* Load More Button */}
+                  {filteredProducts.length > visibleCount && (
+                    <div className="text-center pt-2 pb-4">
+                      <button
+                        type="button"
+                        onClick={() => setVisibleCount(prev => prev + 24)}
+                        className="px-6 py-2.5 bg-white border border-[#D5CDBD] text-[#144A42] hover:bg-[#FAF8F5] text-xs font-bold transition shadow-xs"
+                      >
+                        상품 24개 더 보기 (전체 {filteredProducts.length}개 중 {Math.min(visibleCount, filteredProducts.length)}개 표시)
+                      </button>
                     </div>
-                  ))}
+                  )}
                 </div>
               )}
             </div>
@@ -1576,11 +1612,14 @@ export function ShopPartnerModal({
                   className="w-24 h-24 sm:w-28 sm:h-28 object-cover rounded-xs border border-gray-200 flex-shrink-0"
                 />
                 <div className="flex-1 space-y-1.5 text-center sm:text-left">
-                  <div className="flex items-center justify-center sm:justify-start gap-2">
+                  <div className="flex items-center justify-center sm:justify-start gap-2 flex-wrap">
                     <span className="bg-[#E11D48] text-white text-[10px] font-bold px-1.5 py-0.2">
                       {selectedProduct.discountPercent || partner.discountRate || 25}% OFF
                     </span>
-                    <span className="text-xs text-gray-400">{selectedProduct.modelNo}</span>
+                    <span className="text-xs text-gray-400 font-mono">{selectedProduct.modelNo}</span>
+                    {selectedProduct.categoryName && (
+                      <span className="text-xs text-[#8E764D] font-semibold">[{selectedProduct.categoryName}]</span>
+                    )}
                   </div>
                   <h4 className="font-extrabold text-base text-[#142C27]">{selectedProduct.name}</h4>
                   <div className="flex items-baseline justify-center sm:justify-start gap-2 pt-1">
@@ -1593,6 +1632,88 @@ export function ShopPartnerModal({
                   </div>
                 </div>
               </div>
+
+              {/* Real Detail Images Collapsible View */}
+              {selectedProduct.detailImages && selectedProduct.detailImages.length > 0 && (
+                <div className="bg-white border border-[#E8E1D3] shadow-xs overflow-hidden">
+                  <div className="p-3 sm:p-4 bg-[#FAF8F5] border-b border-[#EAE3D4] flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <span className="font-bold text-xs sm:text-sm text-[#142C27]">
+                        📸 실제 제품 상세 이미지 & 스펙
+                      </span>
+                      <span className="bg-[#144A42] text-white text-[10px] font-bold px-2 py-0.5 rounded-full">
+                        {selectedProduct.detailImages.length}장 등록됨
+                      </span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      {selectedProduct.sourceUrl && (
+                        <a
+                          href={selectedProduct.sourceUrl}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-[11px] text-[#144A42] hover:underline flex items-center gap-1 font-semibold"
+                        >
+                          <span>공식몰 원본</span>
+                          <ExternalLinkIcon className="w-3 h-3" />
+                        </a>
+                      )}
+                      <button
+                        type="button"
+                        onClick={() => setShowDetailImages(!showDetailImages)}
+                        className="px-2.5 py-1 bg-white border border-[#D5CDBD] text-[#144A42] hover:bg-[#FAF8F5] text-xs font-bold transition cursor-pointer"
+                      >
+                        {showDetailImages ? '▲ 상세이미지 접기' : '▼ 상세이미지 펼치기'}
+                      </button>
+                    </div>
+                  </div>
+
+                  {showDetailImages ? (
+                    <div className="p-3 sm:p-6 space-y-4 max-h-[550px] overflow-y-auto bg-gray-50/50">
+                      {selectedProduct.detailImages.map((imgUrl, idx) => (
+                        <div key={idx} className="bg-white border border-gray-200 shadow-xs max-w-xl mx-auto overflow-hidden">
+                          <img
+                            src={imgUrl}
+                            alt={`${selectedProduct.name} 상세컷 ${idx + 1}`}
+                            className="w-full h-auto object-contain mx-auto"
+                            loading="lazy"
+                          />
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="p-3 flex items-center gap-2 overflow-x-auto bg-[#FAF9F6]">
+                      {selectedProduct.detailImages.slice(0, 5).map((imgUrl, idx) => (
+                        <button
+                          key={idx}
+                          type="button"
+                          onClick={() => setShowDetailImages(true)}
+                          className="w-16 h-16 sm:w-20 sm:h-20 flex-shrink-0 bg-white border border-gray-200 hover:border-[#144A42] overflow-hidden group/thumb relative transition cursor-pointer"
+                        >
+                          <img
+                            src={imgUrl}
+                            alt="미리보기"
+                            className="w-full h-full object-cover group-hover/thumb:scale-105 transition"
+                            loading="lazy"
+                          />
+                          {idx === 4 && selectedProduct.detailImages.length > 5 && (
+                            <div className="absolute inset-0 bg-black/60 text-white flex items-center justify-center font-bold text-xs">
+                              +{selectedProduct.detailImages.length - 4}
+                            </div>
+                          )}
+                        </button>
+                      ))}
+                      <button
+                        type="button"
+                        onClick={() => setShowDetailImages(true)}
+                        className="h-16 sm:h-20 px-3 bg-white border border-dashed border-[#C5BBAA] hover:bg-emerald-50 text-[11px] font-bold text-[#144A42] flex flex-col items-center justify-center gap-1 transition flex-shrink-0 cursor-pointer"
+                      >
+                        <span>전체 상세컷</span>
+                        <span>보기 ({selectedProduct.detailImages.length})</span>
+                      </button>
+                    </div>
+                  )}
+                </div>
+              )}
 
               {/* Options & Quantity Selector */}
               <div className="bg-white p-4 sm:p-5 border border-[#E8E1D3] shadow-xs space-y-4">

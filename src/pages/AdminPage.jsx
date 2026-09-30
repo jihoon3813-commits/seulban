@@ -270,6 +270,9 @@ export default function AdminPage({
   const [bulkDiscountRate, setBulkDiscountRate] = useState(25);
   const [isAddProductModalOpen, setIsAddProductModalOpen] = useState(false);
   const [editingProductIndex, setEditingProductIndex] = useState(-1);
+  const [shopProductSearch, setShopProductSearch] = useState('');
+  const [shopProductCategory, setShopProductCategory] = useState('ALL');
+  const [previewDetailImages, setPreviewDetailImages] = useState(null);
   const [productForm, setProductForm] = useState({
     name: '',
     modelNo: '',
@@ -279,6 +282,7 @@ export default function AdminPage({
     salePrice: 75000,
     discountPercent: 25,
     thumbUrl: '',
+    detailImagesStr: '',
     optionsStr: '소프트 베이지, 차콜 그레이',
     desc: '',
     isVisible: true
@@ -2386,7 +2390,7 @@ export default function AdminPage({
                           <button
                             type="button"
                             onClick={() => {
-                              if (confirm('레드퍼피 공식 인기 대표상품 카탈로그로 목록을 초기화/동기화할까요?')) {
+                              if (confirm(`레드퍼피 공식몰(https://redpuppy.co.kr/)에서 현재 실제 판매중인 상품 전체(총 ${REDPUPPY_PRODUCTS.length}개 품목, 실제 썸네일·상세이미지·옵션·판매가 일체)를 불러와 동기화할까요?\n\n현재 일괄 할인율(${bulkDiscountRate || 25}%)이 자동 적용됩니다.`)) {
                                 const rate = Number(bulkDiscountRate) || 25;
                                 const defaultProds = REDPUPPY_PRODUCTS.map(p => ({
                                   ...p,
@@ -2399,12 +2403,13 @@ export default function AdminPage({
                                 };
                                 setSelectedShopPartner(updated);
                                 onUpdatePartner(updated);
-                                if (showToast) showToast('대표 상품 카탈로그가 성공적으로 동기화되었습니다.');
+                                if (showToast) showToast(`레드퍼피 실제 판매중 상품 총 ${defaultProds.length}건이 성공적으로 로드되었습니다.`);
                               }
                             }}
-                            className="px-3 py-1.5 bg-white border border-[#D5CDBD] text-[#144A42] hover:bg-emerald-50 text-xs font-bold transition"
+                            className="px-3.5 py-1.5 bg-[#144A42] hover:bg-[#0D3832] text-white text-xs font-bold flex items-center gap-1.5 transition shadow-xs cursor-pointer"
                           >
-                            🌐 대표상품 복원/동기화
+                            <RefreshCwIcon className="w-3.5 h-3.5 text-[#E8DEC8]" />
+                            <span>🛍️ 판매중인 상품 불러오기</span>
                           </button>
                           <button
                             type="button"
@@ -2434,11 +2439,50 @@ export default function AdminPage({
                       </div>
                     </div>
 
+                    {/* Search & Category Filter Toolbar */}
+                    <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 bg-[#FAF8F5] p-3 border border-gray-200">
+                      <div className="flex items-center gap-2">
+                        <select
+                          value={shopProductCategory}
+                          onChange={(e) => setShopProductCategory(e.target.value)}
+                          className="px-3 py-1.5 bg-white border border-gray-300 text-xs font-semibold focus:outline-none focus:border-[#144A42]"
+                        >
+                          <option value="ALL">전체 분류</option>
+                          <option value="carrier">이동가방/백팩</option>
+                          <option value="sling">슬링백/포대기</option>
+                          <option value="living">스텝/방석/하우스</option>
+                          <option value="car">카시트/안전</option>
+                        </select>
+                        <span className="text-xs text-gray-500 font-medium">
+                          총 <strong>{(selectedShopPartner.products || []).length}</strong>개 품목 중 <strong>{
+                            (selectedShopPartner.products || []).filter(p => {
+                              const matchCat = shopProductCategory === 'ALL' || p.category === shopProductCategory;
+                              const matchSearch = !shopProductSearch || 
+                                (p.name && p.name.toLowerCase().includes(shopProductSearch.toLowerCase())) ||
+                                (p.modelNo && p.modelNo.toLowerCase().includes(shopProductSearch.toLowerCase()));
+                              return matchCat && matchSearch;
+                            }).length
+                          }</strong>개 표시
+                        </span>
+                      </div>
+
+                      <div className="relative w-full sm:w-64">
+                        <SearchIcon className="w-3.5 h-3.5 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2" />
+                        <input
+                          type="text"
+                          value={shopProductSearch}
+                          onChange={(e) => setShopProductSearch(e.target.value)}
+                          placeholder="상품명, 모델번호 검색..."
+                          className="w-full pl-9 pr-3 py-1.5 bg-white border border-gray-300 text-xs focus:outline-none focus:border-[#144A42]"
+                        />
+                      </div>
+                    </div>
+
                     {/* Product Table */}
-                    <div className="border border-gray-200 overflow-x-auto shadow-xs">
+                    <div className="border border-gray-200 overflow-x-auto shadow-xs max-h-[500px] overflow-y-auto">
                       <table className="w-full text-left text-xs border-collapse">
-                        <thead>
-                          <tr className="bg-[#FAF8F5] border-b border-gray-200 text-[#55635D] font-bold">
+                        <thead className="sticky top-0 z-10 bg-[#FAF8F5]">
+                          <tr className="border-b border-gray-200 text-[#55635D] font-bold">
                             <th className="py-2.5 px-3">상품 정보</th>
                             <th className="py-2.5 px-3">모델명/분류</th>
                             <th className="py-2.5 px-3 text-right">공식 정가</th>
@@ -2452,107 +2496,131 @@ export default function AdminPage({
                           {(!selectedShopPartner.products || selectedShopPartner.products.length === 0) ? (
                             <tr>
                               <td colSpan="7" className="py-12 text-center text-gray-400">
-                                등록된 연동 상품이 없습니다. [대표상품 복원/동기화] 또는 [+ 새 상품 직접 추가]를 눌러주세요.
+                                등록된 연동 상품이 없습니다. [🛍️ 판매중인 상품 불러오기] 또는 [+ 새 상품 직접 추가]를 눌러주세요.
                               </td>
                             </tr>
                           ) : (
-                            selectedShopPartner.products.map((p, idx) => (
-                              <tr key={p.id || idx} className={`hover:bg-[#FAF9F6] transition ${p.isVisible === false ? 'opacity-50 bg-gray-50' : ''}`}>
-                                <td className="py-2.5 px-3 flex items-center gap-2.5">
-                                  <img
-                                    src={p.thumbUrl || 'https://images.unsplash.com/photo-1544568100-847a948585b9?w=100&auto=format&fit=crop&q=80'}
-                                    alt={p.name}
-                                    className="w-10 h-10 object-cover rounded-xs border border-gray-200 flex-shrink-0"
-                                  />
-                                  <div>
-                                    <p className="font-bold text-gray-800 line-clamp-1">{p.name}</p>
-                                    <p className="text-[10px] text-gray-400 line-clamp-1">{p.desc}</p>
-                                  </div>
-                                </td>
-                                <td className="py-2.5 px-3">
-                                  <span className="font-mono text-[11px] text-gray-700 block">{p.modelNo || '-'}</span>
-                                  <span className="text-[10px] text-gray-400">{p.categoryName || '반려용품'}</span>
-                                </td>
-                                <td className="py-2.5 px-3 text-right text-gray-400 line-through">
-                                  {(Number(p.originalPrice) || 0).toLocaleString()}원
-                                </td>
-                                <td className="py-2.5 px-3 text-right font-extrabold text-[#144A42]">
-                                  {(Number(p.salePrice) || 0).toLocaleString()}원
-                                </td>
-                                <td className="py-2.5 px-3 text-center">
-                                  <span className="bg-rose-50 text-rose-600 font-extrabold px-1.5 py-0.5 text-[10px]">
-                                    -{p.discountPercent || selectedShopPartner.discountRate || 25}%
-                                  </span>
-                                </td>
-                                <td className="py-2.5 px-3 text-center">
-                                  <button
-                                    type="button"
-                                    onClick={() => {
-                                      const updatedProds = [...selectedShopPartner.products];
-                                      updatedProds[idx] = {
-                                        ...updatedProds[idx],
-                                        isVisible: updatedProds[idx].isVisible === false ? true : false
-                                      };
-                                      const updated = {
-                                        ...selectedShopPartner,
-                                        products: updatedProds
-                                      };
-                                      setSelectedShopPartner(updated);
-                                      onUpdatePartner(updated);
-                                    }}
-                                    className={`px-2.5 py-1 text-[11px] font-bold rounded-xs transition ${
-                                      p.isVisible !== false 
-                                        ? 'bg-emerald-100 text-emerald-800 hover:bg-emerald-200' 
-                                        : 'bg-gray-200 text-gray-600 hover:bg-gray-300'
-                                    }`}
-                                  >
-                                    {p.isVisible !== false ? '● 노출중' : '○ 숨김'}
-                                  </button>
-                                </td>
-                                <td className="py-2.5 px-3 text-center">
-                                  <div className="flex items-center justify-center gap-1.5">
-                                    <button
-                                      type="button"
-                                      onClick={() => {
-                                        setEditingProductIndex(idx);
-                                        setProductForm({
-                                          name: p.name,
-                                          modelNo: p.modelNo || '',
-                                          category: p.category || 'carrier',
-                                          categoryName: p.categoryName || '이동가방/백팩',
-                                          originalPrice: p.originalPrice,
-                                          salePrice: p.salePrice,
-                                          discountPercent: p.discountPercent || 25,
-                                          thumbUrl: p.thumbUrl || '',
-                                          optionsStr: (p.options && p.options.length > 0) ? p.options.join(', ') : '',
-                                          desc: p.desc || '',
-                                          isVisible: p.isVisible !== false
-                                        });
-                                        setIsAddProductModalOpen(true);
-                                      }}
-                                      className="text-[#144A42] hover:underline font-semibold"
-                                    >
-                                      수정
-                                    </button>
-                                    <span className="text-gray-300">|</span>
-                                    <button
-                                      type="button"
-                                      onClick={() => {
-                                        if (confirm(`[${p.name}] 상품을 목록에서 삭제하시겠습니까?`)) {
-                                          const updatedProds = selectedShopPartner.products.filter((_, i) => i !== idx);
-                                          const updated = { ...selectedShopPartner, products: updatedProds };
+                            (selectedShopPartner.products || [])
+                              .filter(p => {
+                                const matchCat = shopProductCategory === 'ALL' || p.category === shopProductCategory;
+                                const matchSearch = !shopProductSearch || 
+                                  (p.name && p.name.toLowerCase().includes(shopProductSearch.toLowerCase())) ||
+                                  (p.modelNo && p.modelNo.toLowerCase().includes(shopProductSearch.toLowerCase()));
+                                return matchCat && matchSearch;
+                              })
+                              .map((p) => {
+                                const realIdx = selectedShopPartner.products.findIndex(it => it === p || it.id === p.id);
+                                return (
+                                  <tr key={p.id || realIdx} className={`hover:bg-[#FAF9F6] transition ${p.isVisible === false ? 'opacity-50 bg-gray-50' : ''}`}>
+                                    <td className="py-2.5 px-3 flex items-center gap-2.5">
+                                      <img
+                                        src={p.thumbUrl || 'https://images.unsplash.com/photo-1544568100-847a948585b9?w=100&auto=format&fit=crop&q=80'}
+                                        alt={p.name}
+                                        className="w-10 h-10 object-cover rounded-xs border border-gray-200 flex-shrink-0"
+                                        loading="lazy"
+                                      />
+                                      <div>
+                                        <p className="font-bold text-gray-800 line-clamp-1">{p.name}</p>
+                                        <div className="flex items-center gap-1.5 mt-0.5">
+                                          <p className="text-[10px] text-gray-400 line-clamp-1">{p.desc}</p>
+                                          {p.detailImages && p.detailImages.length > 0 && (
+                                            <button
+                                              type="button"
+                                              onClick={() => setPreviewDetailImages({ name: p.name, images: p.detailImages })}
+                                              className="text-[9px] bg-emerald-50 hover:bg-emerald-100 text-emerald-800 px-1.5 py-0.2 rounded-xs border border-emerald-200 font-semibold cursor-pointer whitespace-nowrap"
+                                            >
+                                              상세컷 {p.detailImages.length}장 ↗
+                                            </button>
+                                          )}
+                                        </div>
+                                      </div>
+                                    </td>
+                                    <td className="py-2.5 px-3">
+                                      <span className="font-mono text-[11px] text-gray-700 block">{p.modelNo || '-'}</span>
+                                      <span className="text-[10px] text-gray-400">{p.categoryName || '반려용품'}</span>
+                                    </td>
+                                    <td className="py-2.5 px-3 text-right text-gray-400 line-through">
+                                      {(Number(p.originalPrice) || 0).toLocaleString()}원
+                                    </td>
+                                    <td className="py-2.5 px-3 text-right font-extrabold text-[#144A42]">
+                                      {(Number(p.salePrice) || 0).toLocaleString()}원
+                                    </td>
+                                    <td className="py-2.5 px-3 text-center">
+                                      <span className="bg-rose-50 text-rose-600 font-extrabold px-1.5 py-0.5 text-[10px]">
+                                        -{p.discountPercent || selectedShopPartner.discountRate || 25}%
+                                      </span>
+                                    </td>
+                                    <td className="py-2.5 px-3 text-center">
+                                      <button
+                                        type="button"
+                                        onClick={() => {
+                                          const updatedProds = [...selectedShopPartner.products];
+                                          updatedProds[realIdx] = {
+                                            ...updatedProds[realIdx],
+                                            isVisible: updatedProds[realIdx].isVisible === false ? true : false
+                                          };
+                                          const updated = {
+                                            ...selectedShopPartner,
+                                            products: updatedProds
+                                          };
                                           setSelectedShopPartner(updated);
                                           onUpdatePartner(updated);
-                                        }
-                                      }}
-                                      className="text-red-500 hover:underline"
-                                    >
-                                      삭제
-                                    </button>
-                                  </div>
-                                </td>
-                              </tr>
-                            ))
+                                        }}
+                                        className={`px-2.5 py-1 text-[11px] font-bold rounded-xs transition cursor-pointer ${
+                                          p.isVisible !== false 
+                                            ? 'bg-emerald-100 text-emerald-800 hover:bg-emerald-200' 
+                                            : 'bg-gray-200 text-gray-600 hover:bg-gray-300'
+                                        }`}
+                                      >
+                                        {p.isVisible !== false ? '● 노출중' : '○ 숨김'}
+                                      </button>
+                                    </td>
+                                    <td className="py-2.5 px-3 text-center">
+                                      <div className="flex items-center justify-center gap-1.5">
+                                        <button
+                                          type="button"
+                                          onClick={() => {
+                                            setEditingProductIndex(realIdx);
+                                            setProductForm({
+                                              name: p.name,
+                                              modelNo: p.modelNo || '',
+                                              category: p.category || 'carrier',
+                                              categoryName: p.categoryName || '이동가방/백팩',
+                                              originalPrice: p.originalPrice,
+                                              salePrice: p.salePrice,
+                                              discountPercent: p.discountPercent || 25,
+                                              thumbUrl: p.thumbUrl || '',
+                                              detailImagesStr: (p.detailImages && p.detailImages.length > 0) ? p.detailImages.join('\n') : '',
+                                              optionsStr: (p.options && p.options.length > 0) ? p.options.join(', ') : '',
+                                              desc: p.desc || '',
+                                              isVisible: p.isVisible !== false
+                                            });
+                                            setIsAddProductModalOpen(true);
+                                          }}
+                                          className="text-[#144A42] hover:underline font-semibold cursor-pointer"
+                                        >
+                                          수정
+                                        </button>
+                                        <span className="text-gray-300">|</span>
+                                        <button
+                                          type="button"
+                                          onClick={() => {
+                                            if (confirm(`[${p.name}] 상품을 목록에서 삭제하시겠습니까?`)) {
+                                              const updatedProds = selectedShopPartner.products.filter((_, i) => i !== realIdx);
+                                              const updated = { ...selectedShopPartner, products: updatedProds };
+                                              setSelectedShopPartner(updated);
+                                              onUpdatePartner(updated);
+                                            }
+                                          }}
+                                          className="text-red-500 hover:underline cursor-pointer"
+                                        >
+                                          삭제
+                                        </button>
+                                      </div>
+                                    </td>
+                                  </tr>
+                                );
+                              })
                           )}
                         </tbody>
                       </table>
@@ -2566,6 +2634,39 @@ export default function AdminPage({
                       className="px-6 py-2 bg-[#144A42] text-white text-xs font-bold hover:bg-[#0D3832] transition"
                     >
                       확인 완료 (닫기)
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Submodal: 실제 상세 이미지 뷰어 */}
+            {previewDetailImages && (
+              <div className="fixed inset-0 z-[130] flex items-center justify-center p-4 bg-black/80 backdrop-blur-xs animate-fade-in">
+                <div className="bg-white w-full max-w-2xl max-h-[85vh] flex flex-col shadow-2xl border border-gray-300 overflow-hidden">
+                  <div className="p-4 bg-[#144A42] text-white flex items-center justify-between">
+                    <div>
+                      <h4 className="font-bold text-sm text-[#FDE68A]">{previewDetailImages.name}</h4>
+                      <p className="text-[11px] text-[#BED2CC]">실제 상세 이미지 ({previewDetailImages.images.length}장)</p>
+                    </div>
+                    <button onClick={() => setPreviewDetailImages(null)} className="text-white/80 hover:text-white cursor-pointer">
+                      <XIcon className="w-5 h-5" />
+                    </button>
+                  </div>
+                  <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-gray-50 text-center">
+                    {previewDetailImages.images.map((imgUrl, i) => (
+                      <div key={i} className="bg-white border border-gray-200 shadow-xs max-w-lg mx-auto">
+                        <img src={imgUrl} alt={`상세컷 ${i + 1}`} className="w-full h-auto object-contain mx-auto" loading="lazy" />
+                      </div>
+                    ))}
+                  </div>
+                  <div className="p-3 bg-white border-t border-gray-200 text-right">
+                    <button
+                      type="button"
+                      onClick={() => setPreviewDetailImages(null)}
+                      className="px-4 py-1.5 bg-[#144A42] hover:bg-[#0D3832] text-white text-xs font-bold transition cursor-pointer"
+                    >
+                      확인 닫기
                     </button>
                   </div>
                 </div>
@@ -2594,6 +2695,10 @@ export default function AdminPage({
                     const discount = Number(productForm.discountPercent) || 0;
                     const sale = productForm.salePrice ? Number(productForm.salePrice) : Math.round(orig * (1 - discount / 100));
 
+                    const detailImages = productForm.detailImagesStr
+                      ? productForm.detailImagesStr.split('\n').map(s => s.trim()).filter(Boolean)
+                      : (editingProductIndex >= 0 && selectedShopPartner.products[editingProductIndex]?.detailImages) || [];
+
                     const updatedProdItem = {
                       id: editingProductIndex >= 0 && selectedShopPartner.products[editingProductIndex]?.id
                         ? selectedShopPartner.products[editingProductIndex].id
@@ -2606,6 +2711,7 @@ export default function AdminPage({
                       salePrice: sale,
                       discountPercent: discount,
                       thumbUrl: productForm.thumbUrl || 'https://images.unsplash.com/photo-1544568100-847a948585b9?w=600&auto=format&fit=crop&q=80',
+                      detailImages,
                       options,
                       desc: productForm.desc.trim(),
                       isVisible: productForm.isVisible
@@ -2747,6 +2853,30 @@ export default function AdminPage({
                       </div>
                       {productForm.thumbUrl && (
                         <img src={productForm.thumbUrl} alt="미리보기" className="w-20 h-20 object-cover border border-gray-200 mt-1" />
+                      )}
+                    </div>
+
+                    {/* Detail Images URLs */}
+                    <div>
+                      <div className="flex items-center justify-between mb-1">
+                        <label className="block font-semibold">실제 상세 이미지 URLs (줄 단위로 여러 장 입력)</label>
+                        <span className="text-[11px] text-gray-400 font-medium">
+                          {productForm.detailImagesStr ? productForm.detailImagesStr.split('\n').filter(Boolean).length : 0}장 등록
+                        </span>
+                      </div>
+                      <textarea
+                        value={productForm.detailImagesStr}
+                        onChange={(e) => setProductForm({ ...productForm, detailImagesStr: e.target.value })}
+                        rows="3"
+                        placeholder="https://... 각 이미지 URL을 줄단위로 입력"
+                        className="w-full px-3 py-1.5 border border-gray-300 focus:border-[#144A42] focus:outline-none font-mono text-[11px]"
+                      />
+                      {productForm.detailImagesStr && (
+                        <div className="flex gap-1.5 overflow-x-auto py-1 mt-1">
+                          {productForm.detailImagesStr.split('\n').filter(Boolean).slice(0, 5).map((url, i) => (
+                            <img key={i} src={url} alt="상세컷" className="w-12 h-12 object-cover border border-gray-200 flex-shrink-0" />
+                          ))}
+                        </div>
                       )}
                     </div>
 
