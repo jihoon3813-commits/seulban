@@ -3,7 +3,8 @@ import {
   XIcon, CheckIcon, ShieldCheckIcon, PawIcon, ArrowRight, 
   PhoneIcon, MapPinIcon, HeartIcon, SparklesIcon, FileTextIcon, 
   ClockIcon, StethoscopeIcon, UserIcon, CameraIcon, SearchIcon,
-  LogoEmblem, ShoppingBagIcon, GiftIcon, BellIcon, KakaoIcon, HeadphoneIcon
+  LogoEmblem, ShoppingBagIcon, GiftIcon, BellIcon, KakaoIcon, HeadphoneIcon,
+  TruckIcon, TagIcon, ExternalLinkIcon
 } from './Icons';
 import { BRAND_INFO, MEMBERSHIP_PERKS, REG_FAQS } from '../data/mockData';
 import { compressImage } from '../utils/imageCompressor';
@@ -1244,6 +1245,560 @@ export function PartnerModal({ partner, isOpen, onClose, onToggleBookmark, isBoo
     </div>
   );
 }
+
+// 3-B. 쇼핑몰 연동 제휴사 전용 회원 특가 샵 모달 (레드퍼피 등)
+export function ShopPartnerModal({ 
+  partner, 
+  isOpen, 
+  onClose, 
+  onOrderSubmit, 
+  user,
+  bookmarks = [],
+  onToggleBookmark 
+}) {
+  const [activeCategory, setActiveCategory] = useState('all');
+  const [searchQuery, setSearchQuery] = useState('');
+  const [selectedProduct, setSelectedProduct] = useState(null);
+  const [selectedOption, setSelectedOption] = useState('');
+  const [quantity, setQuantity] = useState(1);
+  const [orderStep, setOrderStep] = useState('browse'); // 'browse' | 'checkout' | 'success'
+  const [lastOrder, setLastOrder] = useState(null);
+
+  const [orderForm, setOrderForm] = useState({
+    customerName: user?.name || '',
+    customerPhone: user?.phone || '',
+    address: '',
+    detailAddress: '',
+    deliveryMemo: '문 앞에 놔주세요.',
+  });
+
+  useEffect(() => {
+    if (user) {
+      setOrderForm(prev => ({
+        ...prev,
+        customerName: prev.customerName || user.name || '',
+        customerPhone: prev.customerPhone || user.phone || ''
+      }));
+    }
+  }, [user]);
+
+  useEffect(() => {
+    if (isOpen) {
+      setOrderStep('browse');
+      setSelectedProduct(null);
+      setQuantity(1);
+    }
+  }, [isOpen]);
+
+  if (!isOpen || !partner) return null;
+
+  const isBookmarked = partner.id && bookmarks.includes(partner.id);
+  const products = (partner.products && partner.products.length > 0) ? partner.products : [];
+  const visibleProducts = products.filter(p => p.isVisible !== false);
+
+  const categories = [
+    { id: 'all', label: '전체 상품' },
+    { id: 'carrier', label: '이동가방/백팩' },
+    { id: 'sling', label: '슬링백/포대기' },
+    { id: 'living', label: '스텝/방석' },
+    { id: 'car', label: '카시트/안전' }
+  ];
+
+  const filteredProducts = visibleProducts.filter(item => {
+    const matchCat = activeCategory === 'all' || item.category === activeCategory;
+    const matchSearch = !searchQuery || 
+      item.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
+      (item.modelNo && item.modelNo.toLowerCase().includes(searchQuery.toLowerCase())) ||
+      (item.desc && item.desc.toLowerCase().includes(searchQuery.toLowerCase()));
+    return matchCat && matchSearch;
+  });
+
+  const handleSelectProduct = (prod) => {
+    setSelectedProduct(prod);
+    setSelectedOption(prod.options && prod.options.length > 0 ? prod.options[0] : '기본 단일 옵션');
+    setQuantity(1);
+    setOrderStep('checkout');
+  };
+
+  const handleCheckoutSubmit = (e) => {
+    e.preventDefault();
+    if (!orderForm.customerName.trim() || !orderForm.customerPhone.trim() || !orderForm.address.trim()) {
+      alert('주문자 성함, 연락처, 배송지 주소를 모두 입력해주세요.');
+      return;
+    }
+
+    const orderId = `ORD-${new Date().toISOString().slice(0, 10).replace(/-/g, '')}-${Math.floor(1000 + Math.random() * 9000)}`;
+    const totalAmount = selectedProduct.salePrice * quantity;
+
+    const newOrder = {
+      id: orderId,
+      partnerId: partner.id,
+      partnerName: partner.name,
+      customerName: orderForm.customerName.trim(),
+      customerPhone: orderForm.customerPhone.trim(),
+      address: `${orderForm.address.trim()} ${orderForm.detailAddress.trim()}`.trim(),
+      productName: selectedProduct.name,
+      modelNo: selectedProduct.modelNo || 'RP-STD',
+      option: selectedOption,
+      quantity: Number(quantity),
+      unitPrice: selectedProduct.salePrice,
+      totalAmount,
+      status: 'ORDERED',
+      statusLabel: '주문 접수',
+      courier: '',
+      trackingNumber: '',
+      orderedAt: new Date().toLocaleString('ko-KR', { hour12: false }),
+      memo: orderForm.deliveryMemo || ''
+    };
+
+    if (onOrderSubmit) {
+      onOrderSubmit(newOrder);
+    }
+    setLastOrder(newOrder);
+    setOrderStep('success');
+  };
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/60 backdrop-blur-xs animate-fade-in">
+      <div className="bg-white w-full max-w-4xl max-h-[92vh] flex flex-col shadow-2xl border border-[#DCD5C5] overflow-hidden">
+        
+        {/* Header */}
+        <div className="p-4 sm:p-5 bg-[#144A42] text-white flex items-center justify-between border-b border-[#1E5D53]">
+          <div className="flex items-center gap-3">
+            <div className="w-9 h-9 sm:w-11 sm:h-11 bg-white/10 rounded-sm flex items-center justify-center text-[#E8DEC8]">
+              <ShoppingBagIcon className="w-5 h-5 sm:w-6 sm:h-6" />
+            </div>
+            <div>
+              <div className="flex items-center gap-2">
+                <h3 className="font-extrabold text-sm sm:text-lg tracking-tight">{partner.name}</h3>
+                <span className="bg-[#E11D48] text-white text-[10px] font-bold px-2 py-0.5 uppercase tracking-wider">
+                  슬반생 회원 특가몰
+                </span>
+              </div>
+              <p className="text-[11px] sm:text-xs text-[#BED2CC] mt-0.5">
+                슬반생 정회원 인증 단독 혜택 · 최대 {partner.discountRate || 25}% 즉시할인
+              </p>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-2">
+            {partner.shopUrl && (
+              <a
+                href={partner.shopUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="hidden sm:inline-flex items-center gap-1.5 px-3 py-1.5 bg-white/15 hover:bg-white/25 text-white text-xs font-semibold rounded-xs transition"
+                title="공식몰 새창 열기"
+              >
+                <span>공식몰 둘러보기</span>
+                <ExternalLinkIcon className="w-3.5 h-3.5" />
+              </a>
+            )}
+            <button
+              onClick={onClose}
+              className="w-8 h-8 rounded-full bg-white/10 hover:bg-white/20 text-white flex items-center justify-center transition"
+            >
+              <XIcon className="w-4 h-4" />
+            </button>
+          </div>
+        </div>
+
+        {/* Member Benefit Notification Bar */}
+        <div className="bg-[#FAF6EC] px-4 py-2.5 sm:px-6 border-b border-[#EAE3D4] flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-xs">
+          <div className="flex items-center gap-2 text-[#6D4C1D] font-semibold">
+            <SparklesIcon className="w-4 h-4 text-[#C5A880] flex-shrink-0" />
+            <span>
+              <strong>[슬반생 회원 혜택 인증 완료]</strong> 주문 시 정가 대비 <strong>{partner.discountRate || 25}% 특별 우대가</strong>로 주문 및 배송 접수됩니다.
+            </span>
+          </div>
+          {partner.shopUrl && (
+            <a
+              href={partner.shopUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="sm:hidden text-[11px] text-[#144A42] font-bold underline flex items-center gap-1"
+            >
+              <span>레드퍼피 공식몰 보기</span>
+              <ExternalLinkIcon className="w-3 h-3" />
+            </a>
+          )}
+        </div>
+
+        {/* Modal Body Switch by Step */}
+        <div className="flex-1 overflow-y-auto p-4 sm:p-6 bg-[#FAF9F6]">
+          
+          {/* STEP 1: Product Browse */}
+          {orderStep === 'browse' && (
+            <div className="space-y-5">
+              
+              {/* Filter and Search */}
+              <div className="flex flex-col sm:flex-row gap-3 items-stretch sm:items-center justify-between bg-white p-3 border border-[#EBE5D8] shadow-xs">
+                {/* Categories */}
+                <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar pb-1 sm:pb-0">
+                  {categories.map(c => (
+                    <button
+                      key={c.id}
+                      onClick={() => setActiveCategory(c.id)}
+                      className={`px-3 py-1.5 text-xs font-bold whitespace-nowrap transition ${
+                        activeCategory === c.id
+                          ? 'bg-[#144A42] text-white shadow-xs'
+                          : 'bg-[#F2EFE8] text-[#55635D] hover:bg-[#E7E2D6]'
+                      }`}
+                    >
+                      {c.label}
+                    </button>
+                  ))}
+                </div>
+
+                {/* Search */}
+                <div className="relative sm:w-64">
+                  <SearchIcon className="w-3.5 h-3.5 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2" />
+                  <input
+                    type="text"
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    placeholder="상품명, 모델명 검색..."
+                    className="w-full pl-9 pr-3 py-1.5 text-xs border border-gray-200 bg-[#FAF8F5] focus:outline-none focus:border-[#144A42]"
+                  />
+                </div>
+              </div>
+
+              {/* Product Grid */}
+              {filteredProducts.length === 0 ? (
+                <div className="text-center py-16 bg-white border border-[#EAE3D6] space-y-2">
+                  <ShoppingBagIcon className="w-8 h-8 text-gray-300 mx-auto" />
+                  <p className="text-sm font-bold text-gray-700">해당 조건의 상품이 없습니다.</p>
+                  <p className="text-xs text-gray-400">다른 카테고리나 검색어로 확인해보세요.</p>
+                </div>
+              ) : (
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-5">
+                  {filteredProducts.map((prod) => (
+                    <div 
+                      key={prod.id}
+                      className="bg-white border border-[#ECE5D8] shadow-xs hover:shadow-lg transition-all duration-300 flex flex-col justify-between group overflow-hidden"
+                    >
+                      <div>
+                        {/* Image */}
+                        <div className="relative aspect-[4/3] bg-gray-100 overflow-hidden border-b border-[#ECE5D8]">
+                          <img
+                            src={prod.thumbUrl}
+                            alt={prod.name}
+                            className="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-500"
+                          />
+                          <div className="absolute top-2.5 left-2.5 flex items-center gap-1.5">
+                            <span className="bg-[#E11D48] text-white text-[10px] font-extrabold px-2 py-0.5 shadow-xs">
+                              {prod.discountPercent || partner.discountRate || 25}% OFF
+                            </span>
+                            {prod.modelNo && (
+                              <span className="bg-black/60 backdrop-blur-xs text-white text-[9px] font-medium px-1.5 py-0.5">
+                                {prod.modelNo}
+                              </span>
+                            )}
+                          </div>
+                        </div>
+
+                        {/* Info */}
+                        <div className="p-4 space-y-2">
+                          <div className="text-[10px] font-bold text-[#8E764D] uppercase">
+                            {prod.categoryName || '반려용품'}
+                          </div>
+                          <h4 className="font-bold text-sm text-[#142C27] line-clamp-1 group-hover:text-[#144A42] transition">
+                            {prod.name}
+                          </h4>
+                          <p className="text-[11px] text-[#697872] line-clamp-2 leading-relaxed">
+                            {prod.desc}
+                          </p>
+
+                          {/* Options pills */}
+                          {prod.options && prod.options.length > 0 && (
+                            <div className="flex flex-wrap gap-1 pt-1">
+                              {prod.options.slice(0, 3).map((opt, i) => (
+                                <span key={i} className="text-[9px] bg-[#F4F1EA] text-[#55635D] px-1.5 py-0.5">
+                                  {opt}
+                                </span>
+                              ))}
+                              {prod.options.length > 3 && (
+                                <span className="text-[9px] text-gray-400">+{prod.options.length - 3}</span>
+                              )}
+                            </div>
+                          )}
+                        </div>
+                      </div>
+
+                      {/* Pricing & CTA */}
+                      <div className="p-4 pt-0">
+                        <div className="pt-3 border-t border-gray-100 flex items-baseline justify-between mb-3">
+                          <span className="text-xs text-gray-400 line-through">
+                            {prod.originalPrice.toLocaleString()}원
+                          </span>
+                          <div className="text-right">
+                            <span className="text-[10px] text-[#E11D48] font-bold block leading-none">슬반생 회원가</span>
+                            <span className="text-base sm:text-lg font-extrabold text-[#144A42]">
+                              {prod.salePrice.toLocaleString()}원
+                            </span>
+                          </div>
+                        </div>
+
+                        <button
+                          type="button"
+                          onClick={() => handleSelectProduct(prod)}
+                          className="w-full py-2.5 bg-[#144A42] hover:bg-[#0D3832] text-white font-bold text-xs flex items-center justify-center gap-1.5 shadow-xs transition"
+                        >
+                          <ShoppingBagIcon className="w-3.5 h-3.5 text-[#C5A880]" />
+                          <span>회원특가 바로 주문하기</span>
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* STEP 2: Checkout / Order Form */}
+          {orderStep === 'checkout' && selectedProduct && (
+            <div className="max-w-2xl mx-auto space-y-6">
+              
+              {/* Back to browse button */}
+              <button
+                type="button"
+                onClick={() => setOrderStep('browse')}
+                className="text-xs text-gray-500 hover:text-[#144A42] flex items-center gap-1 font-semibold"
+              >
+                <span>← 상품 목록으로 돌아가기</span>
+              </button>
+
+              {/* Selected Product Card */}
+              <div className="bg-white p-4 sm:p-5 border border-[#E8E1D3] shadow-xs flex flex-col sm:flex-row gap-4 items-center">
+                <img
+                  src={selectedProduct.thumbUrl}
+                  alt={selectedProduct.name}
+                  className="w-24 h-24 sm:w-28 sm:h-28 object-cover rounded-xs border border-gray-200 flex-shrink-0"
+                />
+                <div className="flex-1 space-y-1.5 text-center sm:text-left">
+                  <div className="flex items-center justify-center sm:justify-start gap-2">
+                    <span className="bg-[#E11D48] text-white text-[10px] font-bold px-1.5 py-0.2">
+                      {selectedProduct.discountPercent || partner.discountRate || 25}% OFF
+                    </span>
+                    <span className="text-xs text-gray-400">{selectedProduct.modelNo}</span>
+                  </div>
+                  <h4 className="font-extrabold text-base text-[#142C27]">{selectedProduct.name}</h4>
+                  <div className="flex items-baseline justify-center sm:justify-start gap-2 pt-1">
+                    <span className="text-xs text-gray-400 line-through">
+                      정가 {selectedProduct.originalPrice.toLocaleString()}원
+                    </span>
+                    <span className="text-lg font-extrabold text-[#144A42]">
+                      회원가 {selectedProduct.salePrice.toLocaleString()}원
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Options & Quantity Selector */}
+              <div className="bg-white p-4 sm:p-5 border border-[#E8E1D3] shadow-xs space-y-4">
+                <h4 className="font-bold text-xs sm:text-sm text-[#142C27] border-b border-gray-100 pb-2">
+                  주문 옵션 및 수량 선택
+                </h4>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  {/* Option */}
+                  {selectedProduct.options && selectedProduct.options.length > 0 && (
+                    <div>
+                      <label className="block text-xs font-semibold text-gray-700 mb-1">옵션 선택 *</label>
+                      <select
+                        value={selectedOption}
+                        onChange={(e) => setSelectedOption(e.target.value)}
+                        className="w-full px-3 py-2 border border-gray-300 text-xs focus:border-[#144A42] focus:outline-none"
+                      >
+                        {selectedProduct.options.map((opt, i) => (
+                          <option key={i} value={opt}>{opt}</option>
+                        ))}
+                      </select>
+                    </div>
+                  )}
+
+                  {/* Quantity */}
+                  <div>
+                    <label className="block text-xs font-semibold text-gray-700 mb-1">주문 수량</label>
+                    <div className="flex items-center border border-gray-300 w-32">
+                      <button
+                        type="button"
+                        onClick={() => setQuantity(Math.max(1, quantity - 1))}
+                        className="w-9 py-1.5 text-center bg-gray-100 hover:bg-gray-200 text-gray-700 font-bold"
+                      >
+                        -
+                      </button>
+                      <span className="flex-1 text-center font-bold text-xs">{quantity}</span>
+                      <button
+                        type="button"
+                        onClick={() => setQuantity(quantity + 1)}
+                        className="w-9 py-1.5 text-center bg-gray-100 hover:bg-gray-200 text-gray-700 font-bold"
+                      >
+                        +
+                      </button>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Total Calc */}
+                <div className="pt-3 border-t border-dashed border-gray-200 flex items-center justify-between">
+                  <span className="text-xs font-bold text-gray-700">총 결제 예정 금액:</span>
+                  <div className="text-right">
+                    <span className="text-xl font-extrabold text-[#144A42]">
+                      {(selectedProduct.salePrice * quantity).toLocaleString()}원
+                    </span>
+                    <span className="text-[10px] text-gray-400 block">
+                      (배송비 무료 · 슬반생 정회원 특가)
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Shipping & Order Form */}
+              <form onSubmit={handleCheckoutSubmit} className="bg-white p-4 sm:p-5 border border-[#E8E1D3] shadow-xs space-y-4">
+                <h4 className="font-bold text-xs sm:text-sm text-[#142C27] border-b border-gray-100 pb-2 flex items-center gap-1.5">
+                  <TruckIcon className="w-4 h-4 text-[#144A42]" />
+                  <span>배송지 및 주문자 정보 입력</span>
+                </h4>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div>
+                    <label className="block text-xs font-semibold text-gray-700 mb-1">주문자 성함 *</label>
+                    <input
+                      type="text"
+                      value={orderForm.customerName}
+                      onChange={(e) => setOrderForm({ ...orderForm, customerName: e.target.value })}
+                      placeholder="홍길동"
+                      className="w-full px-3 py-2 border border-gray-300 text-xs focus:border-[#144A42] focus:outline-none"
+                      required
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-semibold text-gray-700 mb-1">휴대폰 번호 *</label>
+                    <input
+                      type="tel"
+                      value={orderForm.customerPhone}
+                      onChange={(e) => setOrderForm({ ...orderForm, customerPhone: formatPhoneNumber(e.target.value) })}
+                      placeholder="010-0000-0000"
+                      className="w-full px-3 py-2 border border-gray-300 text-xs focus:border-[#144A42] focus:outline-none"
+                      required
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-xs font-semibold text-gray-700 mb-1">기본 배송지 주소 *</label>
+                  <input
+                    type="text"
+                    value={orderForm.address}
+                    onChange={(e) => setOrderForm({ ...orderForm, address: e.target.value })}
+                    placeholder="예: 서울특별시 강남구 테헤란로 123"
+                    className="w-full px-3 py-2 border border-gray-300 text-xs focus:border-[#144A42] focus:outline-none"
+                    required
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-semibold text-gray-700 mb-1">상세 주소 (동/호수)</label>
+                  <input
+                    type="text"
+                    value={orderForm.detailAddress}
+                    onChange={(e) => setOrderForm({ ...orderForm, detailAddress: e.target.value })}
+                    placeholder="예: 101동 502호"
+                    className="w-full px-3 py-2 border border-gray-300 text-xs focus:border-[#144A42] focus:outline-none"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-semibold text-gray-700 mb-1">배송 요청사항</label>
+                  <input
+                    type="text"
+                    value={orderForm.deliveryMemo}
+                    onChange={(e) => setOrderForm({ ...orderForm, deliveryMemo: e.target.value })}
+                    placeholder="배송 기사님께 전달할 메시지"
+                    className="w-full px-3 py-2 border border-gray-300 text-xs focus:border-[#144A42] focus:outline-none"
+                  />
+                </div>
+
+                {/* Payment notice box */}
+                <div className="p-3 bg-[#FAF8F5] border border-[#EAE3D4] text-[11px] text-[#63726C] space-y-1">
+                  <p className="font-bold text-[#144A42]">💳 결제 및 배송 안내</p>
+                  <p>• 주문 신청 완료 시 담당자가 주문서를 확인하고 입력하신 휴대폰으로 입금 계좌 및 주문 승인 안내 알림을 발송합니다.</p>
+                  <p>• 평일 오후 2시 이전 입금 확인 건은 당일 출고를 원칙으로 안전하게 배송됩니다.</p>
+                </div>
+
+                <button
+                  type="submit"
+                  className="w-full py-3.5 bg-[#144A42] hover:bg-[#0D3832] text-white font-bold text-sm flex items-center justify-center gap-2 shadow-md transition"
+                >
+                  <CheckIcon className="w-4 h-4 text-[#C5A880]" />
+                  <span>총 {(selectedProduct.salePrice * quantity).toLocaleString()}원 회원특가 주문 접수</span>
+                </button>
+              </form>
+
+            </div>
+          )}
+
+          {/* STEP 3: Order Completed */}
+          {orderStep === 'success' && lastOrder && (
+            <div className="max-w-md mx-auto py-8 text-center space-y-5 bg-white p-6 sm:p-8 border border-[#E8E1D3] shadow-md">
+              <div className="w-14 h-14 bg-emerald-100 text-emerald-700 rounded-full flex items-center justify-center mx-auto shadow-xs">
+                <CheckIcon className="w-8 h-8" />
+              </div>
+              
+              <div className="space-y-1">
+                <h3 className="text-xl font-extrabold text-[#142C27]">회원 특가 주문 접수 완료!</h3>
+                <p className="text-xs text-gray-500">
+                  주문이 정상적으로 접수되었습니다. 곧 알림 문자가 발송됩니다.
+                </p>
+              </div>
+
+              {/* Order Info Card */}
+              <div className="bg-[#FAF8F5] p-4 text-left border border-gray-200 text-xs space-y-2">
+                <div className="flex justify-between pb-1.5 border-b border-gray-200">
+                  <span className="text-gray-500">주문번호</span>
+                  <strong className="text-[#144A42] font-mono">{lastOrder.id}</strong>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-gray-500">주문상품</span>
+                  <span className="font-bold text-gray-800">{lastOrder.productName} ({lastOrder.option})</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-gray-500">수량 / 결제금액</span>
+                  <span className="font-bold text-[#E11D48]">{lastOrder.quantity}개 / {lastOrder.totalAmount.toLocaleString()}원</span>
+                </div>
+                <div className="flex justify-between pt-1.5 border-t border-gray-200">
+                  <span className="text-gray-500">배송지</span>
+                  <span className="text-gray-700 text-right max-w-[200px] truncate">{lastOrder.address}</span>
+                </div>
+              </div>
+
+              <div className="flex gap-2">
+                <button
+                  type="button"
+                  onClick={() => setOrderStep('browse')}
+                  className="flex-1 py-2.5 bg-gray-100 hover:bg-gray-200 text-gray-700 font-bold text-xs transition"
+                >
+                  다른 상품 둘러보기
+                </button>
+                <button
+                  type="button"
+                  onClick={onClose}
+                  className="flex-1 py-2.5 bg-[#144A42] hover:bg-[#0D3832] text-white font-bold text-xs transition"
+                >
+                  닫기
+                </button>
+              </div>
+            </div>
+          )}
+
+        </div>
+
+      </div>
+    </div>
+  );
+}
+
 
 // 4. 회원가입/로그인 모달 (이메일 가입/로그인 전용)
 export function LoginModal({ isOpen, onClose, onLogin, initialMode = 'login' }) {

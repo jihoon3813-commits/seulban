@@ -5,10 +5,10 @@ import {
   CheckIcon, XIcon, SearchIcon, PhoneIcon, MapPinIcon, 
   ArrowRight, ClockIcon, UserIcon, ExternalLinkIcon,
   KakaoIcon, HeadphoneIcon, MessageSquare, FileTextIcon,
-  RefreshCwIcon
+  RefreshCwIcon, ShoppingBagIcon, TruckIcon
 } from '../components/Icons';
 import { compressImage } from '../utils/imageCompressor';
-import { BRAND_INFO } from '../data/mockData';
+import { BRAND_INFO, REDPUPPY_PRODUCTS } from '../data/mockData';
 
 export default function AdminPage({
   onNavigateHome,
@@ -20,6 +20,9 @@ export default function AdminPage({
   onAddPartner,
   onUpdatePartner,
   onDeletePartner,
+  shopOrders = [],
+  onUpdateShopOrderStatus,
+  onDeleteShopOrder,
   adoptionList,
   onAddAdoption,
   onUpdateAdoption,
@@ -260,6 +263,51 @@ export default function AdminPage({
       alert('7일간 보지 않기 설정이 초기화되었습니다.');
     }
   };
+
+  // Shop Partner Products Management Modal State
+  const [selectedShopPartner, setSelectedShopPartner] = useState(null);
+  const [isShopProductsOpen, setIsShopProductsOpen] = useState(false);
+  const [bulkDiscountRate, setBulkDiscountRate] = useState(25);
+  const [isAddProductModalOpen, setIsAddProductModalOpen] = useState(false);
+  const [editingProductIndex, setEditingProductIndex] = useState(-1);
+  const [productForm, setProductForm] = useState({
+    name: '',
+    modelNo: '',
+    category: 'carrier',
+    categoryName: '이동가방/백팩',
+    originalPrice: 100000,
+    salePrice: 75000,
+    discountPercent: 25,
+    thumbUrl: '',
+    optionsStr: '소프트 베이지, 차콜 그레이',
+    desc: '',
+    isVisible: true
+  });
+
+  const handleProductImageUpload = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    try {
+      const compressed = await compressImage(file, 800, 800, 0.8);
+      setProductForm(prev => ({ ...prev, thumbUrl: compressed }));
+    } catch {
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        setProductForm(prev => ({ ...prev, thumbUrl: event.target.result }));
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  // Shop Orders Management State
+  const [orderFilter, setOrderFilter] = useState('ALL');
+  const [orderSearch, setOrderSearch] = useState('');
+  const [isShippingModalOpen, setIsShippingModalOpen] = useState(false);
+  const [selectedOrderForShipping, setSelectedOrderForShipping] = useState(null);
+  const [shippingCourier, setShippingCourier] = useState('CJ대한통운');
+  const [shippingTrackingNumber, setShippingTrackingNumber] = useState('');
+  const [autoMarkShipping, setAutoMarkShipping] = useState(true);
+  const [selectedOrderDetail, setSelectedOrderDetail] = useState(null);
 
   // Password change settings state
   const [pwdForm, setPwdForm] = useState({
@@ -510,6 +558,7 @@ export default function AdminPage({
     { id: 'applications', label: '동물등록 관리', icon: PawIcon, badge: applications.length, badgeColor: 'bg-emerald-600 text-white' },
     { id: 'popups', label: '팝업 관리', icon: SparklesIcon, badge: popups.length },
     { id: 'partners', label: '제휴처 관리', icon: StethoscopeIcon, badge: partners.length },
+    { id: 'shop_orders', label: '제휴몰 주문/배송', icon: ShoppingBagIcon, badge: shopOrders.length, badgeColor: 'bg-rose-600 text-white' },
     { id: 'adoption', label: '안심입양 관리', icon: HeartIcon, badge: adoptionList.length },
     { id: 'travel', label: '반려여행 관리', icon: HomeIcon, badge: travelList.length },
     { id: 'brand', label: '사이트·SEO 설정', icon: ShieldCheckIcon },
@@ -1775,11 +1824,28 @@ export default function AdminPage({
                         <p className="font-bold text-[#144A42]">{partner.benefit}</p>
                         <p className="text-[11px] text-[#65736D] line-clamp-2">{partner.desc}</p>
                       </div>
+
+                      {partner.partnerType === 'shop' && (
+                        <div className="pt-2">
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setSelectedShopPartner(partner);
+                              setBulkDiscountRate(partner.discountRate || 25);
+                              setIsShopProductsOpen(true);
+                            }}
+                            className="w-full py-2 bg-[#144A42] hover:bg-[#0D3832] text-white font-bold text-xs flex items-center justify-center gap-1.5 transition shadow-xs"
+                          >
+                            <ShoppingBagIcon className="w-3.5 h-3.5 text-[#C5A880]" />
+                            <span>🛍️ 연동 상품 & 할인율 관리 ({partner.products?.length || 0}개)</span>
+                          </button>
+                        </div>
+                      )}
                     </div>
                   </div>
 
                   <div className="px-5 py-3 border-t border-gray-100 flex items-center justify-between text-xs text-gray-500 bg-[#FAF9F7]">
-                    <span>전화: {partner.phone}</span>
+                    <span>{partner.partnerType === 'shop' ? '쇼핑몰: 온라인 공식몰' : `전화: ${partner.phone}`}</span>
                     <span className="font-bold text-amber-600">★ {partner.rating}</span>
                   </div>
                 </div>
@@ -2222,6 +2288,889 @@ export default function AdminPage({
                 </div>
               </div>
             )}
+
+            {/* Modal: 쇼핑몰 연동 제휴처 상품 및 할인율 관리 */}
+            {isShopProductsOpen && selectedShopPartner && (
+              <div className="fixed inset-0 z-[110] flex items-center justify-center p-3 sm:p-6 bg-black/80 backdrop-blur-sm animate-fade-in overflow-y-auto">
+                <div className="bg-white w-full max-w-4xl shadow-2xl p-5 sm:p-6 border border-[#ECE5D8] max-h-[92vh] my-auto overflow-y-auto flex flex-col justify-between">
+                  <div>
+                    {/* Modal Header */}
+                    <div className="flex justify-between items-start pb-4 border-b border-gray-200">
+                      <div>
+                        <div className="flex items-center gap-2">
+                          <span className="bg-[#E11D48] text-white text-[10px] font-bold px-2 py-0.5 uppercase">
+                            쇼핑몰 연동 관리
+                          </span>
+                          <h3 className="font-extrabold text-base sm:text-lg text-[#144A42]">
+                            {selectedShopPartner.name} - 상품 및 회원할인 관리
+                          </h3>
+                        </div>
+                        <p className="text-xs text-gray-500 mt-1">
+                          제휴 쇼핑몰에서 제공하는 상품의 슬반생 회원 전용 할인가, 노출 여부, 상세 정보를 관리합니다.
+                        </p>
+                      </div>
+                      <button 
+                        onClick={() => { setIsShopProductsOpen(false); setSelectedShopPartner(null); }} 
+                        className="p-1.5 text-gray-400 hover:text-gray-700 bg-gray-100 rounded-full"
+                      >
+                        <XIcon className="w-5 h-5" />
+                      </button>
+                    </div>
+
+                    {/* Bulk Discount & Tools Bar */}
+                    <div className="my-4 p-4 bg-[#FAF8F5] border border-[#EBE4D5] rounded-xs space-y-3">
+                      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                        
+                        {/* Bulk Discount Form */}
+                        <div className="flex items-center gap-2">
+                          <span className="text-xs font-bold text-gray-700 whitespace-nowrap">
+                            ⚡ 전 상품 일괄 할인율:
+                          </span>
+                          <div className="flex items-center">
+                            <input
+                              type="number"
+                              min="0"
+                              max="90"
+                              value={bulkDiscountRate}
+                              onChange={(e) => setBulkDiscountRate(e.target.value)}
+                              className="w-16 px-2.5 py-1.5 border border-gray-300 text-xs font-bold text-right focus:border-[#144A42] focus:outline-none"
+                            />
+                            <span className="px-2 py-1.5 bg-gray-200 text-xs font-bold text-gray-700 border border-l-0 border-gray-300">
+                              %
+                            </span>
+                          </div>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              const rate = Number(bulkDiscountRate) || 0;
+                              const currentProds = selectedShopPartner.products && selectedShopPartner.products.length > 0 
+                                ? selectedShopPartner.products 
+                                : REDPUPPY_PRODUCTS;
+                              const updatedProds = currentProds.map(p => {
+                                const orig = Number(p.originalPrice) || 0;
+                                const sale = Math.round(orig * (1 - rate / 100));
+                                return {
+                                  ...p,
+                                  discountPercent: rate,
+                                  salePrice: sale
+                                };
+                              });
+                              const updatedPartner = {
+                                ...selectedShopPartner,
+                                discountRate: rate,
+                                products: updatedProds
+                              };
+                              setSelectedShopPartner(updatedPartner);
+                              onUpdatePartner(updatedPartner);
+                              if (showToast) showToast(`전 상품에 ${rate}% 회원 할인가가 일괄 계산되어 적용되었습니다!`);
+                            }}
+                            className="px-3 py-1.5 bg-[#144A42] hover:bg-[#0D3832] text-white text-xs font-bold transition shadow-xs whitespace-nowrap"
+                          >
+                            일괄 적용
+                          </button>
+                        </div>
+
+                        {/* Quick Actions */}
+                        <div className="flex items-center gap-2 flex-wrap">
+                          {selectedShopPartner.shopUrl && (
+                            <a
+                              href={selectedShopPartner.shopUrl}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="px-3 py-1.5 bg-white border border-gray-300 text-gray-700 hover:bg-gray-50 text-xs font-semibold flex items-center gap-1 transition"
+                            >
+                              <span>공식몰 확인</span>
+                              <ExternalLinkIcon className="w-3.5 h-3.5" />
+                            </a>
+                          )}
+                          <button
+                            type="button"
+                            onClick={() => {
+                              if (confirm('레드퍼피 공식 인기 대표상품 카탈로그로 목록을 초기화/동기화할까요?')) {
+                                const rate = Number(bulkDiscountRate) || 25;
+                                const defaultProds = REDPUPPY_PRODUCTS.map(p => ({
+                                  ...p,
+                                  discountPercent: rate,
+                                  salePrice: Math.round(p.originalPrice * (1 - rate / 100))
+                                }));
+                                const updated = {
+                                  ...selectedShopPartner,
+                                  products: defaultProds
+                                };
+                                setSelectedShopPartner(updated);
+                                onUpdatePartner(updated);
+                                if (showToast) showToast('대표 상품 카탈로그가 성공적으로 동기화되었습니다.');
+                              }
+                            }}
+                            className="px-3 py-1.5 bg-white border border-[#D5CDBD] text-[#144A42] hover:bg-emerald-50 text-xs font-bold transition"
+                          >
+                            🌐 대표상품 복원/동기화
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setEditingProductIndex(-1);
+                              setProductForm({
+                                name: '',
+                                modelNo: `RP-NEW${Math.floor(10 + Math.random() * 90)}`,
+                                category: 'carrier',
+                                categoryName: '이동가방/백팩',
+                                originalPrice: 100000,
+                                salePrice: 75000,
+                                discountPercent: bulkDiscountRate || 25,
+                                thumbUrl: '',
+                                optionsStr: '소프트 베이지, 차콜 그레이',
+                                desc: '국내 직영 공장 생산 프리미엄 품질',
+                                isVisible: true
+                              });
+                              setIsAddProductModalOpen(true);
+                            }}
+                            className="px-3.5 py-1.5 bg-rose-600 hover:bg-rose-700 text-white text-xs font-bold flex items-center gap-1 transition shadow-xs"
+                          >
+                            <span>+ 새 상품 직접 추가</span>
+                          </button>
+                        </div>
+
+                      </div>
+                    </div>
+
+                    {/* Product Table */}
+                    <div className="border border-gray-200 overflow-x-auto shadow-xs">
+                      <table className="w-full text-left text-xs border-collapse">
+                        <thead>
+                          <tr className="bg-[#FAF8F5] border-b border-gray-200 text-[#55635D] font-bold">
+                            <th className="py-2.5 px-3">상품 정보</th>
+                            <th className="py-2.5 px-3">모델명/분류</th>
+                            <th className="py-2.5 px-3 text-right">공식 정가</th>
+                            <th className="py-2.5 px-3 text-right text-[#144A42]">슬반생 회원가</th>
+                            <th className="py-2.5 px-3 text-center">할인율</th>
+                            <th className="py-2.5 px-3 text-center">고객 노출</th>
+                            <th className="py-2.5 px-3 text-center">관리</th>
+                          </tr>
+                        </thead>
+                        <tbody className="divide-y divide-gray-100">
+                          {(!selectedShopPartner.products || selectedShopPartner.products.length === 0) ? (
+                            <tr>
+                              <td colSpan="7" className="py-12 text-center text-gray-400">
+                                등록된 연동 상품이 없습니다. [대표상품 복원/동기화] 또는 [+ 새 상품 직접 추가]를 눌러주세요.
+                              </td>
+                            </tr>
+                          ) : (
+                            selectedShopPartner.products.map((p, idx) => (
+                              <tr key={p.id || idx} className={`hover:bg-[#FAF9F6] transition ${p.isVisible === false ? 'opacity-50 bg-gray-50' : ''}`}>
+                                <td className="py-2.5 px-3 flex items-center gap-2.5">
+                                  <img
+                                    src={p.thumbUrl || 'https://images.unsplash.com/photo-1544568100-847a948585b9?w=100&auto=format&fit=crop&q=80'}
+                                    alt={p.name}
+                                    className="w-10 h-10 object-cover rounded-xs border border-gray-200 flex-shrink-0"
+                                  />
+                                  <div>
+                                    <p className="font-bold text-gray-800 line-clamp-1">{p.name}</p>
+                                    <p className="text-[10px] text-gray-400 line-clamp-1">{p.desc}</p>
+                                  </div>
+                                </td>
+                                <td className="py-2.5 px-3">
+                                  <span className="font-mono text-[11px] text-gray-700 block">{p.modelNo || '-'}</span>
+                                  <span className="text-[10px] text-gray-400">{p.categoryName || '반려용품'}</span>
+                                </td>
+                                <td className="py-2.5 px-3 text-right text-gray-400 line-through">
+                                  {(Number(p.originalPrice) || 0).toLocaleString()}원
+                                </td>
+                                <td className="py-2.5 px-3 text-right font-extrabold text-[#144A42]">
+                                  {(Number(p.salePrice) || 0).toLocaleString()}원
+                                </td>
+                                <td className="py-2.5 px-3 text-center">
+                                  <span className="bg-rose-50 text-rose-600 font-extrabold px-1.5 py-0.5 text-[10px]">
+                                    -{p.discountPercent || selectedShopPartner.discountRate || 25}%
+                                  </span>
+                                </td>
+                                <td className="py-2.5 px-3 text-center">
+                                  <button
+                                    type="button"
+                                    onClick={() => {
+                                      const updatedProds = [...selectedShopPartner.products];
+                                      updatedProds[idx] = {
+                                        ...updatedProds[idx],
+                                        isVisible: updatedProds[idx].isVisible === false ? true : false
+                                      };
+                                      const updated = {
+                                        ...selectedShopPartner,
+                                        products: updatedProds
+                                      };
+                                      setSelectedShopPartner(updated);
+                                      onUpdatePartner(updated);
+                                    }}
+                                    className={`px-2.5 py-1 text-[11px] font-bold rounded-xs transition ${
+                                      p.isVisible !== false 
+                                        ? 'bg-emerald-100 text-emerald-800 hover:bg-emerald-200' 
+                                        : 'bg-gray-200 text-gray-600 hover:bg-gray-300'
+                                    }`}
+                                  >
+                                    {p.isVisible !== false ? '● 노출중' : '○ 숨김'}
+                                  </button>
+                                </td>
+                                <td className="py-2.5 px-3 text-center">
+                                  <div className="flex items-center justify-center gap-1.5">
+                                    <button
+                                      type="button"
+                                      onClick={() => {
+                                        setEditingProductIndex(idx);
+                                        setProductForm({
+                                          name: p.name,
+                                          modelNo: p.modelNo || '',
+                                          category: p.category || 'carrier',
+                                          categoryName: p.categoryName || '이동가방/백팩',
+                                          originalPrice: p.originalPrice,
+                                          salePrice: p.salePrice,
+                                          discountPercent: p.discountPercent || 25,
+                                          thumbUrl: p.thumbUrl || '',
+                                          optionsStr: (p.options && p.options.length > 0) ? p.options.join(', ') : '',
+                                          desc: p.desc || '',
+                                          isVisible: p.isVisible !== false
+                                        });
+                                        setIsAddProductModalOpen(true);
+                                      }}
+                                      className="text-[#144A42] hover:underline font-semibold"
+                                    >
+                                      수정
+                                    </button>
+                                    <span className="text-gray-300">|</span>
+                                    <button
+                                      type="button"
+                                      onClick={() => {
+                                        if (confirm(`[${p.name}] 상품을 목록에서 삭제하시겠습니까?`)) {
+                                          const updatedProds = selectedShopPartner.products.filter((_, i) => i !== idx);
+                                          const updated = { ...selectedShopPartner, products: updatedProds };
+                                          setSelectedShopPartner(updated);
+                                          onUpdatePartner(updated);
+                                        }
+                                      }}
+                                      className="text-red-500 hover:underline"
+                                    >
+                                      삭제
+                                    </button>
+                                  </div>
+                                </td>
+                              </tr>
+                            ))
+                          )}
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+
+                  <div className="pt-4 mt-4 border-t border-gray-100 flex justify-end">
+                    <button
+                      type="button"
+                      onClick={() => { setIsShopProductsOpen(false); setSelectedShopPartner(null); }}
+                      className="px-6 py-2 bg-[#144A42] text-white text-xs font-bold hover:bg-[#0D3832] transition"
+                    >
+                      확인 완료 (닫기)
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Submodal: 상품 추가 및 수정 */}
+            {isAddProductModalOpen && (
+              <div className="fixed inset-0 z-[120] flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-fade-in overflow-y-auto">
+                <div className="bg-white w-full max-w-lg shadow-2xl p-5 border border-gray-200 max-h-[88vh] my-auto overflow-y-auto">
+                  <div className="flex justify-between items-center pb-3 border-b border-gray-100">
+                    <h4 className="font-bold text-sm text-[#144A42]">
+                      {editingProductIndex >= 0 ? '상품 정보 수정' : '새 제휴 상품 등록'}
+                    </h4>
+                    <button onClick={() => setIsAddProductModalOpen(false)} className="text-gray-400 hover:text-gray-600">
+                      <XIcon className="w-5 h-5" />
+                    </button>
+                  </div>
+
+                  <form onSubmit={(e) => {
+                    e.preventDefault();
+                    const options = productForm.optionsStr
+                      ? productForm.optionsStr.split(',').map(s => s.trim()).filter(Boolean)
+                      : ['기본'];
+                    const orig = Number(productForm.originalPrice) || 0;
+                    const discount = Number(productForm.discountPercent) || 0;
+                    const sale = productForm.salePrice ? Number(productForm.salePrice) : Math.round(orig * (1 - discount / 100));
+
+                    const updatedProdItem = {
+                      id: editingProductIndex >= 0 && selectedShopPartner.products[editingProductIndex]?.id
+                        ? selectedShopPartner.products[editingProductIndex].id
+                        : `prod_${Date.now()}`,
+                      name: productForm.name.trim(),
+                      modelNo: productForm.modelNo.trim() || 'RP-001',
+                      category: productForm.category,
+                      categoryName: productForm.categoryName,
+                      originalPrice: orig,
+                      salePrice: sale,
+                      discountPercent: discount,
+                      thumbUrl: productForm.thumbUrl || 'https://images.unsplash.com/photo-1544568100-847a948585b9?w=600&auto=format&fit=crop&q=80',
+                      options,
+                      desc: productForm.desc.trim(),
+                      isVisible: productForm.isVisible
+                    };
+
+                    let updatedProductsList = [...(selectedShopPartner.products || [])];
+                    if (editingProductIndex >= 0) {
+                      updatedProductsList[editingProductIndex] = updatedProdItem;
+                    } else {
+                      updatedProductsList = [updatedProdItem, ...updatedProductsList];
+                    }
+
+                    const updatedPartner = {
+                      ...selectedShopPartner,
+                      products: updatedProductsList
+                    };
+
+                    setSelectedShopPartner(updatedPartner);
+                    onUpdatePartner(updatedPartner);
+                    setIsAddProductModalOpen(false);
+                    if (showToast) showToast('상품이 성공적으로 저장되었습니다.');
+                  }} className="space-y-3 pt-3 text-xs">
+                    <div>
+                      <label className="block font-semibold mb-1">상품명 *</label>
+                      <input
+                        type="text"
+                        value={productForm.name}
+                        onChange={(e) => setProductForm({ ...productForm, name: e.target.value })}
+                        placeholder="예: 알로린 백팩형 이동가방 [XL]"
+                        className="w-full px-3 py-2 border border-gray-300 focus:border-[#144A42] focus:outline-none"
+                        required
+                      />
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-3">
+                      <div>
+                        <label className="block font-semibold mb-1">모델명 / 품번</label>
+                        <input
+                          type="text"
+                          value={productForm.modelNo}
+                          onChange={(e) => setProductForm({ ...productForm, modelNo: e.target.value })}
+                          placeholder="RP-AL01"
+                          className="w-full px-3 py-2 border border-gray-300 focus:border-[#144A42] focus:outline-none"
+                        />
+                      </div>
+                      <div>
+                        <label className="block font-semibold mb-1">카테고리</label>
+                        <select
+                          value={productForm.category}
+                          onChange={(e) => {
+                            const map = {
+                              carrier: '이동가방/백팩',
+                              sling: '슬링백/포대기',
+                              living: '스텝/방석',
+                              car: '카시트/안전'
+                            };
+                            setProductForm({
+                              ...productForm,
+                              category: e.target.value,
+                              categoryName: map[e.target.value] || '기타'
+                            });
+                          }}
+                          className="w-full px-3 py-2 border border-gray-300 focus:border-[#144A42] focus:outline-none"
+                        >
+                          <option value="carrier">이동가방/백팩</option>
+                          <option value="sling">슬링백/포대기</option>
+                          <option value="living">스텝/방석</option>
+                          <option value="car">카시트/안전</option>
+                        </select>
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-3 gap-3">
+                      <div>
+                        <label className="block font-semibold mb-1">정상가 (원) *</label>
+                        <input
+                          type="number"
+                          value={productForm.originalPrice}
+                          onChange={(e) => {
+                            const orig = Number(e.target.value) || 0;
+                            const sale = Math.round(orig * (1 - (productForm.discountPercent || 25) / 100));
+                            setProductForm({ ...productForm, originalPrice: orig, salePrice: sale });
+                          }}
+                          className="w-full px-3 py-2 border border-gray-300 focus:border-[#144A42] focus:outline-none font-bold"
+                          required
+                        />
+                      </div>
+                      <div>
+                        <label className="block font-semibold mb-1">할인율 (%)</label>
+                        <input
+                          type="number"
+                          value={productForm.discountPercent}
+                          onChange={(e) => {
+                            const disc = Number(e.target.value) || 0;
+                            const sale = Math.round((productForm.originalPrice || 0) * (1 - disc / 100));
+                            setProductForm({ ...productForm, discountPercent: disc, salePrice: sale });
+                          }}
+                          className="w-full px-3 py-2 border border-gray-300 focus:border-[#144A42] focus:outline-none text-rose-600 font-bold"
+                        />
+                      </div>
+                      <div>
+                        <label className="block font-semibold mb-1">슬반생 회원가 (원) *</label>
+                        <input
+                          type="number"
+                          value={productForm.salePrice}
+                          onChange={(e) => setProductForm({ ...productForm, salePrice: Number(e.target.value) || 0 })}
+                          className="w-full px-3 py-2 border border-gray-300 focus:border-[#144A42] focus:outline-none font-extrabold text-[#144A42]"
+                          required
+                        />
+                      </div>
+                    </div>
+
+                    <div>
+                      <label className="block font-semibold mb-1">옵션 목록 (쉼표 , 로 구분)</label>
+                      <input
+                        type="text"
+                        value={productForm.optionsStr}
+                        onChange={(e) => setProductForm({ ...productForm, optionsStr: e.target.value })}
+                        placeholder="예: 소프트 베이지, 차콜 그레이, 클래식 블랙"
+                        className="w-full px-3 py-2 border border-gray-300 focus:border-[#144A42] focus:outline-none"
+                      />
+                    </div>
+
+                    {/* Thumbnail Image */}
+                    <div>
+                      <label className="block font-semibold mb-1">상품 썸네일 이미지</label>
+                      <div className="flex gap-2 mb-2">
+                        <input
+                          type="url"
+                          value={productForm.thumbUrl}
+                          onChange={(e) => setProductForm({ ...productForm, thumbUrl: e.target.value })}
+                          placeholder="https://... 웹 이미지 URL"
+                          className="flex-1 px-3 py-1.5 border border-gray-300 focus:border-[#144A42] focus:outline-none"
+                        />
+                        <label className="px-3 py-1.5 bg-gray-100 hover:bg-gray-200 text-gray-700 font-semibold cursor-pointer border border-gray-300">
+                          파일 선택
+                          <input type="file" accept="image/*" onChange={handleProductImageUpload} className="hidden" />
+                        </label>
+                      </div>
+                      {productForm.thumbUrl && (
+                        <img src={productForm.thumbUrl} alt="미리보기" className="w-20 h-20 object-cover border border-gray-200 mt-1" />
+                      )}
+                    </div>
+
+                    <div>
+                      <label className="block font-semibold mb-1">상품 핵심 설명</label>
+                      <textarea
+                        value={productForm.desc}
+                        onChange={(e) => setProductForm({ ...productForm, desc: e.target.value })}
+                        rows="2"
+                        placeholder="상품의 특장점을 간략히 입력하세요"
+                        className="w-full px-3 py-2 border border-gray-300 focus:border-[#144A42] focus:outline-none"
+                      />
+                    </div>
+
+                    <div className="flex items-center gap-2 pt-1">
+                      <input
+                        type="checkbox"
+                        id="prodVisible"
+                        checked={productForm.isVisible}
+                        onChange={(e) => setProductForm({ ...productForm, isVisible: e.target.checked })}
+                        className="w-4 h-4 text-[#144A42]"
+                      />
+                      <label htmlFor="prodVisible" className="text-xs font-semibold text-gray-700 cursor-pointer">
+                        슬반생 회원 샵에 즉시 노출
+                      </label>
+                    </div>
+
+                    <div className="pt-3 border-t border-gray-100 flex justify-end gap-2">
+                      <button
+                        type="button"
+                        onClick={() => setIsAddProductModalOpen(false)}
+                        className="px-4 py-2 border border-gray-300 text-gray-600 hover:bg-gray-50"
+                      >
+                        취소
+                      </button>
+                      <button
+                        type="submit"
+                        className="px-5 py-2 bg-[#144A42] text-white font-bold hover:bg-[#0D3832]"
+                      >
+                        상품 저장 완료
+                      </button>
+                    </div>
+                  </form>
+                </div>
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* ========================================================
+            TAB 4-B: 제휴몰 주문/배송 관리 (SHOP ORDERS)
+            ======================================================== */}
+        {currentTab === 'shop_orders' && (
+          <div className="space-y-6 animate-fade-in">
+            <div className="flex flex-col sm:flex-row justify-between sm:items-center gap-4">
+              <div>
+                <span className="text-xs font-bold tracking-widest text-rose-600 uppercase">PARTNER ORDERS & SHIPPING</span>
+                <h2 className="text-2xl sm:text-3xl font-extrabold text-[#142C27] tracking-tight">
+                  제휴몰 주문 및 배송 관리 ({shopOrders.length}건)
+                </h2>
+                <p className="text-xs text-[#6B7973] mt-1">
+                  슬반생 회원이 제휴처(레드퍼피 등)에서 특가로 주문한 주문서를 접수하고 운송장 번호 등록 및 배송 상태를 처리합니다.
+                </p>
+              </div>
+            </div>
+
+            {/* Order Status Counters */}
+            <div className="grid grid-cols-2 sm:grid-cols-6 gap-3">
+              {[
+                { label: '전체 주문', count: shopOrders.length, color: 'text-gray-800' },
+                { label: '신규 접수', count: shopOrders.filter(o => o.status === 'ORDERED').length, color: 'text-amber-600' },
+                { label: '결제/입금 확인', count: shopOrders.filter(o => o.status === 'PAID').length, color: 'text-blue-600' },
+                { label: '배송 준비중', count: shopOrders.filter(o => o.status === 'PREPARING').length, color: 'text-indigo-600' },
+                { label: '배송중', count: shopOrders.filter(o => o.status === 'SHIPPING').length, color: 'text-emerald-600' },
+                { label: '배송 완료', count: shopOrders.filter(o => o.status === 'DELIVERED').length, color: 'text-gray-500' },
+              ].map((item, i) => (
+                <div key={i} className="bg-white p-3.5 border border-[#E2DDD3] shadow-xs">
+                  <span className="text-[11px] text-gray-400 font-medium block">{item.label}</span>
+                  <p className={`text-xl sm:text-2xl font-black mt-1 ${item.color}`}>{item.count}건</p>
+                </div>
+              ))}
+            </div>
+
+            {/* Filter & Search Bar */}
+            <div className="bg-white p-4 border border-[#E2DDD3] shadow-xs flex flex-col sm:flex-row gap-3 items-stretch sm:items-center justify-between">
+              {/* Status Buttons */}
+              <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar pb-1 sm:pb-0 text-xs">
+                {[
+                  { id: 'ALL', label: '전체' },
+                  { id: 'ORDERED', label: '주문접수' },
+                  { id: 'PAID', label: '결제확인' },
+                  { id: 'PREPARING', label: '배송준비' },
+                  { id: 'SHIPPING', label: '배송중' },
+                  { id: 'DELIVERED', label: '배송완료' },
+                  { id: 'CANCELLED', label: '주문취소' }
+                ].map(st => (
+                  <button
+                    key={st.id}
+                    type="button"
+                    onClick={() => setOrderFilter(st.id)}
+                    className={`px-3 py-1.5 font-bold rounded-xs whitespace-nowrap transition ${
+                      orderFilter === st.id
+                        ? 'bg-[#144A42] text-white shadow-xs'
+                        : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                    }`}
+                  >
+                    {st.label}
+                  </button>
+                ))}
+              </div>
+
+              {/* Search Input */}
+              <div className="relative sm:w-64">
+                <SearchIcon className="w-3.5 h-3.5 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2" />
+                <input
+                  type="text"
+                  value={orderSearch}
+                  onChange={(e) => setOrderSearch(e.target.value)}
+                  placeholder="주문자, 연락처, 주문번호 검색"
+                  className="w-full pl-9 pr-3 py-1.5 border border-gray-200 text-xs focus:outline-none focus:border-[#144A42]"
+                />
+              </div>
+            </div>
+
+            {/* Orders Table */}
+            <div className="bg-white border border-[#E2DDD3] shadow-xs overflow-x-auto">
+              <table className="w-full text-left text-xs border-collapse">
+                <thead>
+                  <tr className="bg-[#FAF8F5] border-b border-gray-200 text-[#55635D] font-bold">
+                    <th className="py-3 px-3.5">주문번호 / 일시</th>
+                    <th className="py-3 px-3.5">제휴처</th>
+                    <th className="py-3 px-3.5">주문 상품 정보</th>
+                    <th className="py-3 px-3.5 text-right">결제금액</th>
+                    <th className="py-3 px-3.5">주문자 / 연락처</th>
+                    <th className="py-3 px-3.5">배송지</th>
+                    <th className="py-3 px-3.5 text-center">주문 상태</th>
+                    <th className="py-3 px-3.5 text-center">운송장 / 관리</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-gray-100">
+                  {shopOrders
+                    .filter(o => {
+                      const matchFilter = orderFilter === 'ALL' || o.status === orderFilter;
+                      const matchSearch = !orderSearch || 
+                        (o.id && o.id.includes(orderSearch)) ||
+                        (o.customerName && o.customerName.includes(orderSearch)) ||
+                        (o.customerPhone && o.customerPhone.includes(orderSearch)) ||
+                        (o.productName && o.productName.includes(orderSearch));
+                      return matchFilter && matchSearch;
+                    })
+                    .map(order => {
+                      const statusBadges = {
+                        ORDERED: 'bg-amber-100 text-amber-800 border-amber-200',
+                        PAID: 'bg-blue-100 text-blue-800 border-blue-200',
+                        PREPARING: 'bg-indigo-100 text-indigo-800 border-indigo-200',
+                        SHIPPING: 'bg-emerald-100 text-emerald-800 border-emerald-200',
+                        DELIVERED: 'bg-gray-100 text-gray-800 border-gray-200',
+                        CANCELLED: 'bg-red-100 text-red-800 border-red-200',
+                      };
+
+                      return (
+                        <tr key={order.id} className="hover:bg-[#FAF9F6] transition">
+                          <td className="py-3 px-3.5 font-mono text-[11px]">
+                            <span className="font-bold text-[#144A42] block">{order.id}</span>
+                            <span className="text-[10px] text-gray-400">{order.orderedAt}</span>
+                          </td>
+                          <td className="py-3 px-3.5 font-bold text-gray-700">
+                            {order.partnerName}
+                          </td>
+                          <td className="py-3 px-3.5">
+                            <p className="font-bold text-[#142C27]">{order.productName}</p>
+                            <p className="text-[11px] text-gray-500">
+                              옵션: <strong className="text-gray-700">{order.option}</strong> | 수량: <strong>{order.quantity}개</strong>
+                            </p>
+                          </td>
+                          <td className="py-3 px-3.5 text-right font-extrabold text-[#E11D48]">
+                            {order.totalAmount ? order.totalAmount.toLocaleString() : '0'}원
+                          </td>
+                          <td className="py-3 px-3.5">
+                            <p className="font-bold text-gray-800">{order.customerName}</p>
+                            <a href={`tel:${order.customerPhone}`} className="text-gray-500 text-[11px] hover:underline">
+                              {order.customerPhone}
+                            </a>
+                          </td>
+                          <td className="py-3 px-3.5 max-w-[180px]">
+                            <p className="text-[11px] text-gray-700 truncate" title={order.address}>
+                              {order.address}
+                            </p>
+                            {order.memo && (
+                              <p className="text-[10px] text-gray-400 truncate" title={order.memo}>
+                                요청: {order.memo}
+                              </p>
+                            )}
+                          </td>
+                          <td className="py-3 px-3.5 text-center">
+                            <select
+                              value={order.status}
+                              onChange={(e) => {
+                                if (onUpdateShopOrderStatus) {
+                                  onUpdateShopOrderStatus(order.id, e.target.value);
+                                }
+                              }}
+                              className={`text-[11px] font-bold px-2 py-1 border rounded-xs focus:outline-none cursor-pointer ${
+                                statusBadges[order.status] || 'bg-gray-100 text-gray-700'
+                              }`}
+                            >
+                              <option value="ORDERED">주문 접수</option>
+                              <option value="PAID">결제/입금 확인</option>
+                              <option value="PREPARING">배송 준비중</option>
+                              <option value="SHIPPING">배송중</option>
+                              <option value="DELIVERED">배송 완료</option>
+                              <option value="CANCELLED">주문 취소</option>
+                            </select>
+                          </td>
+                          <td className="py-3 px-3.5 text-center">
+                            <div className="space-y-1">
+                              {order.trackingNumber ? (
+                                <div className="text-[10px] text-gray-600 bg-gray-100 px-1.5 py-0.5 rounded-xs">
+                                  <span className="font-semibold">{order.courier || '택배'}:</span> {order.trackingNumber}
+                                </div>
+                              ) : null}
+                              <div className="flex items-center justify-center gap-1.5 text-[11px]">
+                                <button
+                                  type="button"
+                                  onClick={() => {
+                                    setSelectedOrderForShipping(order);
+                                    setShippingCourier(order.courier || 'CJ대한통운');
+                                    setShippingTrackingNumber(order.trackingNumber || '');
+                                    setIsShippingModalOpen(true);
+                                  }}
+                                  className="text-[#144A42] hover:underline font-bold"
+                                >
+                                  {order.trackingNumber ? '송장수정' : '송장입력'}
+                                </button>
+                                <span className="text-gray-300">|</span>
+                                <button
+                                  type="button"
+                                  onClick={() => setSelectedOrderDetail(order)}
+                                  className="text-gray-600 hover:underline"
+                                >
+                                  상세
+                                </button>
+                                <span className="text-gray-300">|</span>
+                                <button
+                                  type="button"
+                                  onClick={() => {
+                                    if (confirm(`주문 [${order.id}] 내역을 삭제하시겠습니까?`)) {
+                                      if (onDeleteShopOrder) onDeleteShopOrder(order.id);
+                                    }
+                                  }}
+                                  className="text-red-500 hover:underline"
+                                >
+                                  삭제
+                                </button>
+                              </div>
+                            </div>
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  {shopOrders.length === 0 && (
+                    <tr>
+                      <td colSpan="8" className="py-16 text-center text-gray-400">
+                        접수된 제휴몰 주문 내역이 없습니다.
+                      </td>
+                    </tr>
+                  )}
+                </tbody>
+              </table>
+            </div>
+
+            {/* Modal: 배송 정보 (택배사 / 송장번호) 입력 */}
+            {isShippingModalOpen && selectedOrderForShipping && (
+              <div className="fixed inset-0 z-[120] flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-fade-in">
+                <div className="bg-white w-full max-w-md shadow-2xl p-5 border border-gray-200">
+                  <div className="flex justify-between items-center pb-3 border-b border-gray-100">
+                    <h4 className="font-bold text-sm text-[#144A42] flex items-center gap-1.5">
+                      <TruckIcon className="w-4 h-4 text-[#144A42]" />
+                      <span>배송 정보 등록/수정</span>
+                    </h4>
+                    <button onClick={() => { setIsShippingModalOpen(false); setSelectedOrderForShipping(null); }} className="text-gray-400 hover:text-gray-600">
+                      <XIcon className="w-5 h-5" />
+                    </button>
+                  </div>
+
+                  <form onSubmit={(e) => {
+                    e.preventDefault();
+                    const newStatus = autoMarkShipping ? 'SHIPPING' : selectedOrderForShipping.status;
+                    if (onUpdateShopOrderStatus) {
+                      onUpdateShopOrderStatus(selectedOrderForShipping.id, newStatus, {
+                        courier: shippingCourier,
+                        trackingNumber: shippingTrackingNumber.trim()
+                      });
+                    }
+                    setIsShippingModalOpen(false);
+                    setSelectedOrderForShipping(null);
+                    if (showToast) showToast('배송 정보 및 운송장 번호가 등록되었습니다.');
+                  }} className="space-y-3 pt-3 text-xs">
+                    <div className="p-3 bg-[#FAF8F5] border border-gray-200 text-xs space-y-1">
+                      <p><strong className="text-gray-700">주문번호:</strong> {selectedOrderForShipping.id}</p>
+                      <p><strong className="text-gray-700">주문자:</strong> {selectedOrderForShipping.customerName} ({selectedOrderForShipping.customerPhone})</p>
+                      <p><strong className="text-gray-700">상품:</strong> {selectedOrderForShipping.productName} ({selectedOrderForShipping.option})</p>
+                    </div>
+
+                    <div>
+                      <label className="block font-semibold mb-1">택배사 선택 *</label>
+                      <select
+                        value={shippingCourier}
+                        onChange={(e) => setShippingCourier(e.target.value)}
+                        className="w-full px-3 py-2 border border-gray-300 focus:border-[#144A42] focus:outline-none"
+                      >
+                        <option value="CJ대한통운">CJ대한통운</option>
+                        <option value="우체국택배">우체국택배</option>
+                        <option value="한진택배">한진택배</option>
+                        <option value="롯데택배">롯데택배</option>
+                        <option value="로젠택배">로젠택배</option>
+                        <option value="경동택배">경동택배</option>
+                        <option value="직접배송">직접배송 / 기타</option>
+                      </select>
+                    </div>
+
+                    <div>
+                      <label className="block font-semibold mb-1">운송장 번호 *</label>
+                      <input
+                        type="text"
+                        value={shippingTrackingNumber}
+                        onChange={(e) => setShippingTrackingNumber(e.target.value)}
+                        placeholder="숫자 및 하이픈 입력 (예: 6089-1234-5678)"
+                        className="w-full px-3 py-2 border border-gray-300 focus:border-[#144A42] focus:outline-none font-mono"
+                        required
+                      />
+                    </div>
+
+                    <div className="flex items-center gap-2 pt-1">
+                      <input
+                        type="checkbox"
+                        id="autoMark"
+                        checked={autoMarkShipping}
+                        onChange={(e) => setAutoMarkShipping(e.target.checked)}
+                        className="w-4 h-4 text-[#144A42]"
+                      />
+                      <label htmlFor="autoMark" className="text-xs font-semibold text-gray-700 cursor-pointer">
+                        저장과 동시에 주문 상태를 <strong>[배송중]</strong>으로 자동 변경
+                      </label>
+                    </div>
+
+                    <div className="pt-3 border-t border-gray-100 flex justify-end gap-2">
+                      <button
+                        type="button"
+                        onClick={() => { setIsShippingModalOpen(false); setSelectedOrderForShipping(null); }}
+                        className="px-4 py-2 border border-gray-300 text-gray-600 hover:bg-gray-50"
+                      >
+                        취소
+                      </button>
+                      <button
+                        type="submit"
+                        className="px-5 py-2 bg-[#144A42] text-white font-bold hover:bg-[#0D3832]"
+                      >
+                        배송 정보 저장
+                      </button>
+                    </div>
+                  </form>
+                </div>
+              </div>
+            )}
+
+            {/* Modal: 주문 상세 보기 */}
+            {selectedOrderDetail && (
+              <div className="fixed inset-0 z-[120] flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-fade-in">
+                <div className="bg-white w-full max-w-md shadow-2xl p-5 border border-gray-200 text-xs space-y-4">
+                  <div className="flex justify-between items-center pb-3 border-b border-gray-100">
+                    <h4 className="font-bold text-sm text-[#144A42]">주문 상세 정보</h4>
+                    <button onClick={() => setSelectedOrderDetail(null)} className="text-gray-400 hover:text-gray-600">
+                      <XIcon className="w-5 h-5" />
+                    </button>
+                  </div>
+
+                  <div className="bg-[#FAF8F5] p-3.5 border border-gray-200 space-y-2">
+                    <div className="flex justify-between">
+                      <span className="text-gray-500">주문번호</span>
+                      <span className="font-mono font-bold text-[#144A42]">{selectedOrderDetail.id}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-gray-500">주문일시</span>
+                      <span>{selectedOrderDetail.orderedAt}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-gray-500">제휴사</span>
+                      <span className="font-semibold">{selectedOrderDetail.partnerName}</span>
+                    </div>
+                  </div>
+
+                  <div className="space-y-1.5 border-b border-gray-100 pb-3">
+                    <p className="font-bold text-gray-800 text-sm">{selectedOrderDetail.productName}</p>
+                    <p className="text-gray-500">품번: {selectedOrderDetail.modelNo} | 옵션: {selectedOrderDetail.option}</p>
+                    <p className="text-gray-500">수량: {selectedOrderDetail.quantity}개 | 단가: {selectedOrderDetail.unitPrice?.toLocaleString()}원</p>
+                    <p className="font-extrabold text-[#E11D48] text-base pt-1">
+                      총 결제금액: {selectedOrderDetail.totalAmount?.toLocaleString()}원
+                    </p>
+                  </div>
+
+                  <div className="space-y-1.5 border-b border-gray-100 pb-3">
+                    <p className="font-bold text-gray-800">배송 정보</p>
+                    <p><span className="text-gray-500">받는 분:</span> {selectedOrderDetail.customerName} ({selectedOrderDetail.customerPhone})</p>
+                    <p><span className="text-gray-500">배송지:</span> {selectedOrderDetail.address}</p>
+                    {selectedOrderDetail.memo && <p><span className="text-gray-500">요청사항:</span> {selectedOrderDetail.memo}</p>}
+                    {selectedOrderDetail.trackingNumber && (
+                      <p><span className="text-gray-500">운송장:</span> {selectedOrderDetail.courier || '택배'} {selectedOrderDetail.trackingNumber}</p>
+                    )}
+                  </div>
+
+                  <div className="flex justify-end">
+                    <button
+                      type="button"
+                      onClick={() => setSelectedOrderDetail(null)}
+                      className="px-5 py-2 bg-[#144A42] text-white font-bold"
+                    >
+                      닫기
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )}
+
           </div>
         )}
 

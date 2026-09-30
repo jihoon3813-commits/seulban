@@ -223,8 +223,8 @@ export const SparklesIcon = ({ className = "w-5 h-5" }) => (
   </svg>
 );
 
-export const ShoppingBagIcon = ({ className = "w-4 h-4" }) => (
-  <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+export const ShoppingBagIcon = ({ className = "w-4 h-4", ...props }) => (
+  <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}>
     <path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z"/>
     <path d="M3 6h18"/>
     <path d="M16 10a4 4 0 0 1-8 0"/>
@@ -327,3 +327,23 @@ export const RefreshCwIcon = ({ className = "w-4 h-4", ...props }) => (
     <path d="M8 16H3v5"/>
   </svg>
 );
+
+// 배송/트럭 아이콘
+export const TruckIcon = ({ className = "w-5 h-5", ...props }) => (
+  <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}>
+    <path d="M14 18V6a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2v11a1 1 0 0 0 1 1h2" />
+    <path d="M15 18H9" />
+    <path d="M19 18h2a1 1 0 0 0 1-1v-5.5a1.5 1.5 0 0 0-.5-1.1L18 7.5a1.5 1.5 0 0 0-1.1-.5H14v11" />
+    <circle cx="6.5" cy="18.5" r="2.5" />
+    <circle cx="16.5" cy="18.5" r="2.5" />
+  </svg>
+);
+
+// 태그 아이콘
+export const TagIcon = ({ className = "w-5 h-5", ...props }) => (
+  <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}>
+    <path d="M12 2H2v10l9.29 9.29c.94.94 2.48.94 3.42 0l6.58-6.58c.94-.94.94-2.48 0-3.42L12 2Z" />
+    <path d="M7 7h.01" />
+  </svg>
+);
+

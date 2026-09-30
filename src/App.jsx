@@ -16,6 +16,7 @@ import {
   ApplyRegistrationModal, 
   MembershipModal, 
   PartnerModal, 
+  ShopPartnerModal,
   LoginModal, 
   AdminModal,
   MainPopupModal,
@@ -35,7 +36,9 @@ import {
   PARTNER_LIST, 
   ADOPTION_LIST, 
   TRAVEL_LIST,
-  INITIAL_POPUPS
+  INITIAL_POPUPS,
+  INITIAL_SHOP_ORDERS,
+  REDPUPPY_PRODUCTS
 } from './data/mockData';
 export default function App() {
   // URL Parameter based initial tab check (?page=admin, #admin, /admin, etc.)
@@ -240,7 +243,24 @@ export default function App() {
   // Dynamic Content States
   const [localPartners, setLocalPartners] = useState(() => {
     const saved = localStorage.getItem('seulban_partners');
-    return saved ? JSON.parse(saved) : PARTNER_LIST;
+    if (saved) {
+      try {
+        const parsed = JSON.parse(saved);
+        const hasRedpuppy = parsed.some(p => p.id === 'p_redpuppy');
+        if (!hasRedpuppy) {
+          const redpuppy = PARTNER_LIST.find(p => p.id === 'p_redpuppy');
+          if (redpuppy) {
+            const updated = [redpuppy, ...parsed];
+            localStorage.setItem('seulban_partners', JSON.stringify(updated));
+            return updated;
+          }
+        }
+        return parsed;
+      } catch {
+        return PARTNER_LIST;
+      }
+    }
+    return PARTNER_LIST;
   });
   const partners = (convexPartners && convexPartners.length > 0) ? convexPartners : localPartners;
 
@@ -299,6 +319,55 @@ export default function App() {
   });
   const consultations = localConsultations;
 
+  // Shop Orders State (제휴 쇼핑몰 주문 내역)
+  const [shopOrders, setShopOrders] = useState(() => {
+    try {
+      const saved = localStorage.getItem('seulban_shop_orders');
+      return saved ? JSON.parse(saved) : INITIAL_SHOP_ORDERS;
+    } catch {
+      return INITIAL_SHOP_ORDERS;
+    }
+  });
+
+  const handleCreateShopOrder = (newOrder) => {
+    const updated = [newOrder, ...shopOrders];
+    setShopOrders(updated);
+    localStorage.setItem('seulban_shop_orders', JSON.stringify(updated));
+    showToast(`[${newOrder.partnerName}] 회원 특가 주문이 성공적으로 접수되었습니다!`);
+  };
+
+  const handleUpdateShopOrderStatus = (orderId, newStatus, shippingInfo) => {
+    const statusMap = {
+      ORDERED: '주문 접수',
+      PAID: '결제/입금 확인',
+      PREPARING: '배송 준비중',
+      SHIPPING: '배송중',
+      DELIVERED: '배송 완료',
+      CANCELLED: '주문 취소'
+    };
+    const updated = shopOrders.map(o => {
+      if (o.id === orderId) {
+        return {
+          ...o,
+          status: newStatus,
+          statusLabel: statusMap[newStatus] || newStatus,
+          ...(shippingInfo || {})
+        };
+      }
+      return o;
+    });
+    setShopOrders(updated);
+    localStorage.setItem('seulban_shop_orders', JSON.stringify(updated));
+    showToast('주문 및 배송 정보가 성공적으로 변경되었습니다.');
+  };
+
+  const handleDeleteShopOrder = (orderId) => {
+    const updated = shopOrders.filter(o => o.id !== orderId);
+    setShopOrders(updated);
+    localStorage.setItem('seulban_shop_orders', JSON.stringify(updated));
+    showToast('주문 내역이 삭제되었습니다.');
+  };
+
   // Modals
   const [applyModalOpen, setApplyModalOpen] = useState(false);
   const [membershipModalOpen, setMembershipModalOpen] = useState(false);
@@ -306,6 +375,7 @@ export default function App() {
   const [adminModalOpen, setAdminModalOpen] = useState(false);
   const [mallModalOpen, setMallModalOpen] = useState(false);
   const [selectedPartner, setSelectedPartner] = useState(null);
+  const [selectedShopPartner, setSelectedShopPartner] = useState(null);
   const [quickConsultOpen, setQuickConsultOpen] = useState(false);
   const [policyModal, setPolicyModal] = useState({ isOpen: false, type: 'privacy' });
 
@@ -370,6 +440,8 @@ export default function App() {
       if (ad) setLocalAdoptionList(JSON.parse(ad));
       const tr = localStorage.getItem('seulban_travel');
       if (tr) setLocalTravelList(JSON.parse(tr));
+      const ord = localStorage.getItem('seulban_shop_orders');
+      if (ord) setShopOrders(JSON.parse(ord));
     } catch (e) {
       console.error('Error refreshing admin data:', e);
     }
@@ -935,6 +1007,9 @@ export default function App() {
           onAddPartner={handleAddPartner}
           onUpdatePartner={handleUpdatePartner}
           onDeletePartner={handleDeletePartner}
+          shopOrders={shopOrders}
+          onUpdateShopOrderStatus={handleUpdateShopOrderStatus}
+          onDeleteShopOrder={handleDeleteShopOrder}
           adoptionList={adoptionList}
           onAddAdoption={handleAddAdoption}
           onUpdateAdoption={handleUpdateAdoption}
@@ -1013,6 +1088,7 @@ export default function App() {
         {activeTab === 'partners' && (
           <PartnersPage 
             onOpenPartnerModal={(partner) => setSelectedPartner(partner)}
+            onOpenShopModal={(partner) => setSelectedShopPartner(partner)}
             bookmarks={bookmarks}
             onToggleBookmark={handleToggleBookmark}
             partners={partners}
@@ -1180,6 +1256,16 @@ export default function App() {
         bookmarks={bookmarks}
         onToggleBookmark={handleToggleBookmark}
         isBookmarked={selectedPartner ? bookmarks.includes(selectedPartner.id) : false}
+      />
+
+      <ShopPartnerModal
+        partner={selectedShopPartner}
+        isOpen={!!selectedShopPartner}
+        onClose={() => setSelectedShopPartner(null)}
+        onOrderSubmit={handleCreateShopOrder}
+        user={user}
+        bookmarks={bookmarks}
+        onToggleBookmark={handleToggleBookmark}
       />
 
       <LoginModal 

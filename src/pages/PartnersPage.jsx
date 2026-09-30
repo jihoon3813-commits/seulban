@@ -7,6 +7,7 @@ import { PARTNER_LIST } from '../data/mockData';
 
 export default function PartnersPage({ 
   onOpenPartnerModal, 
+  onOpenShopModal,
   bookmarks, 
   onToggleBookmark,
   partners = PARTNER_LIST
@@ -88,6 +89,7 @@ export default function PartnersPage({
                 className="w-full px-3 py-2 border border-gray-200 text-xs text-gray-700 focus:outline-none"
               >
                 <option value="all">전체 업종</option>
+                <option value="shopping">🛍️ 반려용품·쇼핑몰</option>
                 <option value="hospital">동물병원</option>
                 <option value="grooming">미용/스파</option>
                 <option value="hotel">호텔/유치원</option>
@@ -99,10 +101,10 @@ export default function PartnersPage({
           {/* Quick pills */}
           <div className="flex flex-wrap items-center gap-1.5 sm:gap-2 pt-1 border-t border-gray-100 text-xs">
             <span className="text-gray-400 font-medium text-[11px]">추천 태그:</span>
-            {['24시간 응급', '무마취 스케일링', '탄산스파', '천연잔디 운동장', '슬반생 우대할인'].map((tag, i) => (
+            {['레드퍼피', '슬반생 우대할인', '24시간 응급', '무마취 스케일링', '탄산스파', '천연잔디 운동장'].map((tag, i) => (
               <button
                 key={i}
-                onClick={() => setKeyword(tag)}
+                onClick={() => setKeyword(tag === '레드퍼피' ? '레드퍼피' : tag)}
                 className="px-2 py-0.5 sm:px-2.5 sm:py-1 bg-[#FAF8F5] hover:bg-[#EFECE6] text-[#5A6862] text-[10px] sm:text-[11px] border border-gray-200"
               >
                 #{tag}
@@ -124,8 +126,16 @@ export default function PartnersPage({
             return (
               <div
                 key={item.id}
-                onClick={() => onOpenPartnerModal(item)}
-                className="bg-white overflow-hidden border border-[#ECE5D8] shadow-xs hover:shadow-xl transition-all duration-300 cursor-pointer group flex flex-col justify-between"
+                onClick={() => {
+                  if (item.partnerType === 'shop' && onOpenShopModal) {
+                    onOpenShopModal(item);
+                  } else {
+                    onOpenPartnerModal(item);
+                  }
+                }}
+                className={`bg-white overflow-hidden border shadow-xs hover:shadow-xl transition-all duration-300 cursor-pointer group flex flex-col justify-between ${
+                  item.partnerType === 'shop' ? 'border-[#E11D48]/40 ring-1 ring-[#E11D48]/20' : 'border-[#ECE5D8]'
+                }`}
               >
                 <div>
                   {item.imageUrl ? (
@@ -135,8 +145,10 @@ export default function PartnersPage({
                         alt={item.name}
                         className="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-500"
                       />
-                      <span className="absolute top-2.5 left-2.5 sm:top-3 sm:left-3 bg-black/60 backdrop-blur-xs text-white text-[10px] sm:text-[11px] font-extrabold px-2 sm:px-2.5 py-0.5 tracking-wider uppercase">
-                        {item.categoryName}
+                      <span className={`absolute top-2.5 left-2.5 sm:top-3 sm:left-3 text-white text-[10px] sm:text-[11px] font-extrabold px-2 sm:px-2.5 py-0.5 tracking-wider uppercase ${
+                        item.partnerType === 'shop' ? 'bg-[#E11D48] shadow-sm' : 'bg-black/60 backdrop-blur-xs'
+                      }`}>
+                        {item.partnerType === 'shop' ? '🛍️ 회원 전용 특가몰' : item.categoryName}
                       </span>
                       <button
                         type="button"
@@ -188,13 +200,22 @@ export default function PartnersPage({
                 </div>
 
                 <div className="p-4 pt-0 sm:p-6 sm:pt-0">
-                  <div className="p-2 sm:p-3 bg-[#EAF5F2] text-[11px] sm:text-xs font-bold text-[#144A42] mb-2 sm:mb-3">
+                  <div className={`p-2 sm:p-3 text-[11px] sm:text-xs font-bold mb-2 sm:mb-3 ${
+                    item.partnerType === 'shop' ? 'bg-[#FFF1F2] text-[#E11D48] border border-[#FFE4E6]' : 'bg-[#EAF5F2] text-[#144A42]'
+                  }`}>
                     {item.benefit}
                   </div>
-                  <div className="flex items-center justify-between text-[11px] sm:text-xs font-semibold text-gray-500 group-hover:text-[#144A42]">
-                    <span>상세정보 확인</span>
-                    <span>→</span>
-                  </div>
+                  {item.partnerType === 'shop' ? (
+                    <div className="w-full py-2.5 bg-[#144A42] text-white text-xs font-bold flex items-center justify-center gap-1.5 shadow-xs group-hover:bg-[#0D3832] transition">
+                      <span>🛍️ 회원 특가 상품 보기 & 즉시 주문</span>
+                      <span>→</span>
+                    </div>
+                  ) : (
+                    <div className="flex items-center justify-between text-[11px] sm:text-xs font-semibold text-gray-500 group-hover:text-[#144A42]">
+                      <span>상세정보 확인</span>
+                      <span>→</span>
+                    </div>
+                  )}
                 </div>
               </div>
             );

@@ -217,8 +217,181 @@ export const MEMBERSHIP_PERKS = [
   },
 ];
 
+// RedPuppy Special Partner Shop Products
+export const REDPUPPY_PRODUCTS = [
+  {
+    id: "rp_01",
+    name: "알로린 백팩형 이동가방 [XL]",
+    modelNo: "RP-AL01",
+    category: "carrier",
+    categoryName: "이동가방/백팩",
+    originalPrice: 180000,
+    salePrice: 135000,
+    discountPercent: 25,
+    rating: 4.9,
+    reviews: 42,
+    stock: 50,
+    isVisible: true,
+    thumbUrl: "https://images.unsplash.com/photo-1544568100-847a948585b9?w=600&auto=format&fit=crop&q=80",
+    detailImages: [
+      "https://images.unsplash.com/photo-1544568100-847a948585b9?w=800&auto=format&fit=crop&q=80",
+      "https://images.unsplash.com/photo-1583511655857-d19b40a7a54e?w=800&auto=format&fit=crop&q=80"
+    ],
+    options: ["소프트 베이지", "차콜 그레이", "클래식 블랙"],
+    desc: "장시간 착용해도 어깨가 편안한 에어쿠션 등판, 3면 메쉬 통기창, 최대 10kg까지 안전 수납",
+    features: ["국내 직영 공장 품질 검수", "체형 맞춤 인체공학 숄더 스트랩", "탈부착 이중 바닥 패드"]
+  },
+  {
+    id: "rp_02",
+    name: "스마일 백팩 이동가방",
+    modelNo: "RP-SM02",
+    category: "carrier",
+    categoryName: "이동가방/백팩",
+    originalPrice: 126000,
+    salePrice: 94500,
+    discountPercent: 25,
+    rating: 4.8,
+    reviews: 35,
+    stock: 30,
+    isVisible: true,
+    thumbUrl: "https://images.unsplash.com/photo-1601758228041-f3b2795255f1?w=600&auto=format&fit=crop&q=80",
+    detailImages: [
+      "https://images.unsplash.com/photo-1601758228041-f3b2795255f1?w=800&auto=format&fit=crop&q=80"
+    ],
+    options: ["스마일 옐로우", "아이보리", "인디고 블루"],
+    desc: "위트 있는 스마일 포인트와 가벼운 무게, 대중교통 이용 시 필수적인 전면 차단 커버",
+    features: ["기내 및 대중교통 탑승 가능", "고강도 경량 패브릭", "안전 하네스 고정 클립"]
+  },
+  {
+    id: "rp_03",
+    name: "메드핀 프리미엄 숄더 이동가방",
+    modelNo: "RP-MD03",
+    category: "carrier",
+    categoryName: "이동가방/백팩",
+    originalPrice: 89000,
+    salePrice: 66700,
+    discountPercent: 25,
+    rating: 4.9,
+    reviews: 67,
+    stock: 45,
+    isVisible: true,
+    thumbUrl: "https://images.unsplash.com/photo-1548767797-d8c844163c4c?w=600&auto=format&fit=crop&q=80",
+    detailImages: [
+      "https://images.unsplash.com/photo-1548767797-d8c844163c4c?w=800&auto=format&fit=crop&q=80"
+    ],
+    options: ["애쉬 그레이", "올리브 카키", "모카 브라운"],
+    desc: "도시적인 세련된 디자인과 넉넉한 수납공간, 생활방수 겉감으로 오염 걱정 없는 토트/숄더백",
+    features: ["생활 방수 테프론 코팅", "이중 안전 잠금 지퍼", "배변봉투/물병 전용 포켓"]
+  },
+  {
+    id: "rp_04",
+    name: "던로그 통기성 슬링백",
+    modelNo: "RP-DN04",
+    category: "sling",
+    categoryName: "슬링백/포대기",
+    originalPrice: 89000,
+    salePrice: 66700,
+    discountPercent: 25,
+    rating: 5.0,
+    reviews: 82,
+    stock: 60,
+    isVisible: true,
+    thumbUrl: "https://images.unsplash.com/photo-1537151608828-ea2b11777ee8?w=600&auto=format&fit=crop&q=80",
+    detailImages: [
+      "https://images.unsplash.com/photo-1537151608828-ea2b11777ee8?w=800&auto=format&fit=crop&q=80"
+    ],
+    options: ["코튼 베이지", "네이비", "더스티 핑크"],
+    desc: "보호자와 밀착되어 불안감을 덜어주는 슬링백, 폭신한 와이드 어깨 패드로 장시간 산책에도 안심",
+    features: ["와이드 쿠션 숄더 스트랩", "이탈 방지 안전고리 기본 내장", "100% 코튼 안감"]
+  },
+  {
+    id: "rp_05",
+    name: "논슬립 와이드 3단 펫스텝 계단",
+    modelNo: "RP-ST01",
+    category: "living",
+    categoryName: "스텝/가구",
+    originalPrice: 72000,
+    salePrice: 54000,
+    discountPercent: 25,
+    rating: 4.9,
+    reviews: 110,
+    stock: 25,
+    isVisible: true,
+    thumbUrl: "https://images.unsplash.com/photo-1583337130417-3346a1be7dee?w=600&auto=format&fit=crop&q=80",
+    detailImages: [
+      "https://images.unsplash.com/photo-1583337130417-3346a1be7dee?w=800&auto=format&fit=crop&q=80"
+    ],
+    options: ["라이트 그레이", "소프트 오트밀", "초코 브라운"],
+    desc: "슬개골 탈구 예방을 위한 완만한 경사각 설계, 고탄성 무독성 폼과 미끄럼 방지 실리콘 바닥",
+    features: ["지퍼 분리형 커버 세탁 가능", "국내 친환경 고밀도 폼", "바닥 논슬립 실리콘 도트"]
+  },
+  {
+    id: "rp_06",
+    name: "사계절 포근 구름 마약방석 하우스",
+    modelNo: "RP-BD02",
+    category: "living",
+    categoryName: "쿠션/방석",
+    originalPrice: 58000,
+    salePrice: 43500,
+    discountPercent: 25,
+    rating: 4.8,
+    reviews: 58,
+    stock: 40,
+    isVisible: true,
+    thumbUrl: "https://images.unsplash.com/photo-1591946614720-90a587da4a36?w=600&auto=format&fit=crop&q=80",
+    detailImages: [
+      "https://images.unsplash.com/photo-1591946614720-90a587da4a36?w=800&auto=format&fit=crop&q=80"
+    ],
+    options: ["버터 옐로우", "클라우드 화이트", "세이지 그린"],
+    desc: "턱을 괴기 좋아하는 반려견을 위한 볼륨감 있는 사이드 쿠션, 먼지 없는 마이크로화이버 극세사 원단",
+    features: ["향균 진드기 방지 원단", "쿠션 꺼짐 방지 복원력", "물세탁 가능한 통째 세탁"]
+  },
+  {
+    id: "rp_07",
+    name: "올인원 드라이빙 안전 카시트",
+    modelNo: "RP-CS03",
+    category: "car",
+    categoryName: "카시트/안전",
+    originalPrice: 95000,
+    salePrice: 71200,
+    discountPercent: 25,
+    rating: 4.9,
+    reviews: 73,
+    stock: 20,
+    isVisible: true,
+    thumbUrl: "https://images.unsplash.com/photo-1510798831971-661eb04b3739?w=600&auto=format&fit=crop&q=80",
+    detailImages: [
+      "https://images.unsplash.com/photo-1510798831971-661eb04b3739?w=800&auto=format&fit=crop&q=80"
+    ],
+    options: ["차콜 블랙", "웜 베이지"],
+    desc: "급정거 시에도 충격을 흡수하는 사면 범퍼와 차량 좌석 벨트 완벽 결합 고정 시스템",
+    features: ["헤드레스트 & 좌석 2중 고정", "하네스 연결 세이프티 리드줄 2구", "양면 사계절 방수 패드"]
+  }
+];
+
 // Partner Businesses (우리 동네 반려생활)
 export const PARTNER_LIST = [
+  {
+    id: "p_redpuppy",
+    partnerType: "shop", // ★ 제휴 쇼핑몰 유형
+    category: "shopping",
+    categoryName: "반려용품·쇼핑몰",
+    name: "레드퍼피 (RedPuppy) 공식 회원몰",
+    tag: "슬반생 전용 특가몰",
+    location: "전국 택배 배송",
+    benefit: "전 상품 25% 회원 단독 할인",
+    desc: "이동가방, 슬링백, 펫스텝 등 국내 직영 제조 프리미엄 반려용품을 슬반생 회원 특별가로 주문하실 수 있습니다.",
+    rating: 4.9,
+    reviews: 218,
+    phone: "070-4186-1500",
+    color: "bg-[#FBEAEB] text-[#9A2C2C]",
+    icon: "shopping",
+    imageUrl: "https://images.unsplash.com/photo-1544568100-847a948585b9?w=700&auto=format&fit=crop&q=80",
+    featured: true,
+    shopUrl: "https://redpuppy.co.kr/",
+    discountRate: 25,
+    products: REDPUPPY_PRODUCTS,
+  },
   {
     id: "p1",
     category: "hospital",
@@ -444,5 +617,49 @@ export const INITIAL_POPUPS = [
     active: true,
     createdAt: "2026-09-13",
   },
+];
+
+// Initial Shop Orders (제휴몰 주문/배송 관리용)
+export const INITIAL_SHOP_ORDERS = [
+  {
+    id: "ORD-20260930-0101",
+    partnerId: "p_redpuppy",
+    partnerName: "레드퍼피 (RedPuppy)",
+    customerName: "이지은",
+    customerPhone: "010-4821-3921",
+    address: "서울특별시 마포구 월드컵북로 120 402호",
+    productName: "알로린 백팩형 이동가방 [XL]",
+    modelNo: "RP-AL01",
+    option: "소프트 베이지",
+    quantity: 1,
+    unitPrice: 135000,
+    totalAmount: 135000,
+    status: "PREPARING", // ORDERED, PAID, PREPARING, SHIPPING, DELIVERED, CANCELLED
+    statusLabel: "배송 준비중",
+    courier: "CJ대한통운",
+    trackingNumber: "6892-1249-5501",
+    orderedAt: "2026.09.30 09:30",
+    memo: "문 앞에 놔주세요."
+  },
+  {
+    id: "ORD-20260929-0892",
+    partnerId: "p_redpuppy",
+    partnerName: "레드퍼피 (RedPuppy)",
+    customerName: "박민호",
+    customerPhone: "010-9281-5521",
+    address: "경기도 성남시 분당구 정자일로 45 101동 502호",
+    productName: "논슬립 와이드 3단 펫스텝 계단",
+    modelNo: "RP-ST01",
+    option: "라이트 그레이",
+    quantity: 1,
+    unitPrice: 54000,
+    totalAmount: 54000,
+    status: "SHIPPING",
+    statusLabel: "배송중",
+    courier: "우체국택배",
+    trackingNumber: "6089-4912-3841",
+    orderedAt: "2026.09.29 14:15",
+    memo: "배송 전 연락 부탁드립니다."
+  }
 ];
 
