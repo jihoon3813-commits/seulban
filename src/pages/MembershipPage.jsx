@@ -81,8 +81,8 @@ export default function MembershipPage({ onOpenMembershipModal, onOpenMallModal 
               <tbody className="divide-y divide-gray-100">
                 <tr>
                   <td className="py-2.5 px-3 sm:py-3.5 sm:px-4 font-medium">모바일 동물등록</td>
-                  <td className="py-2.5 px-3 sm:py-3.5 sm:px-4 text-center text-gray-400">수수료 무료</td>
-                  <td className="py-2.5 px-3 sm:py-3.5 sm:px-4 text-center font-bold text-[#144A42] bg-[#F2F8F6]">외장칩+등록증 키트 전액 무료</td>
+                  <td className="py-2.5 px-3 sm:py-3.5 sm:px-4 text-center text-gray-400">일반 대행</td>
+                  <td className="py-2.5 px-3 sm:py-3.5 sm:px-4 text-center font-bold text-[#144A42] bg-[#F2F8F6]">간편 대행 & 외장칩 패키지 우대</td>
                 </tr>
                 <tr>
                   <td className="py-2.5 px-3 sm:py-3.5 sm:px-4 font-medium">제휴 병원 진료비</td>

@@ -185,9 +185,9 @@ export const CORE_SERVICES = [
 export const MEMBERSHIP_PERKS = [
   {
     id: "perk1",
-    tag: "01 지원",
-    title: "동물등록비 전액 지원",
-    desc: "신규 등록 대행 수수료 및 프리미엄 외장형 전자칩 목걸이 무료 제공",
+    tag: "01 등록",
+    title: "동물등록 간편 대행 & 패키지 우대",
+    desc: "모바일 3분 간편 접수 및 외장칩 패키지 회원 우대가 제공",
     bg: "bg-[#182422] text-white border border-[#2A3B38]",
     tagBg: "bg-[#253A36] text-[#5EEAD4]",
   },

@@ -1029,9 +1029,9 @@ export function MembershipModal({ isOpen, onClose, onLeadSubmit }) {
             </div>
             <div className="divide-y divide-[#EFECE6] text-xs">
               <div className="grid grid-cols-3 px-4 py-3 items-center">
-                <span className="font-semibold text-gray-800">동물등록비</span>
-                <span className="text-center text-gray-500">대행 수수료만 지원</span>
-                <span className="text-center text-[#144A42] font-bold bg-[#EBF5F2] py-1">인식표 키트 전액 지원</span>
+                <span className="font-semibold text-gray-800">모바일 동물등록</span>
+                <span className="text-center text-gray-500">일반 대행 접수</span>
+                <span className="text-center text-[#144A42] font-bold bg-[#EBF5F2] py-1">간편 대행 & 외장칩 패키지 우대</span>
               </div>
               <div className="grid grid-cols-3 px-4 py-3 items-center">
                 <span className="font-semibold text-gray-800">제휴 동물병원</span>
