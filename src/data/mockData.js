@@ -3,7 +3,7 @@ export const BRAND_INFO = {
   fullName: "슬기로운 반려생활",
   slogan: "우리 아이의 오늘부터 모든 내일까지",
   subSlogan: "등록부터 건강, 여행, 아름다운 이별까지 반려동물의 평생을 함께합니다.",
-  phone1: "010-3545-6982",
+  phone1: "070-4186-1500",
   phone2: "010-8880-6982",
   email: "contact@seulbanlife.com",
   address: "서울특별시 강남구 테헤란로 123 슬반생 빌딩 5층",
@@ -76,7 +76,7 @@ export const BRAND_INFO = {
 제6조(개인정보 보호책임자)
 - 성명: 박슬기
 - 직책: 개인정보보호책임자(CPO)
-- 문의처: 010-3545-6982 / contact@seulbanlife.com`,
+- 문의처: 070-4186-1500 / contact@seulbanlife.com`,
 
   // 7. 이용약관 전문
   termsOfService: `제1조(목적)

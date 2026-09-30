@@ -258,7 +258,19 @@ export default function App() {
 
   const [localBrandInfo, setLocalBrandInfo] = useState(() => {
     const saved = localStorage.getItem('seulban_brand');
-    return saved ? JSON.parse(saved) : BRAND_INFO;
+    if (saved) {
+      try {
+        const parsed = JSON.parse(saved);
+        if (parsed.phone1 === '010-3545-6982') {
+          parsed.phone1 = BRAND_INFO.phone1;
+          localStorage.setItem('seulban_brand', JSON.stringify(parsed));
+        }
+        return parsed;
+      } catch (e) {
+        return BRAND_INFO;
+      }
+    }
+    return BRAND_INFO;
   });
   const brandInfo = convexBrand || localBrandInfo;
 
@@ -344,7 +356,14 @@ export default function App() {
       const c = localStorage.getItem('seulban_consultations');
       if (c) setLocalConsultations(JSON.parse(c));
       const b = localStorage.getItem('seulban_brand');
-      if (b) setLocalBrandInfo(JSON.parse(b));
+      if (b) {
+        const parsed = JSON.parse(b);
+        if (parsed.phone1 === '010-3545-6982') {
+          parsed.phone1 = BRAND_INFO.phone1;
+          localStorage.setItem('seulban_brand', JSON.stringify(parsed));
+        }
+        setLocalBrandInfo(parsed);
+      }
       const pop = localStorage.getItem('seulban_popups');
       if (pop) setLocalPopups(JSON.parse(pop));
       const ad = localStorage.getItem('seulban_adoption');

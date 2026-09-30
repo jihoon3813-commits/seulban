@@ -60,6 +60,7 @@ export default function AdminPage({
 
   // Current admin menu tab
   const [currentTab, setCurrentTab] = useState('dashboard');
+  const [sidebarOpen, setSidebarOpen] = useState(false);
 
   // Application search & filter state
   const [appFilter, setAppFilter] = useState('ALL');
@@ -269,10 +270,11 @@ export default function AdminPage({
   });
 
   // Brand, SEO & Footer edit state
-  const [brandForm, setBrandForm] = useState(() => ({
-    ...BRAND_INFO,
-    ...(brandInfo || {})
-  }));
+  const [brandForm, setBrandForm] = useState(() => {
+    const initial = { ...BRAND_INFO, ...(brandInfo || {}) };
+    if (initial.phone1 === '010-3545-6982') initial.phone1 = BRAND_INFO.phone1;
+    return initial;
+  });
 
   // 메뉴 탭 이동 시 최신 데이터 자동 동기화 및 폼 새로고침
   useEffect(() => {
@@ -280,20 +282,19 @@ export default function AdminPage({
       onRefreshData();
     }
     if (brandInfo) {
-      setBrandForm({
-        ...BRAND_INFO,
-        ...brandInfo
-      });
+      const merged = { ...BRAND_INFO, ...brandInfo };
+      if (merged.phone1 === '010-3545-6982') merged.phone1 = BRAND_INFO.phone1;
+      setBrandForm(merged);
     }
   }, [currentTab]);
 
   React.useEffect(() => {
     if (brandInfo) {
-      setBrandForm(prev => ({
-        ...BRAND_INFO,
-        ...prev,
-        ...brandInfo
-      }));
+      setBrandForm(prev => {
+        const merged = { ...BRAND_INFO, ...prev, ...brandInfo };
+        if (merged.phone1 === '010-3545-6982') merged.phone1 = BRAND_INFO.phone1;
+        return merged;
+      });
     }
   }, [brandInfo]);
 
@@ -502,8 +503,6 @@ export default function AdminPage({
       </div>
     );
   }
-
-  const [sidebarOpen, setSidebarOpen] = useState(false);
 
   const menuItems = [
     { id: 'dashboard', label: '대시보드 요약', icon: SparklesIcon },
@@ -3872,7 +3871,7 @@ export default function AdminPage({
                           type="text"
                           value={brandForm.phone1 || ''}
                           onChange={(e) => setBrandForm({ ...brandForm, phone1: e.target.value })}
-                          placeholder="010-3545-6982"
+                          placeholder="070-4186-1500"
                           className="w-full px-3.5 py-2.5 border border-gray-300 focus:border-[#144A42] focus:outline-none font-semibold text-[#144A42]"
                           required
                         />
@@ -4012,7 +4011,7 @@ export default function AdminPage({
                           {brandForm.csTitle || '고객센터 및 제휴상담'}
                         </p>
                         <div className="text-sm font-bold text-[#E8DEC8]">
-                          {brandForm.phone1 || '010-3545-6982'}
+                          {brandForm.phone1 || '070-4186-1500'}
                         </div>
                         <div className="text-[11px] text-[#A6B2AD]">
                           {brandForm.phone2Label || '야간/응급'}: {brandForm.phone2 || '010-8880-6982'}
