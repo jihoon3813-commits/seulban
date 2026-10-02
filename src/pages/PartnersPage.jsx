@@ -203,7 +203,7 @@ export default function PartnersPage({
                   <div className={`p-2 sm:p-3 text-[11px] sm:text-xs font-bold mb-2 sm:mb-3 ${
                     item.partnerType === 'shop' ? 'bg-[#FFF1F2] text-[#E11D48] border border-[#FFE4E6]' : 'bg-[#EAF5F2] text-[#144A42]'
                   }`}>
-                    {item.benefit}
+                    {item.benefit?.replace('25%', '20%')}
                   </div>
                   {item.partnerType === 'shop' ? (
                     <div className="w-full py-2.5 bg-[#144A42] text-white text-xs font-bold flex items-center justify-center gap-1.5 shadow-xs group-hover:bg-[#0D3832] transition">

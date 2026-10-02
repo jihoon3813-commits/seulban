@@ -100,14 +100,14 @@ export default function MembershipPage({ onOpenMembershipModal, onOpenMallModal 
                   title="슬반생몰 오픈 준비 현황 보기"
                 >
                   <td className="py-2.5 px-3 sm:py-3.5 sm:px-4 font-medium flex items-center justify-between">
-                    <span>슬반생몰 쇼핑</span>
+                    <span>반려용품·쇼핑</span>
                     <span className="text-[10px] bg-[#EBF5F2] text-[#144A42] px-1.5 py-0.5 rounded font-bold group-hover:bg-[#144A42] group-hover:text-white transition">
-                      오픈준비중
+                      단독 혜택
                     </span>
                   </td>
-                  <td className="py-2.5 px-3 sm:py-3.5 sm:px-4 text-center text-gray-400">첫구매 3,000원</td>
+                  <td className="py-2.5 px-3 sm:py-3.5 sm:px-4 text-center text-gray-400">기본 배송비 부담</td>
                   <td className="py-2.5 px-3 sm:py-3.5 sm:px-4 text-center font-bold text-[#144A42] bg-[#F2F8F6] group-hover:bg-[#E2EFEA] transition">
-                    매월 50,000원 전용 쿠폰팩
+                    무제한 무료배송 & 전용 핫딜관
                   </td>
                 </tr>
                 <tr>

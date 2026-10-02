@@ -42,7 +42,13 @@ export const BRAND_INFO = {
   privacyUrl: "#privacy",
   termsUrl: "#terms",
 
-  // 4. 소셜 및 상담 채널 설정
+  // 4. 쇼핑몰/제휴몰 무통장 입금 계좌 설정
+  bankName: "국민은행",
+  accountNumber: "293801-01-209384",
+  accountHolder: "(주)슬기로운반려생활",
+  depositNotice: "주문 접수 후 24시간 이내 입금 확인 시 당일 출고되며, 미입금 시 자동 취소됩니다.",
+
+  // 5. 소셜 및 상담 채널 설정
   kakaoChannelUrl: "https://pf.kakao.com", // 카카오톡 채널 상담 URL
 
   // 5. 상담 신청 시 개인정보 수집 및 이용 동의 문구
@@ -210,8 +216,8 @@ export const MEMBERSHIP_PERKS = [
   {
     id: "perk4",
     tag: "04 쇼핑",
-    title: "슬반생몰 매월 5만원 쿠폰팩",
-    desc: "유기농 프리미엄 사료, 간식, 위생용품 매월 정기 할인 혜택",
+    title: "무제한 무료배송 & 시크릿 핫딜관",
+    desc: "공식 제휴몰 전 상품 무제한 무료배송 지원 & 멤버십 전용 시크릿 핫딜관 이용권",
     bg: "bg-[#144A42] text-white border border-[#20665B]",
     tagBg: "bg-[#1F6257] text-[#FDE68A]",
   },

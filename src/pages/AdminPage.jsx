@@ -2601,6 +2601,7 @@ export default function AdminPage({
                               });
                               const updatedPartner = {
                                 ...selectedShopPartner,
+                                benefit: `전 상품 ${rate}% 회원 단독 할인`,
                                 discountRate: rate,
                                 products: updatedProds
                               };
@@ -2639,6 +2640,8 @@ export default function AdminPage({
                                 }));
                                 const updated = {
                                   ...selectedShopPartner,
+                                  benefit: `전 상품 ${rate}% 회원 단독 할인`,
+                                  discountRate: rate,
                                   products: defaultProds
                                 };
                                 setSelectedShopPartner(updated);
@@ -5246,6 +5249,71 @@ export default function AdminPage({
                         onChange={(e) => setBrandForm({ ...brandForm, csHours: e.target.value })}
                         placeholder="평일 09:00 - 18:00 (점심시간 12:00 - 13:00)&#10;동물등록 및 24시 긴급상담 연중무휴 지원"
                         className="w-full px-3.5 py-2.5 border border-gray-300 focus:border-[#144A42] focus:outline-none leading-relaxed font-sans"
+                      />
+                    </div>
+                  </div>
+
+                  {/* 2-B. 제휴 쇼핑몰 무통장 입금 결제 계좌 설정 */}
+                  <div className="bg-white p-6 sm:p-8 border border-[#E2DDD3] shadow-xs space-y-5 text-xs">
+                    <div className="border-b border-gray-100 pb-3 flex items-center justify-between">
+                      <div>
+                        <h3 className="text-sm font-bold text-[#142C27] flex items-center gap-1.5">
+                          <span>💳 제휴 쇼핑몰(레드퍼피 등) 무통장 입금 계좌 설정</span>
+                        </h3>
+                        <p className="text-gray-500 mt-0.5 text-[11px]">
+                          회원 특가 주문 시 고객에게 안내되는 무통장 입금 계좌 및 안내 문구를 관리합니다.
+                        </p>
+                      </div>
+                      <span className="px-2 py-0.5 bg-[#EAF5F2] text-[#144A42] font-bold text-[10px]">
+                        주문 모달 실시간 연동
+                      </span>
+                    </div>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                      <div>
+                        <label className="block font-bold mb-1 text-gray-800">입금 은행명 *</label>
+                        <input
+                          type="text"
+                          value={brandForm.bankName || ''}
+                          onChange={(e) => setBrandForm({ ...brandForm, bankName: e.target.value })}
+                          placeholder="국민은행"
+                          className="w-full px-3.5 py-2.5 border border-gray-300 focus:border-[#144A42] focus:outline-none font-semibold text-[#142C27]"
+                        />
+                      </div>
+
+                      <div>
+                        <label className="block font-bold mb-1 text-gray-800">계좌번호 *</label>
+                        <input
+                          type="text"
+                          value={brandForm.accountNumber || ''}
+                          onChange={(e) => setBrandForm({ ...brandForm, accountNumber: e.target.value })}
+                          placeholder="293801-01-209384"
+                          className="w-full px-3.5 py-2.5 border border-gray-300 focus:border-[#144A42] focus:outline-none font-mono font-bold text-[#144A42]"
+                        />
+                      </div>
+
+                      <div>
+                        <label className="block font-bold mb-1 text-gray-800">예금주명 *</label>
+                        <input
+                          type="text"
+                          value={brandForm.accountHolder || ''}
+                          onChange={(e) => setBrandForm({ ...brandForm, accountHolder: e.target.value })}
+                          placeholder="(주)슬기로운반려생활"
+                          className="w-full px-3.5 py-2.5 border border-gray-300 focus:border-[#144A42] focus:outline-none font-semibold text-[#142C27]"
+                        />
+                      </div>
+                    </div>
+
+                    <div>
+                      <label className="block font-bold mb-1 text-gray-800">
+                        입금 기한 및 유의사항 안내 문구
+                      </label>
+                      <input
+                        type="text"
+                        value={brandForm.depositNotice || ''}
+                        onChange={(e) => setBrandForm({ ...brandForm, depositNotice: e.target.value })}
+                        placeholder="주문 접수 후 24시간 이내 입금 확인 시 당일 출고되며, 미입금 시 자동 취소됩니다."
+                        className="w-full px-3.5 py-2.5 border border-gray-300 focus:border-[#144A42] focus:outline-none"
                       />
                     </div>
                   </div>

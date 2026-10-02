@@ -1046,11 +1046,11 @@ export function MembershipModal({ isOpen, onClose, onLeadSubmit }) {
               </div>
               <div className="grid grid-cols-3 px-4 py-3 items-center">
                 <div className="flex items-center gap-1.5">
-                  <span className="font-semibold text-gray-800">슬반생몰 쇼핑</span>
-                  <span className="text-[10px] bg-[#EAE4D7] text-[#144A42] px-1 py-0.5 rounded font-bold">준비중</span>
+                  <span className="font-semibold text-gray-800">반려용품·쇼핑</span>
+                  <span className="text-[10px] bg-[#EAE4D7] text-[#144A42] px-1 py-0.5 rounded font-bold">단독혜택</span>
                 </div>
-                <span className="text-center text-gray-500">첫구매 3,000원</span>
-                <span className="text-center text-[#144A42] font-bold bg-[#EBF5F2] py-1">매월 50,000원 쿠폰팩</span>
+                <span className="text-center text-gray-500">기본 배송비 부담</span>
+                <span className="text-center text-[#144A42] font-bold bg-[#EBF5F2] py-1">무제한 무료배송 & 전용 핫딜관</span>
               </div>
             </div>
           </div>
@@ -1295,7 +1295,8 @@ export function ShopPartnerModal({
   onOrderSubmit, 
   user,
   bookmarks = [],
-  onToggleBookmark 
+  onToggleBookmark,
+  brandInfo
 }) {
   const [activeCategory, setActiveCategory] = useState('all');
   const [searchQuery, setSearchQuery] = useState('');
@@ -1308,10 +1309,96 @@ export function ShopPartnerModal({
   const [orderForm, setOrderForm] = useState({
     customerName: user?.name || '',
     customerPhone: user?.phone || '',
+    zonecode: '',
     address: '',
+    extraAddress: '',
     detailAddress: '',
+    jibunAddress: '',
     deliveryMemo: '문 앞에 놔주세요.',
   });
+
+  const [isPostcodeModalOpen, setIsPostcodeModalOpen] = useState(false);
+  const [copiedBank, setCopiedBank] = useState(false);
+  const postcodeContainerRef = useRef(null);
+
+  // 무통장 입금 정보 (설정된 값 우선, 미설정 시 기본값)
+  const bankInfoData = {
+    bankName: brandInfo?.bankName || BRAND_INFO.bankName || '국민은행',
+    accountNumber: brandInfo?.accountNumber || BRAND_INFO.accountNumber || '293801-01-209384',
+    accountHolder: brandInfo?.accountHolder || BRAND_INFO.accountHolder || '(주)슬기로운반려생활',
+    depositNotice: brandInfo?.depositNotice || BRAND_INFO.depositNotice || '주문 접수 후 24시간 이내 입금 확인 시 당일 출고되며, 미입금 시 자동 취소됩니다.'
+  };
+
+  const handleCopyAccount = () => {
+    const textToCopy = `${bankInfoData.bankName} ${bankInfoData.accountNumber} ${bankInfoData.accountHolder}`;
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(textToCopy).then(() => {
+        setCopiedBank(true);
+        setTimeout(() => setCopiedBank(false), 2000);
+      });
+    } else {
+      alert(`입금 계좌: ${textToCopy}`);
+    }
+  };
+
+  // 카카오/다음 우편번호 검색 열기
+  const handleOpenPostcode = () => {
+    if (window.daum && window.daum.Postcode) {
+      setIsPostcodeModalOpen(true);
+    } else {
+      const script = document.createElement('script');
+      script.src = 'https://t1.daumcdn.net/mapjsapi/bundle/postcode/prod/postcode.v2.js';
+      script.onload = () => {
+        setIsPostcodeModalOpen(true);
+      };
+      script.onerror = () => {
+        alert('우편번호 검색 서비스를 불러오는 데 실패했습니다. 주소를 직접 입력해 주세요.');
+      };
+      document.head.appendChild(script);
+    }
+  };
+
+  // 카카오 우편번호 레이어 임베딩
+  useEffect(() => {
+    if (!isPostcodeModalOpen) return;
+
+    const timer = setTimeout(() => {
+      if (window.daum && window.daum.Postcode && postcodeContainerRef.current) {
+        postcodeContainerRef.current.innerHTML = '';
+        new window.daum.Postcode({
+          oncomplete: function(data) {
+            let fullAddr = data.roadAddress || data.jibunAddress;
+            let extraAddr = '';
+
+            if (data.addressType === 'R') {
+              if (data.bname !== '' && /[동|로|가]$/g.test(data.bname)) {
+                extraAddr += data.bname;
+              }
+              if (data.buildingName !== '') {
+                extraAddr += (extraAddr !== '' ? `, ${data.buildingName}` : data.buildingName);
+              }
+              if (extraAddr !== '') {
+                extraAddr = ` (${extraAddr})`;
+              }
+            }
+
+            setOrderForm(prev => ({
+              ...prev,
+              zonecode: data.zonecode || '',
+              address: fullAddr,
+              extraAddress: extraAddr,
+              jibunAddress: data.jibunAddress || ''
+            }));
+            setIsPostcodeModalOpen(false);
+          },
+          width: '100%',
+          height: '100%'
+        }).embed(postcodeContainerRef.current);
+      }
+    }, 60);
+
+    return () => clearTimeout(timer);
+  }, [isPostcodeModalOpen]);
 
   useEffect(() => {
     if (user) {
@@ -1333,6 +1420,8 @@ export function ShopPartnerModal({
       setQuantity(1);
       setShowDetailImages(false);
       setVisibleCount(24);
+      setIsPostcodeModalOpen(false);
+      setCopiedBank(false);
     }
   }, [isOpen]);
 
@@ -1385,21 +1474,35 @@ export function ShopPartnerModal({
     const orderId = `ORD-${new Date().toISOString().slice(0, 10).replace(/-/g, '')}-${Math.floor(1000 + Math.random() * 9000)}`;
     const totalAmount = selectedProduct.salePrice * quantity;
 
+    // 우편번호, 기본주소, 참고항목, 상세주소를 결합한 완전한 주소
+    const fullShippingAddress = [
+      orderForm.zonecode ? `[우:${orderForm.zonecode}]` : '',
+      orderForm.address.trim(),
+      orderForm.extraAddress ? orderForm.extraAddress.trim() : '',
+      orderForm.detailAddress.trim()
+    ].filter(Boolean).join(' ');
+
     const newOrder = {
       id: orderId,
       partnerId: partner.id,
       partnerName: partner.name,
       customerName: orderForm.customerName.trim(),
       customerPhone: orderForm.customerPhone.trim(),
-      address: `${orderForm.address.trim()} ${orderForm.detailAddress.trim()}`.trim(),
+      address: fullShippingAddress,
+      postalCode: orderForm.zonecode || '',
+      baseAddress: orderForm.address || '',
+      extraAddress: orderForm.extraAddress || '',
+      detailAddress: orderForm.detailAddress || '',
       productName: selectedProduct.name,
       modelNo: selectedProduct.modelNo || 'RP-STD',
       option: selectedOption,
       quantity: Number(quantity),
       unitPrice: selectedProduct.salePrice,
       totalAmount,
+      paymentMethod: '무통장 입금',
+      bankInfo: `${bankInfoData.bankName} ${bankInfoData.accountNumber} (${bankInfoData.accountHolder})`,
       status: 'ORDERED',
-      statusLabel: '주문 접수',
+      statusLabel: '입금 대기',
       courier: '',
       trackingNumber: '',
       orderedAt: new Date().toLocaleString('ko-KR', { hour12: false }),
@@ -1788,27 +1891,66 @@ export function ShopPartnerModal({
                   </div>
                 </div>
 
-                <div>
-                  <label className="block text-xs font-semibold text-gray-700 mb-1">기본 배송지 주소 *</label>
-                  <input
-                    type="text"
-                    value={orderForm.address}
-                    onChange={(e) => setOrderForm({ ...orderForm, address: e.target.value })}
-                    placeholder="예: 서울특별시 강남구 테헤란로 123"
-                    className="w-full px-3 py-2 border border-gray-300 text-xs focus:border-[#144A42] focus:outline-none"
-                    required
-                  />
-                </div>
+                {/* 배송지 주소 검색 및 상세 정보 */}
+                <div className="space-y-2.5">
+                  <label className="block text-xs font-semibold text-gray-700">
+                    배송지 주소 <span className="text-red-500">*</span>
+                  </label>
 
-                <div>
-                  <label className="block text-xs font-semibold text-gray-700 mb-1">상세 주소 (동/호수)</label>
-                  <input
-                    type="text"
-                    value={orderForm.detailAddress}
-                    onChange={(e) => setOrderForm({ ...orderForm, detailAddress: e.target.value })}
-                    placeholder="예: 101동 502호"
-                    className="w-full px-3 py-2 border border-gray-300 text-xs focus:border-[#144A42] focus:outline-none"
-                  />
+                  {/* 1. 우편번호 & 주소검색 버튼 */}
+                  <div className="flex gap-2">
+                    <input
+                      type="text"
+                      readOnly
+                      value={orderForm.zonecode}
+                      onClick={handleOpenPostcode}
+                      placeholder="우편번호 5자리"
+                      className="w-36 px-3 py-2 border border-gray-300 bg-gray-50 text-xs font-mono font-bold text-gray-800 cursor-pointer focus:border-[#144A42] focus:outline-none"
+                    />
+                    <button
+                      type="button"
+                      onClick={handleOpenPostcode}
+                      className="px-4 py-2 bg-[#144A42] hover:bg-[#0D3832] text-white text-xs font-bold transition flex items-center gap-1.5 shadow-xs shrink-0 cursor-pointer"
+                    >
+                      <SearchIcon className="w-3.5 h-3.5" />
+                      <span>우편번호 검색</span>
+                    </button>
+                  </div>
+
+                  {/* 2. 도로명 기본 주소 */}
+                  <div>
+                    <input
+                      type="text"
+                      readOnly
+                      value={orderForm.address}
+                      onClick={handleOpenPostcode}
+                      placeholder="우편번호 검색 버튼을 눌러 도로명 주소를 선택하세요"
+                      className="w-full px-3 py-2 border border-gray-300 bg-gray-50 text-xs text-gray-900 cursor-pointer focus:border-[#144A42] focus:outline-none"
+                      required
+                    />
+                  </div>
+
+                  {/* 3. 건물명 / 참고항목 / 지번 표시 (조회 시 자동 입력) */}
+                  {(orderForm.extraAddress || orderForm.jibunAddress) && (
+                    <div className="flex items-center gap-2 px-3 py-1.5 bg-[#FAF8F5] border border-[#EAE3D4] text-[11px] text-gray-600">
+                      <span className="font-semibold text-[#144A42] shrink-0">[참고/지번]</span>
+                      <span className="truncate">
+                        {orderForm.extraAddress && <span className="font-medium mr-1.5 text-gray-700">{orderForm.extraAddress}</span>}
+                        {orderForm.jibunAddress && <span className="text-gray-400">지번: {orderForm.jibunAddress}</span>}
+                      </span>
+                    </div>
+                  )}
+
+                  {/* 4. 상세 주소 (동/호수 직접 입력) */}
+                  <div>
+                    <input
+                      type="text"
+                      value={orderForm.detailAddress}
+                      onChange={(e) => setOrderForm({ ...orderForm, detailAddress: e.target.value })}
+                      placeholder="상세 주소를 입력해 주세요 (예: 101동 502호, 단독주택 등)"
+                      className="w-full px-3 py-2 border border-gray-300 text-xs focus:border-[#144A42] focus:outline-none"
+                    />
+                  </div>
                 </div>
 
                 <div>
@@ -1817,21 +1959,81 @@ export function ShopPartnerModal({
                     type="text"
                     value={orderForm.deliveryMemo}
                     onChange={(e) => setOrderForm({ ...orderForm, deliveryMemo: e.target.value })}
-                    placeholder="배송 기사님께 전달할 메시지"
+                    placeholder="배송 기사님께 전달할 메시지 (예: 문 앞에 놔주세요)"
                     className="w-full px-3 py-2 border border-gray-300 text-xs focus:border-[#144A42] focus:outline-none"
                   />
                 </div>
 
-                {/* Payment notice box */}
-                <div className="p-3 bg-[#FAF8F5] border border-[#EAE3D4] text-[11px] text-[#63726C] space-y-1">
-                  <p className="font-bold text-[#144A42]">💳 결제 및 배송 안내</p>
-                  <p>• 주문 신청 완료 시 담당자가 주문서를 확인하고 입력하신 휴대폰으로 입금 계좌 및 주문 승인 안내 알림을 발송합니다.</p>
-                  <p>• 평일 오후 2시 이전 입금 확인 건은 당일 출고를 원칙으로 안전하게 배송됩니다.</p>
+                {/* 무통장 입금 안내 카드 */}
+                <div className="space-y-2 pt-2 border-t border-gray-100">
+                  <div className="flex items-center justify-between">
+                    <label className="block text-xs font-semibold text-gray-700">결제 방식</label>
+                    <span className="text-[10px] bg-[#EAF5F2] text-[#144A42] font-bold px-2 py-0.5">
+                      무통장 입금 전용
+                    </span>
+                  </div>
+
+                  <div className="p-4 bg-[#FAF9F5] border border-[#DDD5C7] rounded-xs space-y-3">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <div className="w-4 h-4 rounded-full border-4 border-[#144A42] bg-white flex-shrink-0" />
+                        <span className="font-bold text-xs text-[#144A42]">무통장 입금 (계좌이체)</span>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={handleCopyAccount}
+                        className="px-2.5 py-1 bg-white border border-[#DDD5C7] hover:bg-gray-50 text-[11px] font-bold text-gray-700 flex items-center gap-1 transition shadow-2xs cursor-pointer"
+                      >
+                        {copiedBank ? (
+                          <>
+                            <CheckIcon className="w-3 h-3 text-emerald-600" />
+                            <span className="text-emerald-700">복사 완료!</span>
+                          </>
+                        ) : (
+                          <>
+                            <svg className="w-3.5 h-3.5 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                            </svg>
+                            <span>계좌 복사</span>
+                          </>
+                        )}
+                      </button>
+                    </div>
+
+                    <div className="bg-white p-3 border border-gray-200 text-xs space-y-1.5 font-sans">
+                      <div className="flex justify-between items-center text-gray-600">
+                        <span>입금 은행</span>
+                        <strong className="text-gray-900">{bankInfoData.bankName}</strong>
+                      </div>
+                      <div className="flex justify-between items-center text-gray-600">
+                        <span>입금 계좌번호</span>
+                        <strong className="text-sm sm:text-base font-mono font-extrabold text-[#144A42]">
+                          {bankInfoData.accountNumber}
+                        </strong>
+                      </div>
+                      <div className="flex justify-between items-center text-gray-600">
+                        <span>예금주</span>
+                        <strong className="text-gray-900">{bankInfoData.accountHolder}</strong>
+                      </div>
+                      <div className="flex justify-between items-center pt-1.5 border-t border-gray-100">
+                        <span>입금 예정 금액</span>
+                        <strong className="text-base font-extrabold text-[#E11D48]">
+                          {(selectedProduct.salePrice * quantity).toLocaleString()}원
+                        </strong>
+                      </div>
+                    </div>
+
+                    <p className="text-[11px] text-[#63726C] leading-relaxed">
+                      • {bankInfoData.depositNotice}
+                      <br />
+                      • 주문자 성함과 입금자명이 다를 경우 '배송 요청사항'란에 입금자명을 기재해 주세요.
+                    </p>
+                  </div>
                 </div>
 
                 <button
                   type="submit"
-                  className="w-full py-3.5 bg-[#144A42] hover:bg-[#0D3832] text-white font-bold text-sm flex items-center justify-center gap-2 shadow-md transition"
+                  className="w-full py-3.5 bg-[#144A42] hover:bg-[#0D3832] text-white font-bold text-sm flex items-center justify-center gap-2 shadow-md transition cursor-pointer"
                 >
                   <CheckIcon className="w-4 h-4 text-[#C5A880]" />
                   <span>총 {(selectedProduct.salePrice * quantity).toLocaleString()}원 회원특가 주문 접수</span>
@@ -1851,7 +2053,62 @@ export function ShopPartnerModal({
               <div className="space-y-1">
                 <h3 className="text-xl font-extrabold text-[#142C27]">회원 특가 주문 접수 완료!</h3>
                 <p className="text-xs text-gray-500">
-                  주문이 정상적으로 접수되었습니다. 곧 알림 문자가 발송됩니다.
+                  주문이 정상적으로 접수되었습니다. 아래 계좌로 입금해 주시면 확인 즉시 출고됩니다.
+                </p>
+              </div>
+
+              {/* 무통장 입금 계좌 안내 카드 (완료 화면에서 크게 표시) */}
+              <div className="bg-[#FAF9F5] p-4 sm:p-5 border-2 border-[#144A42]/30 text-left space-y-3">
+                <div className="flex items-center justify-between border-b border-gray-200 pb-2">
+                  <span className="font-bold text-xs text-[#144A42] flex items-center gap-1.5">
+                    <span>💳 입금하실 무통장 계좌</span>
+                  </span>
+                  <button
+                    type="button"
+                    onClick={handleCopyAccount}
+                    className="px-2.5 py-1 bg-[#144A42] hover:bg-[#0D3832] text-white text-[11px] font-bold flex items-center gap-1 transition shadow-xs cursor-pointer"
+                  >
+                    {copiedBank ? (
+                      <>
+                        <CheckIcon className="w-3 h-3 text-[#C5A880]" />
+                        <span>복사 완료!</span>
+                      </>
+                    ) : (
+                      <>
+                        <svg className="w-3 h-3 text-[#C5A880]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                        </svg>
+                        <span>계좌 복사</span>
+                      </>
+                    )}
+                  </button>
+                </div>
+
+                <div className="bg-white p-3.5 border border-gray-200 space-y-1.5 text-xs">
+                  <div className="flex justify-between text-gray-600">
+                    <span>은행명</span>
+                    <strong className="text-gray-900">{bankInfoData.bankName}</strong>
+                  </div>
+                  <div className="flex justify-between items-center text-gray-600">
+                    <span>계좌번호</span>
+                    <strong className="text-base font-mono font-black text-[#144A42]">
+                      {bankInfoData.accountNumber}
+                    </strong>
+                  </div>
+                  <div className="flex justify-between text-gray-600">
+                    <span>예금주</span>
+                    <strong className="text-gray-900">{bankInfoData.accountHolder}</strong>
+                  </div>
+                  <div className="flex justify-between pt-2 border-t border-gray-100 items-baseline">
+                    <span className="font-bold text-gray-700">입금하실 금액</span>
+                    <strong className="text-lg font-black text-[#E11D48]">
+                      {lastOrder.totalAmount.toLocaleString()}원
+                    </strong>
+                  </div>
+                </div>
+
+                <p className="text-[11px] text-[#63726C] leading-relaxed">
+                  • 입금 확인 시 {partner.name} 공식 물류센터에서 안전하게 당일/익일 택배 출고됩니다.
                 </p>
               </div>
 
@@ -1879,14 +2136,14 @@ export function ShopPartnerModal({
                 <button
                   type="button"
                   onClick={() => setOrderStep('browse')}
-                  className="flex-1 py-2.5 bg-gray-100 hover:bg-gray-200 text-gray-700 font-bold text-xs transition"
+                  className="flex-1 py-2.5 bg-gray-100 hover:bg-gray-200 text-gray-700 font-bold text-xs transition cursor-pointer"
                 >
                   다른 상품 둘러보기
                 </button>
                 <button
                   type="button"
                   onClick={onClose}
-                  className="flex-1 py-2.5 bg-[#144A42] hover:bg-[#0D3832] text-white font-bold text-xs transition"
+                  className="flex-1 py-2.5 bg-[#144A42] hover:bg-[#0D3832] text-white font-bold text-xs transition cursor-pointer"
                 >
                   닫기
                 </button>
@@ -1897,6 +2154,39 @@ export function ShopPartnerModal({
         </div>
 
       </div>
+
+      {/* Daum Postcode Search Modal Layer */}
+      {isPostcodeModalOpen && (
+        <div className="fixed inset-0 z-[120] flex items-center justify-center p-3 sm:p-6 bg-black/75 backdrop-blur-xs animate-fade-in">
+          <div className="bg-white w-full max-w-lg shadow-2xl border border-gray-300 overflow-hidden flex flex-col h-[520px] max-h-[85vh]">
+            <div className="p-3.5 bg-[#144A42] text-white flex items-center justify-between">
+              <span className="font-bold text-xs sm:text-sm">배송지 주소 우편번호 검색</span>
+              <button 
+                type="button"
+                onClick={() => setIsPostcodeModalOpen(false)}
+                className="p-1 hover:bg-white/15 rounded-full transition"
+              >
+                <XIcon className="w-4 h-4 text-white" />
+              </button>
+            </div>
+            <div className="flex-1 w-full bg-white relative">
+              <div 
+                ref={postcodeContainerRef} 
+                className="w-full h-full"
+              />
+            </div>
+            <div className="p-2.5 bg-gray-100 border-t border-gray-200 text-center">
+              <button 
+                type="button" 
+                onClick={() => setIsPostcodeModalOpen(false)}
+                className="px-5 py-1.5 bg-white border border-gray-300 text-xs font-semibold hover:bg-gray-50 transition cursor-pointer"
+              >
+                닫기
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
@@ -2555,7 +2845,7 @@ export function MallPreparingModal({ isOpen, onClose, user, onNavigate }) {
                 <GiftIcon className="w-4 h-4" />
               </div>
               <div>
-                <p className="text-[11px] font-bold text-gray-900 leading-tight">5만원 쿠폰</p>
+                <p className="text-[11px] font-bold text-gray-900 leading-tight">웰컴 쿠폰</p>
                 <p className="text-[9px] text-gray-500 mt-0.5">신규 가입 즉시</p>
               </div>
             </div>

@@ -249,18 +249,45 @@ export default function App() {
         const parsed = JSON.parse(saved);
         const pIndex = parsed.findIndex(p => p.id === 'p_redpuppy');
         const defaultRedpuppy = PARTNER_LIST.find(p => p.id === 'p_redpuppy');
+        let hasChanged = false;
+
         if (pIndex === -1 && defaultRedpuppy) {
           const updated = [defaultRedpuppy, ...parsed];
           localStorage.setItem('seulban_partners', JSON.stringify(updated));
           return updated;
         } else if (pIndex !== -1 && defaultRedpuppy) {
-          // If stored products list is less than 500, sync with full RedPuppy products catalog (including 네코야)
-          if (!parsed[pIndex].products || parsed[pIndex].products.length < 500) {
+          // If stored benefit contains 25% or discountRate is 25, migrate to 20%
+          if (parsed[pIndex].benefit?.includes('25%') || parsed[pIndex].discountRate === 25 || !parsed[pIndex].benefit) {
+            parsed[pIndex].benefit = defaultRedpuppy.benefit || '전 상품 20% 회원 단독 할인';
+            parsed[pIndex].discountRate = 20;
+            hasChanged = true;
+          }
+          // If stored products list is less than 500 or products have 25% discount, sync with full RedPuppy products catalog
+          if (!parsed[pIndex].products || parsed[pIndex].products.length < 500 || parsed[pIndex].benefit?.includes('25%')) {
             parsed[pIndex].products = defaultRedpuppy.products;
             parsed[pIndex].imageUrl = defaultRedpuppy.imageUrl;
-            localStorage.setItem('seulban_partners', JSON.stringify(parsed));
+            hasChanged = true;
           }
         }
+
+        // Check any partner with redpuppy name
+        parsed.forEach(p => {
+          if (p.id === 'p_redpuppy' || p.name?.includes('레드퍼피')) {
+            if (p.benefit?.includes('25%')) {
+              p.benefit = p.benefit.replace('25%', '20%');
+              hasChanged = true;
+            }
+            if (p.discountRate === 25) {
+              p.discountRate = 20;
+              hasChanged = true;
+            }
+          }
+        });
+
+        if (hasChanged) {
+          localStorage.setItem('seulban_partners', JSON.stringify(parsed));
+        }
+
         return parsed;
       } catch {
         return PARTNER_LIST;
@@ -268,7 +295,24 @@ export default function App() {
     }
     return PARTNER_LIST;
   });
-  const partners = (convexPartners && convexPartners.length > 0) ? convexPartners : localPartners;
+
+  const rawPartners = (convexPartners && convexPartners.length > 0) ? convexPartners : localPartners;
+  const partners = React.useMemo(() => {
+    return (rawPartners || []).map(p => {
+      if (p.id === 'p_redpuppy' || p.name?.includes('레드퍼피')) {
+        let b = p.benefit || '전 상품 20% 회원 단독 할인';
+        if (b.includes('25%')) {
+          b = b.replace('25%', '20%');
+        }
+        return {
+          ...p,
+          benefit: b,
+          discountRate: p.discountRate === 25 ? 20 : (p.discountRate || 20)
+        };
+      }
+      return p;
+    });
+  }, [convexPartners, localPartners]);
 
   const [localAdoptionList, setLocalAdoptionList] = useState(() => {
     const saved = localStorage.getItem('seulban_adoption');
@@ -1301,6 +1345,7 @@ export default function App() {
         user={user}
         bookmarks={bookmarks}
         onToggleBookmark={handleToggleBookmark}
+        brandInfo={brandInfo}
       />
 
       <LoginModal 

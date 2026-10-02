@@ -476,7 +476,7 @@ export default function Home({
                   <span className="w-3 h-3 sm:w-3.5 sm:h-3.5 rounded-full border border-[#4F635B] flex items-center justify-center text-[8px] sm:text-[9px] leading-none">
                     ✓
                   </span>
-                  <span>{item.benefit}</span>
+                  <span>{item.benefit?.replace('25%', '20%')}</span>
                 </div>
               </div>
             </div>
