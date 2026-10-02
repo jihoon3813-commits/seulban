@@ -5,10 +5,10 @@ import {
   CheckIcon, XIcon, SearchIcon, PhoneIcon, MapPinIcon, 
   ArrowRight, ClockIcon, UserIcon, ExternalLinkIcon,
   KakaoIcon, HeadphoneIcon, MessageSquare, FileTextIcon,
-  RefreshCwIcon, ShoppingBagIcon, TruckIcon
+  RefreshCwIcon, ShoppingBagIcon, TruckIcon, MenuIcon
 } from '../components/Icons';
 import { compressImage } from '../utils/imageCompressor';
-import { BRAND_INFO, REDPUPPY_PRODUCTS } from '../data/mockData';
+import { BRAND_INFO, REDPUPPY_PRODUCTS, DEFAULT_MENU_VISIBILITY, NAV_MENU_CONFIG } from '../data/mockData';
 
 export default function AdminPage({
   onNavigateHome,
@@ -41,6 +41,8 @@ export default function AdminPage({
   onDeleteConsultation,
   onUpdateConsultStatus,
   onRefreshData,
+  menuVisibility = DEFAULT_MENU_VISIBILITY,
+  onUpdateMenuVisibility,
   showToast
 }) {
   // Admin Authentication State
@@ -264,10 +266,56 @@ export default function AdminPage({
     }
   };
 
+  // Navigation Menu Visibility State (상단 메뉴 노출/숨김 관리)
+  const [localMenuVisibility, setLocalMenuVisibility] = useState(
+    menuVisibility || DEFAULT_MENU_VISIBILITY
+  );
+
+  useEffect(() => {
+    if (menuVisibility) {
+      setLocalMenuVisibility(menuVisibility);
+    }
+  }, [menuVisibility]);
+
+  const handleToggleMenu = (menuId) => {
+    const nextVal = localMenuVisibility[menuId] === false ? true : false;
+    const updated = {
+      ...localMenuVisibility,
+      [menuId]: nextVal
+    };
+    setLocalMenuVisibility(updated);
+    if (onUpdateMenuVisibility) {
+      onUpdateMenuVisibility(updated);
+    }
+    const targetObj = NAV_MENU_CONFIG.find(m => m.id === menuId);
+    const label = targetObj ? targetObj.label : menuId;
+    if (showToast) {
+      showToast(`[${label}] 메뉴가 ${nextVal ? '노출' : '숨김'} 처리되었습니다.`);
+    }
+  };
+
+  const handleSetAllMenus = (visible) => {
+    const updated = {
+      registration: visible,
+      adoption: visible,
+      partners: visible,
+      travel: visible,
+      farewell: visible,
+      membership: visible,
+    };
+    setLocalMenuVisibility(updated);
+    if (onUpdateMenuVisibility) {
+      onUpdateMenuVisibility(updated);
+    }
+    if (showToast) {
+      showToast(visible ? '전체 메뉴가 노출로 설정되었습니다.' : '전체 메뉴가 숨김 처리되었습니다.');
+    }
+  };
+
   // Shop Partner Products Management Modal State
   const [selectedShopPartner, setSelectedShopPartner] = useState(null);
   const [isShopProductsOpen, setIsShopProductsOpen] = useState(false);
-  const [bulkDiscountRate, setBulkDiscountRate] = useState(25);
+  const [bulkDiscountRate, setBulkDiscountRate] = useState(20);
   const [isAddProductModalOpen, setIsAddProductModalOpen] = useState(false);
   const [editingProductIndex, setEditingProductIndex] = useState(-1);
   const [shopProductSearch, setShopProductSearch] = useState('');
@@ -279,8 +327,8 @@ export default function AdminPage({
     category: 'carrier',
     categoryName: '이동가방/백팩',
     originalPrice: 100000,
-    salePrice: 75000,
-    discountPercent: 25,
+    salePrice: 80000,
+    discountPercent: 20,
     thumbUrl: '',
     detailImagesStr: '',
     optionsStr: '소프트 베이지, 차콜 그레이',
@@ -494,7 +542,7 @@ export default function AdminPage({
         <div className="bg-white w-full max-w-md border border-[#DDD5C7] shadow-xl p-8 sm:p-10 space-y-6">
           <div className="text-center space-y-3">
             <div className="flex justify-center mb-1">
-              <LogoEmblem className="h-12 w-auto shadow-sm" />
+              <LogoEmblem className="h-[58px] w-auto shadow-sm" />
             </div>
             <span className="text-[11px] font-bold tracking-widest text-[#B48B55] uppercase block">
               SEULBAN MANAGEMENT SYSTEM
@@ -558,6 +606,7 @@ export default function AdminPage({
 
   const menuItems = [
     { id: 'dashboard', label: '대시보드 요약', icon: SparklesIcon },
+    { id: 'menu_settings', label: '메뉴 노출 관리', icon: MenuIcon, badge: 'NEW', badgeColor: 'bg-emerald-600 text-white' },
     { id: 'consultations', label: '빠른상담 내역', icon: HeadphoneIcon, badge: consultations.length, badgeColor: 'bg-amber-500 text-white' },
     { id: 'applications', label: '동물등록 관리', icon: PawIcon, badge: applications.length, badgeColor: 'bg-emerald-600 text-white' },
     { id: 'popups', label: '팝업 관리', icon: SparklesIcon, badge: popups.length },
@@ -829,6 +878,19 @@ export default function AdminPage({
                 <p className="text-3xl font-black text-[#144A42] mt-2">{travelList.length}곳</p>
                 <p className="text-[11px] text-gray-500 mt-3">리조트, 독채펜션</p>
               </div>
+
+              <div 
+                onClick={() => setCurrentTab('menu_settings')}
+                className="bg-white p-5 border border-[#E2DDD3] shadow-xs cursor-pointer hover:border-[#144A42] transition group"
+              >
+                <span className="text-xs text-gray-500 font-medium">상단 메뉴 노출</span>
+                <p className="text-3xl font-black text-[#144A42] mt-2">
+                  {NAV_MENU_CONFIG.filter(m => localMenuVisibility[m.id] !== false).length} / {NAV_MENU_CONFIG.length}개
+                </p>
+                <div className="mt-3 flex items-center gap-1 text-[11px] text-[#144A42] group-hover:underline font-bold">
+                  <span>노출/숨김 관리 →</span>
+                </div>
+              </div>
             </div>
 
             {/* Quick Menu Blocks */}
@@ -935,6 +997,184 @@ export default function AdminPage({
                   </tbody>
                 </table>
               </div>
+            </div>
+          </div>
+        )}
+
+        {/* ========================================================
+            TAB: 상단 네비게이션 메뉴 노출 관리 (MENU VISIBILITY CONTROL)
+            ======================================================== */}
+        {currentTab === 'menu_settings' && (
+          <div className="space-y-6 max-w-5xl animate-fade-in">
+            {/* Header */}
+            <div className="flex flex-col sm:flex-row justify-between sm:items-center gap-4 bg-white p-6 border border-[#E2DDD3] shadow-xs">
+              <div>
+                <span className="text-xs font-bold tracking-widest text-[#B48B55] uppercase">NAVIGATION & MENU CONTROL</span>
+                <h2 className="text-2xl sm:text-3xl font-extrabold text-[#142C27] tracking-tight mt-1">
+                  상단 메뉴 노출 관리
+                </h2>
+                <p className="text-xs text-[#6B7973] mt-1.5 leading-relaxed">
+                  웹사이트 상단 헤더 네비게이션, 모바일 전체메뉴 및 푸터에 표시되는 주요 메뉴(새로운 만남, 반려생활, 반려여행, 아름다운 이별, 슬반생멤버십 등)의 노출 여부를 직접 제어합니다.
+                </p>
+              </div>
+
+              {/* Quick Actions */}
+              <div className="flex items-center gap-2 flex-wrap">
+                <button
+                  type="button"
+                  onClick={() => handleSetAllMenus(true)}
+                  className="px-4 py-2 bg-[#144A42] hover:bg-[#0D3832] text-white text-xs font-bold transition shadow-xs flex items-center gap-1.5 cursor-pointer"
+                >
+                  <CheckIcon className="w-3.5 h-3.5" />
+                  <span>전체 메뉴 노출</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => handleSetAllMenus(false)}
+                  className="px-4 py-2 bg-white hover:bg-gray-100 text-gray-700 border border-gray-300 text-xs font-semibold transition cursor-pointer"
+                >
+                  <XIcon className="w-3.5 h-3.5" />
+                  <span>전체 숨김</span>
+                </button>
+              </div>
+            </div>
+
+            {/* Live Header Preview Bar */}
+            <div className="bg-white p-5 border border-[#E2DDD3] shadow-xs space-y-3">
+              <div className="flex items-center justify-between">
+                <span className="text-xs font-bold text-[#144A42] flex items-center gap-1.5">
+                  <SparklesIcon className="w-4 h-4 text-[#C5A880]" />
+                  <span>실시간 헤더 네비게이션 노출 미리보기 (Live Preview)</span>
+                </span>
+                <span className="text-[11px] text-gray-400">
+                  토글 변경 시 즉시 반영되어 보입니다
+                </span>
+              </div>
+              
+              {/* Simulated Header Mockup */}
+              <div className="bg-[#F4F0E8] border border-[#E5DFD1] p-3 sm:p-4 flex items-center justify-between rounded-xs overflow-x-auto">
+                <div className="flex items-center gap-4 shrink-0">
+                  <LogoEmblem className="h-8 sm:h-9 w-auto opacity-90" />
+                  <nav className="flex items-center gap-1 sm:gap-2">
+                    {NAV_MENU_CONFIG.filter(item => localMenuVisibility[item.id] !== false).length === 0 ? (
+                      <span className="text-xs text-rose-500 font-semibold px-2 py-1 bg-rose-50 border border-rose-200">
+                        현재 모든 메뉴가 숨김 처리된 상태입니다.
+                      </span>
+                    ) : (
+                      NAV_MENU_CONFIG.filter(item => localMenuVisibility[item.id] !== false).map(item => (
+                        <span 
+                          key={item.id}
+                          className="px-2.5 py-1 text-xs font-bold text-[#144A42] bg-white border border-[#DCD6C8] shadow-2xs rounded-xs flex items-center gap-1"
+                        >
+                          <span>{item.label}</span>
+                          {item.badge && (
+                            <span className="text-[9px] bg-[#E11D48] text-white px-1 py-0.2 font-bold">
+                              {item.badge}
+                            </span>
+                          )}
+                        </span>
+                      ))
+                    )}
+                  </nav>
+                </div>
+                <div className="hidden sm:flex items-center gap-2 text-xs text-gray-500 font-medium shrink-0 ml-4">
+                  <span className="px-2 py-1 bg-white border border-gray-200 text-gray-600">MY</span>
+                  <span className="px-2.5 py-1 bg-[#1F2C27] text-white font-bold">슬반생몰</span>
+                </div>
+              </div>
+            </div>
+
+            {/* Menu Cards List */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {NAV_MENU_CONFIG.map((item) => {
+                const isVisible = localMenuVisibility[item.id] !== false;
+                return (
+                  <div
+                    key={item.id}
+                    className={`bg-white border p-5 shadow-xs transition-all flex flex-col justify-between ${
+                      isVisible ? 'border-[#144A42]/40 ring-1 ring-[#144A42]/10' : 'border-gray-200 bg-gray-50/60 opacity-80'
+                    }`}
+                  >
+                    <div>
+                      <div className="flex items-start justify-between gap-3 mb-2.5">
+                        <div className="flex items-center gap-2.5">
+                          <div className={`w-9 h-9 flex items-center justify-center rounded-xs ${
+                            isVisible ? 'bg-[#EAF5F2] text-[#144A42]' : 'bg-gray-200 text-gray-500'
+                          }`}>
+                            <MenuIcon className="w-4 h-4" />
+                          </div>
+                          <div>
+                            <div className="flex items-center gap-1.5">
+                              <h4 className="font-extrabold text-base text-[#142C27]">{item.label}</h4>
+                              {item.badge && (
+                                <span className="bg-[#E11D48] text-white text-[9px] font-bold px-1.5 py-0.2">
+                                  {item.badge}
+                                </span>
+                              )}
+                            </div>
+                            <span className="text-[11px] font-mono text-gray-400">ID: {item.id}</span>
+                          </div>
+                        </div>
+
+                        {/* Status Badge */}
+                        <span className={`px-2.5 py-1 text-[11px] font-extrabold tracking-tight flex items-center gap-1 ${
+                          isVisible 
+                            ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' 
+                            : 'bg-gray-100 text-gray-500 border border-gray-200'
+                        }`}>
+                          <span className={`w-1.5 h-1.5 rounded-full ${isVisible ? 'bg-emerald-500 animate-pulse' : 'bg-gray-400'}`}></span>
+                          <span>{isVisible ? '노출중' : '숨김 상태'}</span>
+                        </span>
+                      </div>
+
+                      <p className="text-xs text-[#525E59] leading-relaxed mb-4">
+                        {item.desc}
+                      </p>
+                    </div>
+
+                    {/* Bottom Action Row with Switch Toggle */}
+                    <div className="pt-3 border-t border-gray-100 flex items-center justify-between">
+                      <span className="text-xs text-gray-500 font-medium">
+                        {isVisible ? '헤더 및 메뉴에 정상 표시 중' : '사용자 화면에서 감춰진 상태'}
+                      </span>
+
+                      <button
+                        type="button"
+                        onClick={() => handleToggleMenu(item.id)}
+                        className={`relative inline-flex h-6 w-12 items-center rounded-full transition-colors cursor-pointer ${
+                          isVisible ? 'bg-[#144A42]' : 'bg-gray-300'
+                        }`}
+                        title={`${item.label} 메뉴 ${isVisible ? '숨기기' : '노출하기'}`}
+                      >
+                        <span
+                          className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform shadow-xs ${
+                            isVisible ? 'translate-x-7' : 'translate-x-1'
+                          }`}
+                        />
+                      </button>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+
+            {/* Information Notice Box */}
+            <div className="bg-[#FAF8F5] border border-[#DDD5C7] p-5 text-xs text-[#525E59] space-y-2">
+              <div className="font-bold text-[#144A42] flex items-center gap-1.5 text-sm">
+                <ShieldCheckIcon className="w-4 h-4 text-[#B48B55]" />
+                <span>메뉴 노출 및 숨김 설정 안내</span>
+              </div>
+              <ul className="list-disc list-inside space-y-1 text-xs text-gray-600 pl-1 leading-relaxed">
+                <li>
+                  <strong>숨김 설정 즉시 반영:</strong> 스위치를 끄면 웹사이트 상단 PC 헤더 바, 모바일 햄버거 전체메뉴 및 푸터 하단 빠른 링크에서 해당 메뉴가 자동으로 숨겨집니다.
+                </li>
+                <li>
+                  <strong>데이터 보존:</strong> 메뉴를 숨기더라도 등록된 제휴처, 안심입양 동물, 반려여행 숙소 등의 데이터는 안전하게 보존되며 언제든 다시 스위치를 켜면 즉시 노출됩니다.
+                </li>
+                <li>
+                  <strong>저장 상태 유지:</strong> 설정값은 관리자 시스템에 실시간으로 자동 저장되어 브라우저를 새로고침하거나 재접속해도 유지됩니다.
+                </li>
+              </ul>
             </div>
           </div>
         )}
@@ -1835,7 +2075,7 @@ export default function AdminPage({
                             type="button"
                             onClick={() => {
                               setSelectedShopPartner(partner);
-                              setBulkDiscountRate(partner.discountRate || 25);
+                              setBulkDiscountRate(partner.discountRate || 20);
                               setIsShopProductsOpen(true);
                             }}
                             className="w-full py-2 bg-[#144A42] hover:bg-[#0D3832] text-white font-bold text-xs flex items-center justify-center gap-1.5 transition shadow-xs"
@@ -2390,8 +2630,8 @@ export default function AdminPage({
                           <button
                             type="button"
                             onClick={() => {
-                              if (confirm(`레드퍼피 공식몰(https://redpuppy.co.kr/)에서 현재 실제 판매중인 상품 전체(총 ${REDPUPPY_PRODUCTS.length}개 품목, 실제 썸네일·상세이미지·옵션·판매가 일체)를 불러와 동기화할까요?\n\n현재 일괄 할인율(${bulkDiscountRate || 25}%)이 자동 적용됩니다.`)) {
-                                const rate = Number(bulkDiscountRate) || 25;
+                              if (confirm(`레드퍼피 공식몰(https://redpuppy.co.kr/)에서 현재 실제 판매중인 상품 전체(총 ${REDPUPPY_PRODUCTS.length}개 품목, 실제 썸네일·상세이미지·옵션·판매가 일체)를 불러와 동기화할까요?\n\n현재 일괄 할인율(${bulkDiscountRate || 20}%)이 자동 적용됩니다.`)) {
+                                const rate = Number(bulkDiscountRate) || 20;
                                 const defaultProds = REDPUPPY_PRODUCTS.map(p => ({
                                   ...p,
                                   discountPercent: rate,
@@ -2421,8 +2661,8 @@ export default function AdminPage({
                                 category: 'carrier',
                                 categoryName: '이동가방/백팩',
                                 originalPrice: 100000,
-                                salePrice: 75000,
-                                discountPercent: bulkDiscountRate || 25,
+                                salePrice: 80000,
+                                discountPercent: bulkDiscountRate || 20,
                                 thumbUrl: '',
                                 optionsStr: '소프트 베이지, 차콜 그레이',
                                 desc: '국내 직영 공장 생산 프리미엄 품질',
@@ -2550,7 +2790,7 @@ export default function AdminPage({
                                     </td>
                                     <td className="py-2.5 px-3 text-center">
                                       <span className="bg-rose-50 text-rose-600 font-extrabold px-1.5 py-0.5 text-[10px]">
-                                        -{p.discountPercent || selectedShopPartner.discountRate || 25}%
+                                        -{p.discountPercent || selectedShopPartner.discountRate || 20}%
                                       </span>
                                     </td>
                                     <td className="py-2.5 px-3 text-center">
@@ -2591,7 +2831,7 @@ export default function AdminPage({
                                               categoryName: p.categoryName || '이동가방/백팩',
                                               originalPrice: p.originalPrice,
                                               salePrice: p.salePrice,
-                                              discountPercent: p.discountPercent || 25,
+                                              discountPercent: p.discountPercent || 20,
                                               thumbUrl: p.thumbUrl || '',
                                               detailImagesStr: (p.detailImages && p.detailImages.length > 0) ? p.detailImages.join('\n') : '',
                                               optionsStr: (p.options && p.options.length > 0) ? p.options.join(', ') : '',
@@ -2795,7 +3035,7 @@ export default function AdminPage({
                           value={productForm.originalPrice}
                           onChange={(e) => {
                             const orig = Number(e.target.value) || 0;
-                            const sale = Math.round(orig * (1 - (productForm.discountPercent || 25) / 100));
+                            const sale = Math.round(orig * (1 - (productForm.discountPercent || 20) / 100));
                             setProductForm({ ...productForm, originalPrice: orig, salePrice: sale });
                           }}
                           className="w-full px-3 py-2 border border-gray-300 focus:border-[#144A42] focus:outline-none font-bold"

@@ -1156,8 +1156,14 @@ export function MembershipModal({ isOpen, onClose, onLeadSubmit }) {
 }
 
 // 3. 제휴처 상세 모달 (PAR-002)
-export function PartnerModal({ partner, isOpen, onClose, onToggleBookmark, isBookmarked }) {
+export function PartnerModal({ partner, isOpen, onClose, onToggleBookmark, isBookmarked, onOpenShopModal }) {
   if (!isOpen || !partner) return null;
+
+  const isShopPartner = partner.partnerType === 'shop' || 
+    partner.category === 'shopping' || 
+    partner.id === 'p_redpuppy' || 
+    partner.name?.includes('레드퍼피') || 
+    (partner.products && partner.products.length > 0);
 
   return (
     <div className="fixed inset-0 z-[100] flex items-center justify-center p-3 sm:p-6 bg-black/80 backdrop-blur-sm animate-fade-in overflow-y-auto">
@@ -1205,18 +1211,37 @@ export function PartnerModal({ partner, isOpen, onClose, onToggleBookmark, isBoo
           </div>
 
           <div className="bg-[#FAF9F6] p-4 space-y-2 text-xs border border-[#ECE6D8]">
-            <div className="flex justify-between">
-              <span className="text-gray-500">영업 시간</span>
-              <span className="font-semibold">연중무휴 (24시간 응급진료 가능)</span>
-            </div>
-            <div className="flex justify-between">
-              <span className="text-gray-500">반려동물 동반조건</span>
-              <span className="font-semibold">모든 견종/묘종 가능 (예방접종 완료 권장)</span>
-            </div>
-            <div className="flex justify-between">
-              <span className="text-gray-500">전화번호</span>
-              <span className="font-bold text-[#144A42]">{partner.phone}</span>
-            </div>
+            {isShopPartner ? (
+              <>
+                <div className="flex justify-between">
+                  <span className="text-gray-500">배송 방식</span>
+                  <span className="font-semibold">{partner.location || '전국 택배 배송'}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-gray-500">회원 혜택</span>
+                  <span className="font-semibold text-[#144A42]">{partner.benefit || '전 상품 20% 회원 단독 할인'}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-gray-500">고객센터 / 문의</span>
+                  <span className="font-bold text-[#144A42]">{partner.phone || '070-4186-1500'}</span>
+                </div>
+              </>
+            ) : (
+              <>
+                <div className="flex justify-between">
+                  <span className="text-gray-500">영업 시간</span>
+                  <span className="font-semibold">연중무휴 (24시간 응급진료 가능)</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-gray-500">반려동물 동반조건</span>
+                  <span className="font-semibold">모든 견종/묘종 가능 (예방접종 완료 권장)</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-gray-500">전화번호</span>
+                  <span className="font-bold text-[#144A42]">{partner.phone}</span>
+                </div>
+              </>
+            )}
           </div>
         </div>
 
@@ -1232,13 +1257,29 @@ export function PartnerModal({ partner, isOpen, onClose, onToggleBookmark, isBoo
             <span>{isBookmarked ? '찜 완료' : '찜하기'}</span>
           </button>
           
-          <a
-            href={`tel:${partner.phone}`}
-            className="flex-1 py-2.5 bg-[#144A42] text-white font-bold text-xs flex items-center justify-center gap-1.5 hover:bg-[#0D3832] transition shadow-xs"
-          >
-            <PhoneIcon className="w-3.5 h-3.5" />
-            <span>전화 문의 및 예약하기</span>
-          </a>
+          {isShopPartner ? (
+            <button
+              type="button"
+              onClick={() => {
+                onClose();
+                if (onOpenShopModal) {
+                  onOpenShopModal(partner);
+                }
+              }}
+              className="flex-1 py-2.5 bg-[#144A42] text-white font-bold text-xs flex items-center justify-center gap-1.5 hover:bg-[#0D3832] transition shadow-xs cursor-pointer"
+            >
+              <ShoppingBagIcon className="w-4 h-4" />
+              <span>회원 특가 상품 보기</span>
+            </button>
+          ) : (
+            <a
+              href={`tel:${partner.phone}`}
+              className="flex-1 py-2.5 bg-[#144A42] text-white font-bold text-xs flex items-center justify-center gap-1.5 hover:bg-[#0D3832] transition shadow-xs"
+            >
+              <PhoneIcon className="w-3.5 h-3.5" />
+              <span>전화 문의 및 예약하기</span>
+            </a>
+          )}
         </div>
 
       </div>
@@ -1390,7 +1431,7 @@ export function ShopPartnerModal({
                 </span>
               </div>
               <p className="text-[11px] sm:text-xs text-[#BED2CC] mt-0.5">
-                슬반생 정회원 인증 단독 혜택 · 최대 {partner.discountRate || 25}% 즉시할인
+                슬반생 정회원 인증 단독 혜택 · 최대 {partner.discountRate || 20}% 즉시할인
               </p>
             </div>
           </div>
@@ -1410,7 +1451,7 @@ export function ShopPartnerModal({
           <div className="flex items-center gap-2 text-[#6D4C1D] font-semibold">
             <SparklesIcon className="w-4 h-4 text-[#C5A880] flex-shrink-0" />
             <span>
-              <strong>[슬반생 회원 혜택 인증 완료]</strong> 주문 시 정가 대비 <strong>{partner.discountRate || 25}% 특별 우대가</strong>로 주문 및 배송 접수됩니다.
+              <strong>[슬반생 회원 혜택 인증 완료]</strong> 주문 시 정가 대비 <strong>{partner.discountRate || 20}% 특별 우대가</strong>로 주문 및 배송 접수됩니다.
             </span>
           </div>
         </div>
@@ -1487,7 +1528,7 @@ export function ShopPartnerModal({
                             />
                             <div className="absolute top-2.5 left-2.5 flex items-center gap-1.5 flex-wrap">
                               <span className="bg-[#E11D48] text-white text-[10px] font-extrabold px-2 py-0.5 shadow-xs">
-                                {prod.discountPercent || partner.discountRate || 25}% OFF
+                                {prod.discountPercent || partner.discountRate || 20}% OFF
                               </span>
                               {prod.modelNo && (
                                 <span className="bg-black/60 backdrop-blur-xs text-white text-[9px] font-medium px-1.5 py-0.5">
@@ -1597,7 +1638,7 @@ export function ShopPartnerModal({
                 <div className="flex-1 space-y-1.5 text-center sm:text-left">
                   <div className="flex items-center justify-center sm:justify-start gap-2 flex-wrap">
                     <span className="bg-[#E11D48] text-white text-[10px] font-bold px-1.5 py-0.2">
-                      {selectedProduct.discountPercent || partner.discountRate || 25}% OFF
+                      {selectedProduct.discountPercent || partner.discountRate || 20}% OFF
                     </span>
                     <span className="text-xs text-gray-400 font-mono">{selectedProduct.modelNo}</span>
                     {selectedProduct.categoryName && (
@@ -2465,7 +2506,7 @@ export function MallPreparingModal({ isOpen, onClose, user, onNavigate }) {
           {/* 상단 로고 & 닫기 버튼 */}
           <div className="absolute top-3.5 left-4 right-4 flex items-center justify-between z-10">
             <div className="bg-white/90 backdrop-blur-md px-3 py-1 rounded-full shadow-sm flex items-center gap-1.5 border border-white/50">
-              <LogoEmblem className="h-6 w-auto" />
+              <LogoEmblem className="h-[29px] w-auto" />
               <span className="text-[11px] font-bold text-[#144A42] tracking-tight">슬반생 공식몰</span>
             </div>
             <button 

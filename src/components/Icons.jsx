@@ -60,15 +60,16 @@ export const PawOutlineIcon = ({ className = "w-7 h-7", ...props }) => (
 );
 
 export const LogoEmblem = ({ 
-  className = "h-11 sm:h-12 w-auto", 
+  className = "h-[53px] sm:h-[58px] w-auto", 
   imgClassName = "h-full w-auto object-contain",
-  bright = false
+  bright = false,
+  white = false
 }) => (
   <div className={`flex items-center justify-center shrink-0 ${className}`}>
     <img 
-      src={bright ? "/logo-admin-bright.png" : "https://res.cloudinary.com/lyjyvy54/image/upload/v1789272352/Group_2_5_l2foaz.png"} 
+      src={bright ? "/logo-admin-bright.png" : "https://res.cloudinary.com/lyjyvy54/image/upload/v1790941016/%EC%8A%AC%EB%B0%98%EC%83%9D_%EB%A1%9C%EA%B3%A0_5_po6w0p.png"} 
       alt="슬반생 로고" 
-      className={imgClassName}
+      className={`${imgClassName} ${white ? 'brightness-0 invert' : ''}`}
     />
   </div>
 );

@@ -1,8 +1,8 @@
 import React from 'react';
 import { HomeIcon, PawIcon, SparklesIcon, ScissorsIcon, UserIcon } from './Icons';
 
-export default function MobileNav({ activeTab, onNavigate }) {
-  const tabs = [
+export default function MobileNav({ activeTab, onNavigate, menuVisibility }) {
+  const allTabs = [
     { id: 'home', label: '홈', icon: HomeIcon },
     { id: 'registration', label: '동물등록', icon: PawIcon, isHighlight: true },
     { id: 'membership', label: '혜택', icon: SparklesIcon },
@@ -10,9 +10,18 @@ export default function MobileNav({ activeTab, onNavigate }) {
     { id: 'mypage', label: 'MY', icon: UserIcon },
   ];
 
+  const tabs = allTabs.filter(tab => {
+    if (tab.id === 'home' || tab.id === 'mypage') return true;
+    if (!menuVisibility) return true;
+    return menuVisibility[tab.id] !== false;
+  });
+
   return (
     <div className="md:hidden fixed bottom-0 left-0 right-0 z-40 bg-white/95 backdrop-blur-md border-t border-[#EAE6DD] shadow-[0_-4px_16px_rgba(0,0,0,0.06)] pb-safe">
-      <div className="grid grid-cols-5 h-16 items-center px-1">
+      <div 
+        className="grid h-16 items-center px-1"
+        style={{ gridTemplateColumns: `repeat(${tabs.length}, minmax(0, 1fr))` }}
+      >
         {tabs.map((tab) => {
           const Icon = tab.icon;
           const isActive = activeTab === tab.id;

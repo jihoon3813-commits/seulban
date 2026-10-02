@@ -38,7 +38,8 @@ import {
   TRAVEL_LIST,
   INITIAL_POPUPS,
   INITIAL_SHOP_ORDERS,
-  REDPUPPY_PRODUCTS
+  REDPUPPY_PRODUCTS,
+  DEFAULT_MENU_VISIBILITY
 } from './data/mockData';
 export default function App() {
   // URL Parameter based initial tab check (?page=admin, #admin, /admin, etc.)
@@ -384,6 +385,27 @@ export default function App() {
   const [quickConsultOpen, setQuickConsultOpen] = useState(false);
   const [policyModal, setPolicyModal] = useState({ isOpen: false, type: 'privacy' });
 
+  // Navigation Menu Visibility State (어드민에서 메뉴 숨김/노출 제어)
+  const [menuVisibility, setMenuVisibility] = useState(() => {
+    try {
+      const saved = localStorage.getItem('seulban_menu_visibility');
+      if (saved) return { ...DEFAULT_MENU_VISIBILITY, ...JSON.parse(saved) };
+    } catch (e) {
+      console.error('Error loading menu visibility:', e);
+    }
+    return DEFAULT_MENU_VISIBILITY;
+  });
+
+  const handleUpdateMenuVisibility = (newVisibility) => {
+    setMenuVisibility(newVisibility);
+    try {
+      localStorage.setItem('seulban_menu_visibility', JSON.stringify(newVisibility));
+    } catch (e) {
+      console.error('Error saving menu visibility:', e);
+    }
+    showToast('메뉴 노출 설정이 저장되었습니다.');
+  };
+
   // Floating consult widget state
   const [floatingMenuOpen, setFloatingMenuOpen] = useState(false);
 
@@ -447,6 +469,8 @@ export default function App() {
       if (tr) setLocalTravelList(JSON.parse(tr));
       const ord = localStorage.getItem('seulban_shop_orders');
       if (ord) setShopOrders(JSON.parse(ord));
+      const mv = localStorage.getItem('seulban_menu_visibility');
+      if (mv) setMenuVisibility(JSON.parse(mv));
     } catch (e) {
       console.error('Error refreshing admin data:', e);
     }
@@ -1033,6 +1057,8 @@ export default function App() {
           onDeleteConsultation={handleDeleteConsultation}
           onUpdateConsultStatus={handleUpdateConsultStatus}
           onRefreshData={handleRefreshAdminData}
+          menuVisibility={menuVisibility}
+          onUpdateMenuVisibility={handleUpdateMenuVisibility}
           showToast={showToast}
         />
       </div>
@@ -1062,6 +1088,7 @@ export default function App() {
         onOpenMembershipModal={() => setMembershipModalOpen(true)}
         onOpenAdmin={handleOpenAdmin}
         onOpenMallModal={() => setMallModalOpen(true)}
+        menuVisibility={menuVisibility}
       />
 
       {/* Main Page View */}
@@ -1138,12 +1165,14 @@ export default function App() {
         onNavigate={handleNavigate}
         brandInfo={brandInfo}
         onOpenPolicy={(type) => setPolicyModal({ isOpen: true, type })}
+        menuVisibility={menuVisibility}
       />
 
       {/* Mobile Fixed Bottom Navigation (기획서 5.2 모바일 5대 내비게이션) */}
       <MobileNav 
         activeTab={activeTab}
         onNavigate={handleNavigate}
+        menuVisibility={menuVisibility}
       />
 
       {/* Floating Action Buttons (빠른상담, 카톡상담, 전화상담 지원) */}
@@ -1261,6 +1290,7 @@ export default function App() {
         bookmarks={bookmarks}
         onToggleBookmark={handleToggleBookmark}
         isBookmarked={selectedPartner ? bookmarks.includes(selectedPartner.id) : false}
+        onOpenShopModal={(partner) => setSelectedShopPartner(partner)}
       />
 
       <ShopPartnerModal

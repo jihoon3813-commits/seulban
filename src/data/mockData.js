@@ -231,7 +231,7 @@ export const PARTNER_LIST = [
     name: "레드퍼피 (RedPuppy) 공식 회원몰",
     tag: "슬반생 전용 특가몰",
     location: "전국 택배 배송",
-    benefit: "전 상품 25% 회원 단독 할인",
+    benefit: "전 상품 20% 회원 단독 할인",
     desc: "이동가방, 슬링백, 펫스텝 등 국내 직영 제조 프리미엄 반려용품을 슬반생 회원 특별가로 주문하실 수 있습니다.",
     rating: 4.9,
     reviews: 218,
@@ -241,7 +241,7 @@ export const PARTNER_LIST = [
     imageUrl: "https://redpuppy.co.kr/web/product/medium/202609/097a4c6057c835800030d4e1f1de5093.jpg",
     featured: true,
     shopUrl: "https://redpuppy.co.kr/",
-    discountRate: 25,
+    discountRate: 20,
     products: REDPUPPY_PRODUCTS,
   },
   {
@@ -515,3 +515,58 @@ export const INITIAL_SHOP_ORDERS = [
   }
 ];
 
+// 네비게이션 메뉴 기본 노출 여부 설정
+export const DEFAULT_MENU_VISIBILITY = {
+  registration: true, // 동물등록
+  adoption: true,     // 새로운 만남
+  partners: true,     // 반려생활
+  travel: true,       // 반려여행
+  farewell: true,     // 아름다운 이별
+  membership: true,   // 슬반생멤버십
+};
+
+// 네비게이션 메뉴 상세 정보 목록
+export const NAV_MENU_CONFIG = [
+  { 
+    id: 'adoption', 
+    label: '새로운 만남', 
+    desc: '안심 입양 안내 및 유기동물 가족 매칭 프로필',
+    badge: null,
+    highlight: false,
+  },
+  { 
+    id: 'partners', 
+    label: '반려생활', 
+    desc: '제휴 동물병원, 미용, 호텔 등 동네 제휴처 및 특가몰',
+    badge: null,
+    highlight: false,
+  },
+  { 
+    id: 'travel', 
+    label: '반려여행', 
+    desc: '반려동물 동반 호텔, 펜션, 숙소 추천 및 우대 혜택',
+    badge: null,
+    highlight: false,
+  },
+  { 
+    id: 'farewell', 
+    label: '아름다운 이별', 
+    desc: '반려동물 장례 및 메모리얼 케어 서비스 안내',
+    badge: null,
+    highlight: false,
+  },
+  { 
+    id: 'membership', 
+    label: '슬반생멤버십', 
+    desc: '정회원 우대 할인 및 전용 혜택 사전신청 안내',
+    badge: null,
+    highlight: true,
+  },
+  { 
+    id: 'registration', 
+    label: '동물등록', 
+    desc: '국가 공인 동물등록 신청 및 무료 대행 혜택',
+    badge: '필수',
+    highlight: false,
+  },
+];

@@ -12,7 +12,8 @@ export default function Header({
   onOpenApplyModal,
   onOpenMembershipModal,
   onOpenAdmin,
-  onOpenMallModal
+  onOpenMallModal,
+  menuVisibility
 }) {
   const [isScrolled, setIsScrolled] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -25,7 +26,7 @@ export default function Header({
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
-  const navItems = [
+  const allNavItems = [
     { id: 'registration', label: '동물등록', badge: '필수' },
     { id: 'adoption', label: '새로운 만남' },
     { id: 'partners', label: '반려생활' },
@@ -33,6 +34,11 @@ export default function Header({
     { id: 'farewell', label: '아름다운 이별' },
     { id: 'membership', label: '슬반생멤버십', highlight: true },
   ];
+
+  const navItems = allNavItems.filter(item => {
+    if (!menuVisibility) return true;
+    return menuVisibility[item.id] !== false;
+  });
 
   const handleNavClick = (id) => {
     onNavigate(id);
@@ -67,7 +73,7 @@ export default function Header({
             className="flex items-center text-left group py-0.5"
             aria-label="슬반생 홈"
           >
-            <LogoEmblem className="h-11 sm:h-12 w-auto group-hover:scale-105 transition-transform" />
+            <LogoEmblem className="h-[53px] sm:h-[58px] w-auto group-hover:scale-105 transition-transform" />
           </button>
 
           {/* Desktop Navigation Menus */}

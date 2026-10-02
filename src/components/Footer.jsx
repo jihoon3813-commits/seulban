@@ -2,7 +2,7 @@ import React from 'react';
 import { LogoEmblem, PhoneIcon } from './Icons';
 import { BRAND_INFO } from '../data/mockData';
 
-export default function Footer({ onOpenAdmin, onNavigate, brandInfo, onOpenPolicy }) {
+export default function Footer({ onOpenAdmin, onNavigate, brandInfo, onOpenPolicy, menuVisibility }) {
   const info = { ...BRAND_INFO, ...(brandInfo || {}) };
 
   return (
@@ -12,14 +12,28 @@ export default function Footer({ onOpenAdmin, onNavigate, brandInfo, onOpenPolic
         {/* Top footer row: Logo and Quick links */}
         <div className="flex flex-col md:flex-row md:items-center justify-between pb-8 border-b border-[#1E2926] gap-6">
           <div className="flex items-center">
-            <LogoEmblem className="h-11 sm:h-13 w-auto brightness-110" />
+            <LogoEmblem white className="h-[53px] sm:h-[62px] w-auto" />
           </div>
 
           <div className="flex flex-wrap gap-x-6 gap-y-2 text-sm text-[#CAD4CF]">
-            <button onClick={() => onNavigate('registration')} className="hover:text-white transition">동물등록 안내</button>
-            <button onClick={() => onNavigate('membership')} className="hover:text-white transition">멤버십 혜택</button>
-            <button onClick={() => onNavigate('partners')} className="hover:text-white transition">제휴처 찾기</button>
-            <button onClick={() => onNavigate('farewell')} className="hover:text-white transition">장례케어 안내</button>
+            {(!menuVisibility || menuVisibility.registration !== false) && (
+              <button onClick={() => onNavigate('registration')} className="hover:text-white transition">동물등록 안내</button>
+            )}
+            {(!menuVisibility || menuVisibility.membership !== false) && (
+              <button onClick={() => onNavigate('membership')} className="hover:text-white transition">멤버십 혜택</button>
+            )}
+            {(!menuVisibility || menuVisibility.partners !== false) && (
+              <button onClick={() => onNavigate('partners')} className="hover:text-white transition">제휴처 찾기</button>
+            )}
+            {(!menuVisibility || menuVisibility.farewell !== false) && (
+              <button onClick={() => onNavigate('farewell')} className="hover:text-white transition">장례케어 안내</button>
+            )}
+            {(!menuVisibility || menuVisibility.adoption !== false) && (
+              <button onClick={() => onNavigate('adoption')} className="hover:text-white transition">안심입양 안내</button>
+            )}
+            {(!menuVisibility || menuVisibility.travel !== false) && (
+              <button onClick={() => onNavigate('travel')} className="hover:text-white transition">반려여행 안내</button>
+            )}
           </div>
         </div>
 
