@@ -1319,6 +1319,7 @@ export default function App() {
         onClose={() => setApplyModalOpen(false)}
         onApplySuccess={handleApplySuccess}
         user={user}
+        brandInfo={brandInfo}
       />
 
       <MembershipModal 

@@ -5708,10 +5708,152 @@ export default function AdminPage({
                 </div>
               </div>
 
+              {/* 5. 동물등록 전용 - 주민등록번호 사용 동의서 (상세 안내표) 관리 */}
+              <div className="bg-white p-6 sm:p-7 border border-[#E2DDD3] shadow-xs space-y-4">
+                <div className="border-b border-gray-100 pb-3 flex items-center justify-between">
+                  <div>
+                    <h3 className="text-sm font-bold text-[#142C27] flex items-center gap-1.5">
+                      <ShieldCheckIcon className="w-4 h-4 text-[#144A42]" />
+                      <span>동물등록 신청 모달 - 주민등록번호 사용 동의서 (법정 안내표) 관리</span>
+                    </h3>
+                    <p className="text-[11px] text-gray-500 mt-0.5">
+                      동물등록 신청 모달 2단계 및 5단계에서 [약관보기 / 자세히보기] 클릭 시 팝업에 노출되는 법정 필수 표기 항목입니다.
+                    </p>
+                  </div>
+                  <span className="text-[10px] bg-amber-50 text-amber-800 px-2 py-0.5 border border-amber-200 font-bold">
+                    동물보호법 정식 규격
+                  </span>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block font-bold mb-1 text-gray-800">수집하는 자 *</label>
+                    <input
+                      type="text"
+                      value={brandForm.juminConsentCollector || ''}
+                      onChange={(e) => setBrandForm({ ...brandForm, juminConsentCollector: e.target.value })}
+                      placeholder="주식회사 슬기로운 반려생활"
+                      className="w-full px-3 py-2 border border-gray-300 focus:border-[#144A42] focus:outline-none"
+                      required
+                    />
+                  </div>
+                  <div>
+                    <label className="block font-bold mb-1 text-gray-800">수집 목적 *</label>
+                    <input
+                      type="text"
+                      value={brandForm.juminConsentPurpose || ''}
+                      onChange={(e) => setBrandForm({ ...brandForm, juminConsentPurpose: e.target.value })}
+                      placeholder="동물등록 업무 대행 (지자체 전산망 등록 및 모바일 동물등록증 발급)"
+                      className="w-full px-3 py-2 border border-gray-300 focus:border-[#144A42] focus:outline-none"
+                      required
+                    />
+                  </div>
+                  <div>
+                    <label className="block font-bold mb-1 text-gray-800">필수 수집 항목 *</label>
+                    <input
+                      type="text"
+                      value={brandForm.juminConsentRequired || ''}
+                      onChange={(e) => setBrandForm({ ...brandForm, juminConsentRequired: e.target.value })}
+                      placeholder="주민등록번호 13자리"
+                      className="w-full px-3 py-2 border border-gray-300 focus:border-[#144A42] focus:outline-none"
+                      required
+                    />
+                  </div>
+                  <div>
+                    <label className="block font-bold mb-1 text-gray-800">선택 수집 항목</label>
+                    <input
+                      type="text"
+                      value={brandForm.juminConsentOptional || ''}
+                      onChange={(e) => setBrandForm({ ...brandForm, juminConsentOptional: e.target.value })}
+                      placeholder="주민등록번호 (동일)"
+                      className="w-full px-3 py-2 border border-gray-300 focus:border-[#144A42] focus:outline-none"
+                    />
+                  </div>
+                  <div className="sm:col-span-2">
+                    <label className="block font-bold mb-1 text-gray-800">보유 및 이용기간 *</label>
+                    <input
+                      type="text"
+                      value={brandForm.juminConsentPeriod || ''}
+                      onChange={(e) => setBrandForm({ ...brandForm, juminConsentPeriod: e.target.value })}
+                      placeholder="동물 등록 승인 완료 시점까지 (승인 후 관계 법령에 따른 안전 분리 보관)"
+                      className="w-full px-3 py-2 border border-gray-300 focus:border-[#144A42] focus:outline-none"
+                      required
+                    />
+                  </div>
+                  <div className="sm:col-span-2">
+                    <label className="block font-bold mb-1 text-gray-800">관련 법규 (법적 근거) *</label>
+                    <input
+                      type="text"
+                      value={brandForm.juminConsentLaws || ''}
+                      onChange={(e) => setBrandForm({ ...brandForm, juminConsentLaws: e.target.value })}
+                      placeholder="동물보호법 제12조(등록대상동물의 등록 등) 제1항, 동물보호법 시행규칙 제8조(등록대상동물의 등록사항 및 방법 등) 제1항"
+                      className="w-full px-3 py-2 border border-gray-300 focus:border-[#144A42] focus:outline-none"
+                      required
+                    />
+                  </div>
+                  <div className="sm:col-span-2">
+                    <label className="block font-bold mb-1 text-gray-800">동의 거부권 및 불이익 고지 문구 *</label>
+                    <textarea
+                      rows={2}
+                      value={brandForm.juminConsentNotice || ''}
+                      onChange={(e) => setBrandForm({ ...brandForm, juminConsentNotice: e.target.value })}
+                      placeholder="귀하는 위와 같이 개인정보를 수집·이용하는데 동의를 거부할 권리가 있습니다. 필수 수집 항목에 대한 동의를 거절하는 경우 지자체 동물등록 대행 서비스 이용이 제한될 수 있습니다."
+                      className="w-full px-3 py-2 border border-gray-300 focus:border-[#144A42] focus:outline-none leading-relaxed text-xs"
+                      required
+                    />
+                  </div>
+                </div>
+              </div>
+
+              {/* 6. 동물등록 전용 - 전자서명법 및 동물보호법 행정등록 동의약관 (6대 법적 조항 전문) 관리 */}
+              <div className="bg-white p-6 sm:p-7 border border-[#E2DDD3] shadow-xs space-y-4">
+                <div className="border-b border-gray-100 pb-3 flex items-center justify-between">
+                  <div>
+                    <h3 className="text-sm font-bold text-[#142C27] flex items-center gap-1.5">
+                      <FileTextIcon className="w-4 h-4 text-[#144A42]" />
+                      <span>동물등록 신청 모달 - 전자서명법 및 동물보호법 동의약관 (6대 조항) 관리</span>
+                    </h3>
+                    <p className="text-[11px] text-gray-500 mt-0.5">
+                      전자정부법, 동물보호법, 전자서명법 등 동물등록 정식 행정 대행을 위해 신청자에게 고지 및 동의받는 6개 법적 조항 전문입니다.
+                    </p>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      if (window.confirm('동물등록 행정 동의약관을 정부 표준 기본 양식으로 초기화하시겠습니까?')) {
+                        setBrandForm({
+                          ...brandForm,
+                          animalRegTermsText: BRAND_INFO.animalRegTermsText
+                        });
+                        showToast('정부 표준 동의약관으로 초기화되었습니다.');
+                      }
+                    }}
+                    className="text-[11px] text-[#144A42] hover:underline font-semibold cursor-pointer shrink-0"
+                  >
+                    기본 양식으로 복원
+                  </button>
+                </div>
+
+                <div>
+                  <label className="block font-bold mb-1 text-gray-800">동의약관 전문 (각 조항 줄바꿈 지원) *</label>
+                  <textarea
+                    rows={12}
+                    value={brandForm.animalRegTermsText || ''}
+                    onChange={(e) => setBrandForm({ ...brandForm, animalRegTermsText: e.target.value })}
+                    placeholder="전자정부법, 동물보호법, 전자서명법 등 법적 필수 동의 조항을 입력하세요..."
+                    className="w-full px-3.5 py-2.5 border border-gray-300 focus:border-[#144A42] focus:outline-none leading-relaxed font-sans text-xs"
+                    required
+                  />
+                  <p className="text-[11px] text-gray-500 mt-1">
+                    * 전자정부법 제7조 제5항, 동물보호법 제12조, 전자정부법 제36조 제1항 행정정보 공동이용, 전자서명법 제3조 서명 대체 조항 등이 포함되어야 관할 지자체 행정 심사 승인이 가능합니다.
+                  </p>
+                </div>
+              </div>
+
               {/* 하단 저장 버튼 Bar */}
               <div className="bg-[#FAF8F5] p-4 border border-[#E2DDD3] flex items-center justify-between">
                 <span className="text-xs text-gray-500">
-                  저장 즉시 이용자 푸터 팝업 및 빠른상담 창에 실시간 반영됩니다.
+                  저장 즉시 이용자 푸터 팝업, 빠른상담 창 및 동물등록 신청 모달에 실시간 반영됩니다.
                 </span>
                 <button
                   type="submit"

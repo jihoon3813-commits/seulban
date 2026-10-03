@@ -24,79 +24,147 @@ export const formatPhoneNumber = (value) => {
   }
 };
 
-// 1. 동물등록 7단계 신청 마법사 모달 (REG-002 & REG-003)
-export function ApplyRegistrationModal({ isOpen, onClose, onApplySuccess, user }) {
+// 1. 동물등록 신청 마법사 모달 (페오펫 정식 국가 동물등록 대행 표준 규격)
+export function ApplyRegistrationModal({ isOpen, onClose, onApplySuccess, user, brandInfo }) {
+  const info = { ...BRAND_INFO, ...(brandInfo || {}) };
   const [step, setStep] = useState(1);
+  const [showJuminBack, setShowJuminBack] = useState(false);
+  const [termsDetailModal, setTermsDetailModal] = useState(null); // 'jumin' | 'elec_animal' | null
+
+  // 폼 데이터 상태 (정부 동물보호관리시스템 APMS 공식 대행 규격 & 페오펫 규격)
   const [formData, setFormData] = useState({
+    // 1. 보호자(소유자) 본인인증 정보
     ownerName: user?.name || '',
-    birthDate: '',
+    ownerJuminFront: '', // 주민등록번호 앞 6자리 (생년월일 YYMMDD)
+    ownerJuminBack: '',  // 주민등록번호 뒤 7자리 (성별 1~4 + 6자리)
     phone: user?.phone || '',
-    address: '',
-    addressDetail: '',
+
+    // 2. 주소 입력 (현 거주지 & 주민등록상 주소)
+    isSameResidenceAndRegistration: true, // 현 거주지와 주민등록상 주소 동일 여부
+    currentPostalCode: '',
+    currentAddress: '',
+    currentAddressDetail: '',
     postalCode: '',
+    address: '', // 기본 도로명 주소 (참고항목 포함)
+    jibunAddress: '', // 지번 주소
+    addressDetail: '', // 추가 상세주소 (동, 호수 등)
+
+    // 전자서명 (페오펫 공식 대행 서명 규격)
+    signature: '',
+    agreeSignature: true, // 동물등록 대행 동의 및 서명 완료
+    agreeJuminDoc: true, // 주민등록번호 사용 동의서
+    agreeElecSignDoc: true, // 전자서명법 및 동물보호법 동의약관
+
+    // 3. 반려동물 정보 (정식 등록 규격)
     petName: '',
     petPhoto: '',
-    petType: 'dog',
+    petType: 'dog', // dog: 반려견, cat: 반려묘
     breed: '',
     gender: '남아',
-    petBirth: '',
-    neutered: '완료',
+    petBirth: '', // 생년월일
+    petColor: '화이트(흰색)', // 털색(모색) - 동물등록증 필수 항목!
+    petWeight: '', // 체중 (kg)
+    neutered: '완료', // 완료, 미완료
+
+    // 4. 등록 방식
     regType: 'external',
-    tagColor: '베이지 골드',
+    tagColor: '샴페인 골드',
+
+    // 5. 배송지 수령 정보
     recipient: user?.name || '',
+    recipientPhone: user?.phone || '',
     shippingPostalCode: '',
     shippingAddress: '',
     shippingAddressDetail: '',
-    shippingMemo: '',
-    agreeTerms: true,
-    agreeAgency: true,
+    shippingMemo: '부재 시 문 앞 보관 부탁드립니다',
+
+    // 6. 법적 필수 동의 항목 (정부 행정망 규격)
+    agreeTerms: true,      // 전자정부법 및 동물보호법 대행 위임
+    agreeJumin: true,      // 고유식별정보(주민등록번호) 수집 동의
+    agreeAgency: true,     // 행정정보 공동이용 및 지자체 전산망 제3자 정보 제공
+    agreeElecSign: true,   // 전자서명법 서명 대체 및 법적 효력 인정 동의
   });
 
   const [submittedNumber, setSubmittedNumber] = useState('');
   const [isPostcodeModalOpen, setIsPostcodeModalOpen] = useState(false);
-  const [postcodeTarget, setPostcodeTarget] = useState('owner'); // 'owner' | 'shipping'
+  const [postcodeTarget, setPostcodeTarget] = useState('current'); // 'current' | 'owner' | 'shipping'
   const [isSameAsOwnerAddress, setIsSameAsOwnerAddress] = useState(true);
 
+  // 전자서명 Canvas 관련 상태
+  const signatureCanvasRef = useRef(null);
+  const [isSigning, setIsSigning] = useState(false);
+  const [hasSignature, setHasSignature] = useState(false);
+
   const postcodeContainerRef = useRef(null);
+  const ownerJuminBackRef = useRef(null);
+  const currentAddressDetailRef = useRef(null);
   const addressDetailRef = useRef(null);
   const shippingAddressDetailRef = useRef(null);
 
-  // 모달이 열릴 때마다 폼을 깨끗하게 초기화
+  // 인기 품종 & 털색 퀵 태그 리스트
+  const popularBreeds = ['말티즈', '토이 푸들', '포메라니안', '비숑 프리제', '시츄', '요크셔테리어', '진돗개', '골든 리트리버', '믹스견'];
+  const popularColors = ['화이트(흰색)', '크림/베이지', '브라운/갈색', '블랙(검정)', '골드/황색', '실버/그레이', '파티/혼합'];
+  const shippingMemoOptions = [
+    '부재 시 문 앞 보관 부탁드립니다',
+    '배송 전 미리 연락 바랍니다',
+    '경비실에 맡겨 주세요',
+    '택배함에 넣어 주세요'
+  ];
+
+  // 모달이 열릴 때 초기화
   useEffect(() => {
     if (isOpen) {
       setStep(1);
+      setShowJuminBack(false);
+      setHasSignature(false);
       setFormData({
         ownerName: user?.name || '',
-        birthDate: '',
-        phone: user?.phone || '',
-        address: '',
-        addressDetail: '',
+        ownerJuminFront: '',
+        ownerJuminBack: '',
+        phone: user?.phone ? formatPhoneNumber(user.phone) : '',
+        isSameResidenceAndRegistration: true,
+        currentPostalCode: '',
+        currentAddress: '',
+        currentAddressDetail: '',
         postalCode: '',
+        address: '',
+        jibunAddress: '',
+        addressDetail: '',
+        signature: '',
+        agreeSignature: true,
+        agreeJuminDoc: true,
+        agreeElecSignDoc: true,
         petName: '',
         petPhoto: '',
         petType: 'dog',
         breed: '',
         gender: '남아',
         petBirth: '',
+        petColor: '화이트(흰색)',
+        petWeight: '',
         neutered: '완료',
         regType: 'external',
-        tagColor: '베이지 골드',
-        recipient: '',
+        tagColor: '샴페인 골드',
+        recipient: user?.name || '',
+        recipientPhone: user?.phone ? formatPhoneNumber(user.phone) : '',
         shippingPostalCode: '',
         shippingAddress: '',
         shippingAddressDetail: '',
-        shippingMemo: '',
+        shippingMemo: '부재 시 문 앞 보관 부탁드립니다',
         agreeTerms: true,
+        agreeJumin: true,
         agreeAgency: true,
+        agreeElecSign: true,
       });
       setSubmittedNumber('');
       setIsPostcodeModalOpen(false);
+      setTermsDetailModal(null);
       setIsSameAsOwnerAddress(true);
     }
-  }, [isOpen]);
+  }, [isOpen, user]);
 
   // 카카오 우편번호 검색 열기
-  const handleOpenPostcode = (target = 'owner') => {
+  const handleOpenPostcode = (target = 'current') => {
     setPostcodeTarget(target);
     if (window.daum && window.daum.Postcode) {
       setIsPostcodeModalOpen(true);
@@ -139,12 +207,30 @@ export function ApplyRegistrationModal({ isOpen, onClose, onApplySuccess, user }
 
             const completeAddress = fullAddr + extraAddr;
             const zonecode = data.zonecode;
+            const jibun = data.jibunAddress || '';
 
-            if (postcodeTarget === 'owner') {
+            if (postcodeTarget === 'current') {
+              setFormData(prev => ({
+                ...prev,
+                currentPostalCode: zonecode,
+                currentAddress: completeAddress,
+                // 동일 주소 체크되어 있다면 주민등록 주소도 함께 업데이트
+                ...(prev.isSameResidenceAndRegistration ? {
+                  postalCode: zonecode,
+                  address: completeAddress,
+                  jibunAddress: jibun,
+                } : {})
+              }));
+              setIsPostcodeModalOpen(false);
+              setTimeout(() => {
+                currentAddressDetailRef.current?.focus();
+              }, 150);
+            } else if (postcodeTarget === 'owner') {
               setFormData(prev => ({
                 ...prev,
                 postalCode: zonecode,
                 address: completeAddress,
+                jibunAddress: jibun,
               }));
               setIsPostcodeModalOpen(false);
               setTimeout(() => {
@@ -171,6 +257,86 @@ export function ApplyRegistrationModal({ isOpen, onClose, onApplySuccess, user }
     return () => clearTimeout(timer);
   }, [isPostcodeModalOpen, postcodeTarget]);
 
+  // 전자서명 캔버스 좌표 계산 (마우스 & 터치 완벽 지원)
+  const getCanvasCoordinates = (e) => {
+    const canvas = signatureCanvasRef.current;
+    if (!canvas) return { x: 0, y: 0 };
+    const rect = canvas.getBoundingClientRect();
+    const scaleX = canvas.width / rect.width;
+    const scaleY = canvas.height / rect.height;
+    if (e.touches && e.touches.length > 0) {
+      return {
+        x: (e.touches[0].clientX - rect.left) * scaleX,
+        y: (e.touches[0].clientY - rect.top) * scaleY,
+      };
+    }
+    return {
+      x: (e.clientX - rect.left) * scaleX,
+      y: (e.clientY - rect.top) * scaleY,
+    };
+  };
+
+  const handleStartSign = (e) => {
+    const canvas = signatureCanvasRef.current;
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    const { x, y } = getCanvasCoordinates(e);
+    ctx.beginPath();
+    ctx.moveTo(x, y);
+    setIsSigning(true);
+  };
+
+  const handleMoveSign = (e) => {
+    if (!isSigning) return;
+    if (e.cancelable && e.type.startsWith('touch')) {
+      e.preventDefault();
+    }
+    const canvas = signatureCanvasRef.current;
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    const { x, y } = getCanvasCoordinates(e);
+    ctx.lineWidth = 2.8;
+    ctx.lineCap = 'round';
+    ctx.lineJoin = 'round';
+    ctx.strokeStyle = '#144A42';
+    ctx.lineTo(x, y);
+    ctx.stroke();
+    setHasSignature(true);
+  };
+
+  const handleEndSign = () => {
+    if (!isSigning) return;
+    setIsSigning(false);
+    const canvas = signatureCanvasRef.current;
+    if (canvas) {
+      setFormData(prev => ({ ...prev, signature: canvas.toDataURL() }));
+    }
+  };
+
+  const handleClearSignature = () => {
+    const canvas = signatureCanvasRef.current;
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    setHasSignature(false);
+    setFormData(prev => ({ ...prev, signature: '' }));
+  };
+
+  // 주민등록번호 앞 6자리 변경 핸들러 (입력 완료 시 뒷자리로 자동 포커스)
+  const handleJuminFrontChange = (e) => {
+    const digits = e.target.value.replace(/[^0-9]/g, '').slice(0, 6);
+    setFormData(prev => ({ ...prev, ownerJuminFront: digits }));
+    if (digits.length === 6) {
+      ownerJuminBackRef.current?.focus();
+    }
+  };
+
+  // 주민등록번호 뒤 7자리 변경 핸들러
+  const handleJuminBackChange = (e) => {
+    const digits = e.target.value.replace(/[^0-9]/g, '').slice(0, 7);
+    setFormData(prev => ({ ...prev, ownerJuminBack: digits }));
+  };
+
   // 반려동물 사진 업로드 핸들러 (고화질 사진 자동 압축 최적화)
   const handlePhotoUpload = async (e) => {
     const file = e.target.files?.[0];
@@ -182,7 +348,6 @@ export function ApplyRegistrationModal({ isOpen, onClose, onApplySuccess, user }
     }
 
     try {
-      // 800x800 해상도 및 JPEG 0.8 압축 -> 약 40~80KB로 경량화하여 Convex DB 저장 보장
       const compressedDataUrl = await compressImage(file, 800, 800, 0.8);
       setFormData(prev => ({
         ...prev,
@@ -203,52 +368,91 @@ export function ApplyRegistrationModal({ isOpen, onClose, onApplySuccess, user }
 
   if (!isOpen) return null;
 
+  // 다음 단계 유효성 검증
   const handleNext = () => {
     if (step === 1) {
       if (!formData.ownerName.trim()) {
-        alert('보호자 성명을 입력해 주세요.');
+        alert('보호자 성명(실명)을 입력해 주세요.');
         return;
       }
-      if (!formData.birthDate.trim()) {
-        alert('생년월일 6자리를 입력해 주세요. (예: 950315)');
+      if (!formData.ownerJuminFront || formData.ownerJuminFront.length !== 6) {
+        alert('주민등록번호 앞 6자리(생년월일)를 정확히 입력해 주세요.');
         return;
       }
-      if (formData.birthDate.length < 6) {
-        alert('생년월일은 6자리 숫자로 입력해 주세요.');
+      if (!formData.ownerJuminBack || formData.ownerJuminBack.length !== 7) {
+        alert('주민등록번호 뒷 7자리를 정확히 입력해 주세요.');
         return;
       }
       if (!formData.phone.trim()) {
         alert('휴대폰 번호를 입력해 주세요.');
         return;
       }
-      if (formData.phone.length < 12) {
-        alert('휴대폰 번호 11자리를 정확히 입력해 주세요. (예: 010-1234-5678)');
+      if (formData.phone.replace(/[^0-9]/g, '').length < 10) {
+        alert('휴대폰 번호를 올바르게 입력해 주세요. (예: 010-1234-5678)');
         return;
       }
     }
+
     if (step === 2) {
-      if (!formData.address.trim()) {
-        alert('보호자 주민등록상 주소지를 입력해 주세요 (우편번호 검색을 이용해 주세요).');
+      const activeAddress = formData.isSameResidenceAndRegistration ? formData.currentAddress : formData.address;
+      if (!activeAddress.trim()) {
+        alert('주소 검색을 통해 거주지 주소를 입력해 주세요.');
         return;
       }
+      if (!formData.agreeSignature) {
+        alert('동물등록 대행 동의 및 서명 완료에 체크해 주세요.');
+        return;
+      }
+      if (!hasSignature && !formData.signature) {
+        alert(`공식적인 민원 대행업무를 위해 서명란에 한글 이름 정자(ex. ${formData.ownerName || '홍길동'})로 서명해 주세요.`);
+        return;
+      }
+      if (!formData.agreeJuminDoc || !formData.agreeElecSignDoc) {
+        alert('필수 약관(주민등록번호 사용 동의 및 전자서명법 동의약관)에 체크해 주세요.');
+        return;
+      }
+      // 현 거주지와 주민등록 주소가 동일한 경우 데이터 동기화
+      if (formData.isSameResidenceAndRegistration) {
+        setFormData(prev => ({
+          ...prev,
+          postalCode: prev.currentPostalCode,
+          address: prev.currentAddress,
+          addressDetail: prev.currentAddressDetail,
+        }));
+      }
     }
-    if (step === 3 && !formData.petName.trim()) {
-      alert('반려동물의 이름을 입력해 주세요.');
-      return;
-    }
-    if (step === 4) {
-      // 5단계(수령 정보) 진입 시 배송지 정보가 비어있으면 앞서 입력한 보호자 정보로 연동
+
+    if (step === 3) {
+      if (!formData.petName.trim()) {
+        alert('반려동물의 이름을 입력해 주세요.');
+        return;
+      }
+      if (!formData.breed.trim()) {
+        alert('반려동물의 품종을 선택하거나 입력해 주세요.');
+        return;
+      }
+      if (!formData.petColor.trim()) {
+        alert('반려동물의 털색(모색)을 선택하거나 입력해 주세요.');
+        return;
+      }
+      // 4단계(수령 정보) 진입 시 수령자 정보 자동 채우기
       setFormData(prev => ({
         ...prev,
         recipient: prev.recipient || prev.ownerName,
-        shippingPostalCode: prev.shippingPostalCode || prev.postalCode,
-        shippingAddress: prev.shippingAddress || prev.address,
-        shippingAddressDetail: prev.shippingAddressDetail || prev.addressDetail,
+        recipientPhone: prev.recipientPhone || prev.phone,
+        shippingPostalCode: prev.shippingPostalCode || prev.postalCode || prev.currentPostalCode,
+        shippingAddress: prev.shippingAddress || prev.address || prev.currentAddress,
+        shippingAddressDetail: prev.shippingAddressDetail || prev.addressDetail || prev.currentAddressDetail,
       }));
     }
-    if (step === 5 && formData.regType === 'external') {
+
+    if (step === 4) {
       if (!formData.recipient.trim()) {
-        alert('인식표를 수령하실 분의 성명을 입력해 주세요.');
+        alert('외장칩을 수령하실 분의 성명을 입력해 주세요.');
+        return;
+      }
+      if (!formData.recipientPhone.trim() || formData.recipientPhone.replace(/[^0-9]/g, '').length < 10) {
+        alert('수령인 휴대폰 번호를 정확히 입력해 주세요.');
         return;
       }
       if (!formData.shippingAddress.trim() && !formData.address.trim()) {
@@ -256,45 +460,68 @@ export function ApplyRegistrationModal({ isOpen, onClose, onApplySuccess, user }
         return;
       }
     }
-    if (step === 6) {
+
+    if (step === 5) {
+      if (!formData.agreeTerms || !formData.agreeJumin || !formData.agreeAgency || !formData.agreeElecSign) {
+        alert('동물등록 정식 신청을 위해 모든 필수 동의 항목에 체크해 주세요.');
+        return;
+      }
+
       const newRegId = `REG-${new Date().getFullYear()}${String(new Date().getMonth() + 1).padStart(2, '0')}${String(new Date().getDate()).padStart(2, '0')}-${Math.floor(1000 + Math.random() * 9000)}`;
       setSubmittedNumber(newRegId);
-      
-      const fullOwnerAddress = `${formData.postalCode ? `(${formData.postalCode}) ` : ''}${formData.address}${formData.addressDetail ? ` ${formData.addressDetail}` : ''}`.trim();
-      const fullShippingAddress = `${formData.shippingPostalCode ? `(${formData.shippingPostalCode}) ` : (formData.postalCode ? `(${formData.postalCode}) ` : '')}${formData.shippingAddress || formData.address}${formData.shippingAddressDetail ? ` ${formData.shippingAddressDetail}` : (formData.addressDetail ? ` ${formData.addressDetail}` : '')}`.trim();
+
+      const targetPostal = formData.isSameResidenceAndRegistration ? (formData.currentPostalCode || formData.postalCode) : formData.postalCode;
+      const targetAddr = formData.isSameResidenceAndRegistration ? (formData.currentAddress || formData.address) : formData.address;
+      const targetDetail = formData.isSameResidenceAndRegistration ? (formData.currentAddressDetail || formData.addressDetail) : formData.addressDetail;
+
+      const fullOwnerAddress = `${targetPostal ? `(${targetPostal}) ` : ''}${targetAddr}${targetDetail ? ` ${targetDetail}` : ''}`.trim();
+      const fullShippingAddress = `${formData.shippingPostalCode ? `(${formData.shippingPostalCode}) ` : (targetPostal ? `(${targetPostal}) ` : '')}${formData.shippingAddress || targetAddr}${formData.shippingAddressDetail ? ` ${formData.shippingAddressDetail}` : (targetDetail ? ` ${targetDetail}` : '')}`.trim();
+      const maskedJumin = `${formData.ownerJuminFront}-${formData.ownerJuminBack.charAt(0)}******`;
 
       const newApp = {
         id: newRegId,
         petName: formData.petName || '우리 아이',
         petPhoto: formData.petPhoto || '',
+        petBreed: formData.breed || '믹스/기타',
+        petGender: formData.gender,
+        petBirth: formData.petBirth || '2024-01-01',
+        petColor: formData.petColor,
+        petWeight: formData.petWeight ? `${formData.petWeight}kg` : undefined,
         ownerName: formData.ownerName,
         phone: formData.phone,
+        ownerJumin: maskedJumin,
         ownerEmail: user?.email || '',
         address: fullOwnerAddress,
         shippingAddress: fullShippingAddress,
-        type: formData.regType === 'external' ? '외장형 안심 목걸이 칩' : '내장형 마이크로칩 시술권',
+        recipient: formData.recipient || formData.ownerName,
+        recipientPhone: formData.recipientPhone || formData.phone,
+        tagColor: formData.tagColor,
+        signature: formData.signature || '',
+        type: '외장형 안심 목걸이 칩',
         appliedDate: new Date().toLocaleString('ko-KR'),
         statusCode: 'SUBMITTED',
         statusLabel: '접수 완료 (검수 대기)',
         trackingNumber: '검수 후 발송 준비 예정',
         history: [
-          { date: '방금 전', title: '온라인 신청서 접수', desc: '담당자 검수 대기 중입니다.' }
+          { date: '방금 전', title: '온라인 신청서 접수', desc: '정부 동물보호관리시스템 행정 검수 대기 중입니다.' }
         ]
       };
-      
+
       onApplySuccess(newApp, {
         name: formData.petName,
         breed: formData.breed || '믹스/기타',
         gender: formData.gender,
         birth: formData.petBirth || '2024-01-01',
+        color: formData.petColor,
         neutered: formData.neutered,
         regNumber: '발급 심사 진행 중',
         status: '등록 신청 중',
         photoUrl: formData.petPhoto || 'https://images.unsplash.com/photo-1543466835-00a7907e9de1?w=600&auto=format&fit=crop&q=80'
       });
-      setStep(7);
+      setStep(6);
       return;
     }
+
     setStep(step + 1);
   };
 
@@ -303,90 +530,144 @@ export function ApplyRegistrationModal({ isOpen, onClose, onApplySuccess, user }
   };
 
   const stepsTitle = [
-    '1. 본인 확인',
-    '2. 보호자 정보',
+    '1. 보호자 정보 (본인확인)',
+    '2. 주소 입력 및 전자서명',
     '3. 반려동물 정보',
-    '4. 등록 방식 선택',
-    '5. 수령 정보',
-    '6. 최종 확인 및 동의',
-    '7. 접수 완료'
+    '4. 수령 정보 (외장칩 배송지)',
+    '5. 신청 내용 최종 확인',
+    '6. 접수 완료'
   ];
 
   return (
     <div className="fixed inset-0 z-[100] flex items-center justify-center p-3 sm:p-6 bg-black/80 backdrop-blur-sm animate-fade-in overflow-y-auto">
-      <div className="bg-white w-full max-w-xl shadow-2xl overflow-hidden flex flex-col max-h-[86vh] my-auto border border-[#DDD5C7]">
+      <div className="bg-white w-full max-w-xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh] my-auto border border-[#DDD5C7] font-sans">
         
         {/* Header */}
-        <div className="bg-[#144A42] text-white px-4 sm:px-6 py-3 sm:py-4 flex items-center justify-between">
+        <div className="bg-[#144A42] text-white px-4 sm:px-6 py-3.5 sm:py-4 flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <PawIcon className="w-4 h-4 sm:w-5 sm:h-5 text-[#C5A880]" />
-            <span className="font-bold text-sm sm:text-base">모바일 동물등록 간편 신청</span>
+            <PawIcon className="w-5 h-5 text-[#C5A880]" />
+            <div>
+              <span className="font-bold text-sm sm:text-base block">국가 동물등록 간편 신청</span>
+              <span className="text-[10px] text-[#A3CCC0] block -mt-0.5">정부 동물보호관리시스템(APMS) 공식 대행 규격</span>
+            </div>
           </div>
-          <button onClick={onClose} className="p-1 text-white/80 hover:text-white hover:bg-white/10">
-            <XIcon className="w-4 h-4 sm:w-5 sm:h-5" />
+          <button 
+            type="button" 
+            onClick={onClose} 
+            className="p-1.5 text-white/80 hover:text-white hover:bg-white/10 rounded transition"
+            aria-label="닫기"
+          >
+            <XIcon className="w-5 h-5" />
           </button>
         </div>
 
         {/* Step Indicator */}
-        {step < 7 && (
-          <div className="bg-[#F8F6F1] px-4 sm:px-6 py-2 sm:py-3 border-b border-[#EFECE6]">
-            <div className="flex items-center justify-between text-[11px] sm:text-xs font-semibold text-[#144A42] mb-1">
+        {step < 6 && (
+          <div className="bg-[#F8F6F1] px-4 sm:px-6 py-2.5 sm:py-3 border-b border-[#EFECE6]">
+            <div className="flex items-center justify-between text-[11px] sm:text-xs font-semibold text-[#144A42] mb-1.5">
               <span>{stepsTitle[step - 1]}</span>
-              <span className="text-[#88948F]">{step} / 6 단계</span>
+              <span className="text-[#88948F] font-semibold">{step} / 5 단계</span>
             </div>
-            <div className="w-full bg-[#E5E0D4] h-1 sm:h-1.5 overflow-hidden">
+            <div className="w-full bg-[#E5E0D4] h-1.5 overflow-hidden">
               <div 
                 className="bg-[#144A42] h-full transition-all duration-300"
-                style={{ width: `${(step / 6) * 100}%` }}
+                style={{ width: `${(step / 5) * 100}%` }}
               />
             </div>
           </div>
         )}
 
         {/* Form Body */}
-        <div className="p-4 sm:p-6 overflow-y-auto space-y-3 sm:space-y-4 flex-1 text-xs sm:text-sm text-[#26312D]">
+        <div className="p-4 sm:p-6 overflow-y-auto space-y-4 sm:space-y-5 flex-1 text-xs sm:text-sm text-[#26312D]">
           
-          {/* Step 1: 본인확인 */}
+          {/* Step 1: 보호자 정보 및 주민등록번호 본인인증 */}
           {step === 1 && (
-            <div className="space-y-3 sm:space-y-4">
-              <div className="bg-[#EBF4F2] p-3 sm:p-4 border border-[#D5E8E4] flex items-start gap-2.5 sm:gap-3">
-                <ShieldCheckIcon className="w-4 h-4 sm:w-5 sm:h-5 text-[#144A42] mt-0.5 shrink-0" />
-                <p className="text-[11px] sm:text-xs text-[#204941] leading-relaxed">
-                  동물보호법에 의거하여 정확한 지자체 전산망 등록을 위해 보호자 본인 인증 정보를 확인합니다.
-                </p>
+            <div className="space-y-4">
+              <div className="bg-[#EBF4F2] p-3.5 border border-[#D5E8E4] flex items-start gap-2.5">
+                <ShieldCheckIcon className="w-5 h-5 text-[#144A42] mt-0.5 shrink-0" />
+                <div className="space-y-1">
+                  <p className="text-xs font-bold text-[#144A42]">동물보호법에 따른 법적 필수 본인확인</p>
+                  <p className="text-[11px] text-[#335A51] leading-relaxed">
+                    동물보호법 제12조 및 시행규칙 제8조에 따라 관할 지자체 전산망 등록을 위해 <strong>소유자 실명, 주민등록번호, 연락처</strong>가 수집되며 암호화 보호됩니다.
+                  </p>
+                </div>
               </div>
 
+              {/* 보호자 성명 */}
               <div>
-                <label className="block font-semibold mb-1">보호자 성명 (실명)</label>
+                <label className="block font-semibold mb-1 text-xs text-[#2C3833]">
+                  보호자 성명 (실명) <span className="text-red-500">*</span>
+                </label>
                 <input 
                   type="text" 
                   value={formData.ownerName} 
                   onChange={(e) => setFormData({...formData, ownerName: e.target.value})}
-                  className="w-full px-4 py-2.5 border border-gray-300 focus:outline-none focus:border-[#144A42]"
-                  placeholder="보호자 실명 입력"
+                  className="w-full px-4 py-2.5 border border-gray-300 focus:outline-none focus:border-[#144A42] text-xs sm:text-sm"
+                  placeholder="예: 홍길동 (주민등록상 실명)"
                   autoFocus
                 />
               </div>
 
+              {/* 주민등록번호 입력 (앞 6자리 - 뒤 7자리 & 모바일 숫자 키패드) */}
               <div>
-                <label className="block font-semibold mb-1">생년월일 (6자리)</label>
-                <input 
-                  type="text" 
-                  inputMode="numeric"
-                  pattern="[0-9]*"
-                  maxLength={6}
-                  value={formData.birthDate} 
-                  onChange={(e) => {
-                    const digits = e.target.value.replace(/[^0-9]/g, '').slice(0, 6);
-                    setFormData({...formData, birthDate: digits});
-                  }}
-                  className="w-full px-4 py-2.5 border border-gray-300 focus:outline-none focus:border-[#144A42]"
-                  placeholder="예: 920518"
-                />
+                <div className="flex items-center justify-between mb-1">
+                  <label className="font-semibold text-xs text-[#2C3833]">
+                    주민등록번호 13자리 <span className="text-red-500">*</span>
+                  </label>
+                  <span className="text-[10px] text-amber-700 bg-amber-50 px-2 py-0.5 font-medium border border-amber-200">
+                    구청 행정 등록 필수
+                  </span>
+                </div>
+
+                <div className="flex items-center gap-2">
+                  {/* 앞 6자리 */}
+                  <div className="flex-1">
+                    <input 
+                      type="tel"
+                      inputMode="numeric"
+                      pattern="[0-9]*"
+                      maxLength={6}
+                      value={formData.ownerJuminFront}
+                      onChange={handleJuminFrontChange}
+                      placeholder="앞 6자리 (생년월일)"
+                      className="w-full px-3.5 py-2.5 border border-gray-300 focus:outline-none focus:border-[#144A42] text-center text-xs sm:text-sm"
+                    />
+                  </div>
+                  
+                  <span className="text-gray-400 font-bold text-base">-</span>
+
+                  {/* 뒤 7자리 (보안 마스킹 및 숫자 키패드 지원) */}
+                  <div className="flex-1 relative">
+                    <input 
+                      ref={ownerJuminBackRef}
+                      type={showJuminBack ? "tel" : "password"}
+                      inputMode="numeric"
+                      pattern="[0-9]*"
+                      maxLength={7}
+                      value={formData.ownerJuminBack}
+                      onChange={handleJuminBackChange}
+                      placeholder="뒤 7자리"
+                      className="w-full px-3.5 py-2.5 border border-gray-300 focus:outline-none focus:border-[#144A42] text-center text-xs sm:text-sm"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowJuminBack(!showJuminBack)}
+                      className="absolute right-2.5 top-1/2 -translate-y-1/2 text-[10px] text-gray-500 hover:text-[#144A42] px-1 py-0.5 font-medium"
+                    >
+                      {showJuminBack ? '숨김' : '표시'}
+                    </button>
+                  </div>
+                </div>
+                <p className="text-[11px] text-[#7A8580] mt-1.5 leading-snug">
+                  * 앞 6자리 입력 시 자동으로 뒷자리로 이동합니다. 모바일에서는 숫자 키패드로 편리하게 입력하실 수 있습니다.
+                </p>
               </div>
 
+              {/* 휴대폰 번호 (자동 하이픈 및 모바일 숫자 키패드) */}
               <div>
-                <label className="block font-semibold mb-1">휴대폰 번호</label>
+                <label className="block font-semibold mb-1 text-xs text-[#2C3833]">
+                  휴대폰 번호 <span className="text-red-500">*</span>
+                </label>
                 <input 
                   type="tel" 
                   inputMode="numeric"
@@ -394,110 +675,448 @@ export function ApplyRegistrationModal({ isOpen, onClose, onApplySuccess, user }
                   maxLength={13}
                   value={formData.phone} 
                   onChange={(e) => setFormData({...formData, phone: formatPhoneNumber(e.target.value)})}
-                  className="w-full px-4 py-2.5 border border-gray-300 focus:outline-none focus:border-[#144A42]"
-                  placeholder="010-0000-0000"
+                  className="w-full px-4 py-2.5 border border-gray-300 focus:outline-none focus:border-[#144A42] text-xs sm:text-sm"
+                  placeholder="010-0000-0000 (숫자만 입력 시 자동 하이픈)"
                 />
+                <p className="text-[11px] text-[#7A8580] mt-1">
+                  * 접수 진행 및 승인 완료 알림톡(문자)이 발송됩니다.
+                </p>
               </div>
             </div>
           )}
 
-          {/* Step 2: 보호자 상세 주소 */}
+          {/* Step 2: 주소 입력 및 동물등록 대행 전자서명 (2번 이미지 페오펫 정식 규격) */}
           {step === 2 && (
             <div className="space-y-4">
-              {/* 우편번호 */}
-              <div>
-                <label className="block font-semibold mb-1 text-xs text-[#2C3833]">
-                  우편번호 <span className="text-red-500">*</span>
-                </label>
-                <div className="flex gap-2">
+              
+              {/* 1. 주소 입력 섹션 */}
+              <div className="space-y-3 pb-3 border-b border-gray-200">
+                <div className="flex items-center gap-2">
+                  <span className="w-5 h-5 rounded-full bg-[#144A42] text-white flex items-center justify-center text-xs font-bold">
+                    2
+                  </span>
+                  <h4 className="font-bold text-sm text-[#144A42]">주소 입력</h4>
+                </div>
+
+                {/* 현 거주지 주소 입력 */}
+                <div>
+                  <div className="flex gap-2">
+                    <input 
+                      type="text" 
+                      readOnly
+                      value={formData.currentAddress} 
+                      onClick={() => handleOpenPostcode('current')}
+                      placeholder="현 거주지 주소 검색"
+                      className="flex-1 px-4 py-2.5 border border-gray-300 bg-white focus:outline-none focus:border-[#144A42] text-xs sm:text-sm cursor-pointer"
+                    />
+                    <button 
+                      type="button" 
+                      onClick={() => handleOpenPostcode('current')}
+                      className="px-4 py-2.5 bg-[#144A42] text-white text-xs font-bold hover:bg-[#0D3832] transition shrink-0 cursor-pointer"
+                    >
+                      주소 검색
+                    </button>
+                  </div>
+                </div>
+
+                {/* 현 거주지 나머지 상세 주소 */}
+                <div>
                   <input 
+                    ref={currentAddressDetailRef}
                     type="text" 
-                    readOnly
-                    value={formData.postalCode} 
-                    onClick={() => handleOpenPostcode('owner')}
-                    placeholder="우편번호 5자리"
-                    className="w-36 px-4 py-2.5 border border-gray-300 bg-gray-50 focus:outline-none focus:border-[#144A42] font-mono text-sm cursor-pointer"
+                    value={formData.currentAddressDetail || ''} 
+                    onChange={(e) => {
+                      const val = e.target.value;
+                      setFormData(prev => ({
+                        ...prev,
+                        currentAddressDetail: val,
+                        ...(prev.isSameResidenceAndRegistration ? { addressDetail: val } : {})
+                      }));
+                    }}
+                    placeholder="나머지 주소 입력(동, 호수)"
+                    className="w-full px-4 py-2.5 border border-gray-300 focus:outline-none focus:border-[#144A42] text-xs sm:text-sm"
                   />
-                  <button 
-                    type="button" 
-                    onClick={() => handleOpenPostcode('owner')}
-                    className="px-4 py-2.5 bg-[#144A42] text-white text-xs font-bold hover:bg-[#0D3832] transition flex items-center gap-1.5 shadow-xs shrink-0 cursor-pointer"
+                </div>
+
+                {/* [v] 현 거주지와 주민등록상 주소가 동일 합니다. 체크박스 */}
+                <div className="pt-1">
+                  <label className="flex items-center gap-2 cursor-pointer text-xs font-semibold text-[#144A42]">
+                    <input 
+                      type="checkbox" 
+                      checked={formData.isSameResidenceAndRegistration} 
+                      onChange={(e) => {
+                        const checked = e.target.checked;
+                        setFormData(prev => ({
+                          ...prev,
+                          isSameResidenceAndRegistration: checked,
+                          ...(checked ? {
+                            postalCode: prev.currentPostalCode,
+                            address: prev.currentAddress,
+                            addressDetail: prev.currentAddressDetail,
+                          } : {})
+                        }));
+                      }}
+                      className="w-4 h-4 text-[#144A42] accent-[#144A42] focus:ring-0 rounded"
+                    />
+                    <span>현 거주지와 주민등록상 주소가 동일 합니다.</span>
+                  </label>
+                </div>
+
+                {/* 주민등록상 주소 (동일하지 않은 경우 펼쳐짐) */}
+                {!formData.isSameResidenceAndRegistration && (
+                  <div className="space-y-2.5 p-3.5 bg-[#FAF8F5] border border-[#E7DFD1] mt-2 animate-fade-in">
+                    <span className="block text-xs font-bold text-[#144A42]">
+                      주민등록상 주소지 입력 (동물등록증 공식 등재 주소)
+                    </span>
+                    <div className="flex gap-2">
+                      <input 
+                        type="text" 
+                        readOnly
+                        value={formData.address} 
+                        onClick={() => handleOpenPostcode('owner')}
+                        placeholder="주민등록상 주소 입력"
+                        className="flex-1 px-4 py-2.5 border border-gray-300 bg-white focus:outline-none focus:border-[#144A42] text-xs sm:text-sm cursor-pointer"
+                      />
+                      <button 
+                        type="button" 
+                        onClick={() => handleOpenPostcode('owner')}
+                        className="px-4 py-2.5 bg-[#144A42] text-white text-xs font-bold hover:bg-[#0D3832] transition shrink-0 cursor-pointer"
+                      >
+                        주소 검색
+                      </button>
+                    </div>
+                    <input 
+                      ref={addressDetailRef}
+                      type="text" 
+                      value={formData.addressDetail || ''} 
+                      onChange={(e) => setFormData({...formData, addressDetail: e.target.value})}
+                      placeholder="나머지 주소 입력(동, 호수)"
+                      className="w-full px-4 py-2.5 border border-gray-300 focus:outline-none focus:border-[#144A42] text-xs sm:text-sm"
+                    />
+                  </div>
+                )}
+
+                {/* 조회된 전체 주소 실시간 확인 배너 */}
+                {(formData.currentAddress || formData.address) && (
+                  <div className="p-3 bg-[#F4F9F7] border border-[#C6DDD5] text-xs space-y-1">
+                    <span className="font-bold text-[#144A42] text-[11px] flex items-center gap-1">
+                      <MapPinIcon className="w-3.5 h-3.5 text-[#144A42]" />
+                      <span>등록될 최종 전체 주소:</span>
+                    </span>
+                    <p className="text-[#144A42] font-bold text-xs sm:text-sm leading-relaxed break-all">
+                      {formData.isSameResidenceAndRegistration
+                        ? `${formData.currentPostalCode ? `[${formData.currentPostalCode}] ` : ''}${formData.currentAddress} ${formData.currentAddressDetail || ''}`
+                        : `${formData.postalCode ? `[${formData.postalCode}] ` : ''}${formData.address} ${formData.addressDetail || ''}`
+                      }
+                    </p>
+                  </div>
+                )}
+              </div>
+
+              {/* 2. 동물등록 대행 동의 및 서명 완료 섹션 (2번 이미지 전자서명 패드) */}
+              <div className="space-y-2.5 pb-3 border-b border-gray-200">
+                <div className="flex items-center justify-between">
+                  <label className="flex items-center gap-2 cursor-pointer font-bold text-xs sm:text-sm text-[#144A42]">
+                    <input 
+                      type="checkbox" 
+                      checked={formData.agreeSignature} 
+                      onChange={(e) => setFormData({...formData, agreeSignature: e.target.checked})}
+                      className="w-4 h-4 text-[#144A42] accent-[#144A42] focus:ring-0 rounded"
+                    />
+                    <span>동물등록 대행 동의 및 서명 완료</span>
+                  </label>
+                  <span className="text-[10px] text-red-600 bg-red-50 px-2 py-0.5 font-bold border border-red-200">
+                    필수 서명
+                  </span>
+                </div>
+
+                <p className="text-[11px] sm:text-xs text-red-600 leading-snug font-medium">
+                  공식적인 민원 대행업무이기 때문에 한글 이름 정자(ex. {formData.ownerName || '홍길동'})로 서명해주셔야 정상적인 승인처리가 가능합니다.
+                </p>
+
+                {/* 서명 캔버스 박스 */}
+                <div className="relative border-2 border-gray-300 rounded-sm bg-white overflow-hidden shadow-inner">
+                  <canvas 
+                    ref={signatureCanvasRef} 
+                    width={480} 
+                    height={140} 
+                    onMouseDown={handleStartSign}
+                    onMouseMove={handleMoveSign}
+                    onMouseUp={handleEndSign}
+                    onMouseLeave={handleEndSign}
+                    onTouchStart={handleStartSign}
+                    onTouchMove={handleMoveSign}
+                    onTouchEnd={handleEndSign}
+                    className="w-full h-32 sm:h-36 touch-none cursor-crosshair block bg-white"
+                  />
+                  
+                  {/* 서명 미입력 시 안내 가이드 워터마크 */}
+                  {!hasSignature && (
+                    <div className="absolute inset-0 flex items-center justify-center pointer-events-none text-gray-300 text-xs sm:text-sm select-none">
+                      여기에 한글 이름을 정자로 서명해 주세요
+                    </div>
+                  )}
+
+                  {/* 우측 상단 ↺ 초기화(지우기) 버튼 */}
+                  <button
+                    type="button"
+                    onClick={handleClearSignature}
+                    className="absolute top-2.5 right-2.5 w-7 h-7 bg-white/90 border border-gray-300 text-[#0284C7] hover:text-[#0369A1] hover:bg-gray-50 flex items-center justify-center rounded-full shadow-xs transition"
+                    title="서명 지우기"
+                    aria-label="서명 초기화"
                   >
-                    <SearchIcon className="w-3.5 h-3.5" />
-                    <span>우편번호 검색</span>
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                    </svg>
                   </button>
                 </div>
               </div>
 
-              {/* 기본 주소 (조회 시 도로명 + 건물명 + 동 전체 자동 입력) */}
-              <div>
-                <label className="block font-semibold mb-1 text-xs text-[#2C3833]">
-                  보호자 주민등록상 기본 주소지 <span className="text-red-500">*</span>
-                </label>
-                <input 
-                  type="text" 
-                  value={formData.address} 
-                  onChange={(e) => setFormData({...formData, address: e.target.value})}
-                  onClick={() => {
-                    if (!formData.address) handleOpenPostcode('owner');
-                  }}
-                  placeholder="우편번호 검색 시 도로명/지번 및 건물 상세 주소가 자동 입력됩니다"
-                  className="w-full px-4 py-2.5 border border-gray-300 focus:outline-none focus:border-[#144A42] text-xs sm:text-sm"
-                />
-              </div>
-
-              {/* 추가 상세 주소 (동, 호수, 층수 등) */}
-              <div>
-                <label className="block font-semibold mb-1 text-xs text-[#2C3833] flex items-center justify-between">
-                  <span>추가 상세 주소 (동, 호수 등)</span>
-                  <span className="text-[11px] text-gray-400 font-normal">직접 입력</span>
-                </label>
-                <input 
-                  ref={addressDetailRef}
-                  type="text" 
-                  value={formData.addressDetail || ''} 
-                  onChange={(e) => setFormData({...formData, addressDetail: e.target.value})}
-                  placeholder="예: 101동 1204호, 2층, 상가 B01호 등"
-                  className="w-full px-4 py-2.5 border border-gray-300 focus:outline-none focus:border-[#144A42] text-xs sm:text-sm font-medium"
-                />
-                <p className="text-[11px] text-[#7A8580] mt-1.5 leading-relaxed">
-                  * 동물등록증 발급 및 관할 지자체 행정 전산망 등록을 위한 공식 법정 주소지입니다.
-                </p>
-              </div>
-
-              {/* 주소 전체 조합 실시간 미리보기 카드 */}
-              {(formData.address || formData.postalCode) && (
-                <div className="p-3.5 bg-[#FAF8F5] border border-[#E7DFD1] text-xs space-y-1">
-                  <span className="font-bold text-[#144A42] block text-[11px] flex items-center gap-1">
-                    <MapPinIcon className="w-3.5 h-3.5 text-[#144A42]" />
-                    <span>등록될 전체 주소 미리보기:</span>
-                  </span>
-                  <p className="text-[#2C3B35] font-semibold text-xs leading-relaxed break-all">
-                    {formData.postalCode ? `[${formData.postalCode}] ` : ''}
-                    {formData.address}
-                    {formData.addressDetail ? ` ${formData.addressDetail}` : ''}
-                  </p>
+              {/* 3. 전체동의 및 필수 약관 섹션 (페오펫 정식 규격) */}
+              <div className="space-y-2 pt-1">
+                {/* 전체동의 체크박스 */}
+                <div className="p-2.5 bg-[#FAF8F5] border border-[#E7DFD1] flex items-center justify-between">
+                  <label className="flex items-center gap-2 cursor-pointer font-bold text-xs text-[#144A42]">
+                    <input 
+                      type="checkbox" 
+                      checked={formData.agreeJuminDoc && formData.agreeElecSignDoc} 
+                      onChange={(e) => {
+                        const checked = e.target.checked;
+                        setFormData(prev => ({
+                          ...prev,
+                          agreeJuminDoc: checked,
+                          agreeElecSignDoc: checked,
+                          agreeTerms: checked,
+                          agreeJumin: checked,
+                          agreeAgency: checked,
+                          agreeElecSign: checked,
+                        }));
+                      }}
+                      className="w-4 h-4 text-[#144A42] accent-[#144A42] focus:ring-0 rounded"
+                    />
+                    <span>전체동의</span>
+                  </label>
                 </div>
-              )}
+
+                {/* 주민등록번호 사용 동의서 (필수) */}
+                <div className="flex items-center justify-between text-xs py-1.5 px-1 border-b border-gray-100">
+                  <label className="flex items-center gap-2 cursor-pointer flex-1">
+                    <input 
+                      type="checkbox" 
+                      checked={formData.agreeJuminDoc} 
+                      onChange={(e) => setFormData({...formData, agreeJuminDoc: e.target.checked, agreeJumin: e.target.checked})}
+                      className="w-4 h-4 text-[#144A42] accent-[#144A42] focus:ring-0 rounded"
+                    />
+                    <span className="text-[#333] font-medium">주민등록번호 사용 동의서 (필수)</span>
+                  </label>
+                  <button 
+                    type="button"
+                    onClick={() => setTermsDetailModal('jumin')}
+                    className="px-2.5 py-1 border border-gray-300 rounded-xs text-[11px] text-gray-600 hover:text-[#144A42] hover:border-[#144A42] transition bg-white cursor-pointer font-medium"
+                  >
+                    약관보기
+                  </button>
+                </div>
+
+                {/* 전자서명법 및 동물보호법 동의약관 (필수) */}
+                <div className="flex items-center justify-between text-xs py-1.5 px-1">
+                  <label className="flex items-center gap-2 cursor-pointer flex-1">
+                    <input 
+                      type="checkbox" 
+                      checked={formData.agreeElecSignDoc} 
+                      onChange={(e) => setFormData({...formData, agreeElecSignDoc: e.target.checked, agreeElecSign: e.target.checked, agreeTerms: e.target.checked, agreeAgency: e.target.checked})}
+                      className="w-4 h-4 text-[#144A42] accent-[#144A42] focus:ring-0 rounded"
+                    />
+                    <span className="text-[#333] font-medium">전자서명법 및 동물보호법 동의약관 (필수)</span>
+                  </label>
+                  <button 
+                    type="button"
+                    onClick={() => setTermsDetailModal('elec_animal')}
+                    className="px-2.5 py-1 border border-gray-300 rounded-xs text-[11px] text-gray-600 hover:text-[#144A42] hover:border-[#144A42] transition bg-white cursor-pointer font-medium"
+                  >
+                    약관보기
+                  </button>
+                </div>
+              </div>
+
             </div>
           )}
 
-          {/* Step 3: 반려동물 정보 */}
+          {/* Step 3: 반려동물 정보 (페오펫 정식 규격: 이름, 품종, 털색, 성별, 중성화, 생년월일, 사진) */}
           {step === 3 && (
             <div className="space-y-4">
+              {/* 축종 선택 */}
               <div>
-                <label className="block font-semibold mb-1">우리 아이 이름 <span className="text-red-500">*</span></label>
+                <label className="block font-semibold mb-1 text-xs text-[#2C3833]">동물 종류 (축종) <span className="text-red-500">*</span></label>
+                <div className="grid grid-cols-2 gap-2">
+                  {[
+                    { id: 'dog', label: '반려견 (강아지)', sub: '법적 의무 등록 대상' },
+                    { id: 'cat', label: '반려묘 (고양이)', sub: '지자체 자율 등록' }
+                  ].map(t => (
+                    <button
+                      key={t.id}
+                      type="button"
+                      onClick={() => setFormData({...formData, petType: t.id})}
+                      className={`p-2.5 text-left border transition ${
+                        formData.petType === t.id 
+                          ? 'border-[#144A42] bg-[#EBF4F2] text-[#144A42] font-bold' 
+                          : 'border-gray-200 text-gray-700 hover:bg-gray-50'
+                      }`}
+                    >
+                      <div className="text-xs">{t.label}</div>
+                      <div className="text-[10px] text-[#6A7873]">{t.sub}</div>
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* 이름 */}
+              <div>
+                <label className="block font-semibold mb-1 text-xs text-[#2C3833]">
+                  우리 아이 이름 <span className="text-red-500">*</span>
+                </label>
                 <input 
                   type="text" 
                   value={formData.petName} 
                   onChange={(e) => setFormData({...formData, petName: e.target.value})}
-                  className="w-full px-4 py-2.5 border border-gray-300 focus:outline-none focus:border-[#144A42] font-semibold text-base"
-                  placeholder="예: 뭉치, 초코, 루루"
+                  className="w-full px-4 py-2.5 border border-gray-300 focus:outline-none focus:border-[#144A42] font-bold text-sm"
+                  placeholder="예: 뭉치, 초코, 루루 (한글 또는 영문)"
                   autoFocus
                 />
               </div>
 
-              {/* 반려동물 사진 등록 */}
+              {/* 품종 선택 및 직접입력 */}
+              <div>
+                <label className="block font-semibold mb-1 text-xs text-[#2C3833]">
+                  품종 <span className="text-red-500">*</span>
+                </label>
+                {/* 인기 품종 퀵 태그 */}
+                <div className="flex flex-wrap gap-1.5 mb-2">
+                  {popularBreeds.map(b => (
+                    <button
+                      key={b}
+                      type="button"
+                      onClick={() => setFormData({...formData, breed: b})}
+                      className={`px-2.5 py-1 text-[11px] border transition ${
+                        formData.breed === b 
+                          ? 'bg-[#144A42] text-white border-[#144A42] font-bold' 
+                          : 'bg-[#FAF8F5] text-gray-700 border-gray-200 hover:bg-gray-100'
+                      }`}
+                    >
+                      {b}
+                    </button>
+                  ))}
+                </div>
+                <input 
+                  type="text" 
+                  value={formData.breed} 
+                  onChange={(e) => setFormData({...formData, breed: e.target.value})}
+                  className="w-full px-4 py-2 border border-gray-300 focus:outline-none focus:border-[#144A42] text-xs sm:text-sm"
+                  placeholder="위에서 선택하거나 직접 입력 (예: 말티푸, 골든두들)"
+                />
+              </div>
+
+              {/* 털색 (모색) - 페오펫 및 정부 정식 규격 필수 */}
+              <div>
+                <label className="block font-semibold mb-1 text-xs text-[#2C3833]">
+                  털색 (모색) <span className="text-red-500">*</span>
+                  <span className="text-[10px] text-[#7A8580] font-normal ml-1.5">(동물등록증 표기 필수)</span>
+                </label>
+                <div className="flex flex-wrap gap-1.5 mb-2">
+                  {popularColors.map(c => (
+                    <button
+                      key={c}
+                      type="button"
+                      onClick={() => setFormData({...formData, petColor: c})}
+                      className={`px-2.5 py-1 text-[11px] border transition ${
+                        formData.petColor === c 
+                          ? 'bg-[#144A42] text-white border-[#144A42] font-bold' 
+                          : 'bg-[#FAF8F5] text-gray-700 border-gray-200 hover:bg-gray-100'
+                      }`}
+                    >
+                      {c}
+                    </button>
+                  ))}
+                </div>
+                <input 
+                  type="text" 
+                  value={formData.petColor} 
+                  onChange={(e) => setFormData({...formData, petColor: e.target.value})}
+                  className="w-full px-4 py-2 border border-gray-300 focus:outline-none focus:border-[#144A42] text-xs sm:text-sm"
+                  placeholder="털색 직접 입력 (예: 갈색 섞인 흰색, 삼색)"
+                />
+              </div>
+
+              {/* 성별 & 중성화 여부 */}
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block font-semibold mb-1 text-xs text-[#2C3833]">성별 <span className="text-red-500">*</span></label>
+                  <div className="flex gap-2">
+                    {['남아', '여아'].map((g) => (
+                      <button
+                        key={g}
+                        type="button"
+                        onClick={() => setFormData({...formData, gender: g})}
+                        className={`flex-1 py-2 text-xs font-semibold border transition ${
+                          formData.gender === g ? 'bg-[#144A42] text-white border-[#144A42]' : 'border-gray-200 text-gray-700 hover:bg-gray-50'
+                        }`}
+                      >
+                        {g}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block font-semibold mb-1 text-xs text-[#2C3833]">중성화 여부 <span className="text-red-500">*</span></label>
+                  <div className="flex gap-2">
+                    {['완료', '미완료'].map((n) => (
+                      <button
+                        key={n}
+                        type="button"
+                        onClick={() => setFormData({...formData, neutered: n})}
+                        className={`flex-1 py-2 text-xs font-semibold border transition ${
+                          formData.neutered === n ? 'bg-[#144A42] text-white border-[#144A42]' : 'border-gray-200 text-gray-700 hover:bg-gray-50'
+                        }`}
+                      >
+                        {n}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              </div>
+
+              {/* 생년월일 & 몸무게 */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div>
+                  <div className="flex items-center justify-between mb-1">
+                    <label className="font-semibold text-xs text-[#2C3833]">생년월일</label>
+                    <span className="text-[10px] text-gray-400">추정일 가능</span>
+                  </div>
+                  <input 
+                    type="date" 
+                    value={formData.petBirth} 
+                    onChange={(e) => setFormData({...formData, petBirth: e.target.value})}
+                    className="w-full px-3 py-2 border border-gray-300 focus:outline-none focus:border-[#144A42] text-xs"
+                  />
+                </div>
+
+                <div>
+                  <label className="block font-semibold mb-1 text-xs text-[#2C3833]">
+                    몸무게 (kg) <span className="text-[10px] text-gray-400 font-normal">선택</span>
+                  </label>
+                  <input 
+                    type="text"
+                    inputMode="decimal"
+                    value={formData.petWeight} 
+                    onChange={(e) => setFormData({...formData, petWeight: e.target.value.replace(/[^0-9.]/g, '')})}
+                    placeholder="예: 4.5"
+                    className="w-full px-3 py-2 border border-gray-300 focus:outline-none focus:border-[#144A42] text-xs"
+                  />
+                </div>
+              </div>
+
+              {/* 아이 사진 등록 (모바일 최적화) */}
               <div>
                 <label className="block font-semibold mb-1.5 flex items-center justify-between">
                   <span className="flex items-center gap-1.5 text-xs text-[#204941]">
@@ -509,27 +1128,25 @@ export function ApplyRegistrationModal({ isOpen, onClose, onApplySuccess, user }
                   </span>
                 </label>
                 
-                <div className="flex items-center gap-4 p-3.5 bg-[#FAF8F5] border border-[#DDD5C7]">
-                  {/* Photo Preview Thumbnail */}
-                  <div className="w-20 h-20 bg-white border-2 border-[#144A42] flex items-center justify-center overflow-hidden shrink-0 relative shadow-inner">
+                <div className="flex items-center gap-4 p-3 bg-[#FAF8F5] border border-[#DDD5C7]">
+                  <div className="w-18 h-18 sm:w-20 sm:h-20 bg-white border-2 border-[#144A42] flex items-center justify-center overflow-hidden shrink-0 relative shadow-inner">
                     {formData.petPhoto ? (
                       <img 
                         src={formData.petPhoto} 
-                        alt="반려동물 사진 미리보기" 
+                        alt="아이 사진" 
                         className="w-full h-full object-cover"
                       />
                     ) : (
                       <div className="text-center p-2 text-gray-400 flex flex-col items-center">
-                        <PawIcon className="w-6 h-6 text-[#C5A880] mb-1" />
-                        <span className="text-[10px] text-gray-400 font-medium">사진 미등록</span>
+                        <PawIcon className="w-5 h-5 text-[#C5A880] mb-0.5" />
+                        <span className="text-[9px] text-gray-400 font-medium">사진 미등록</span>
                       </div>
                     )}
                   </div>
 
-                  {/* Actions & Instructions */}
                   <div className="flex-1 space-y-1.5 text-xs">
                     <div className="flex items-center gap-2">
-                      <label className="px-3.5 py-1.5 bg-[#144A42] text-white font-bold cursor-pointer hover:bg-[#0D3832] transition flex items-center gap-1.5 shadow-sm text-xs">
+                      <label className="px-3 py-1.5 bg-[#144A42] text-white font-bold cursor-pointer hover:bg-[#0D3832] transition flex items-center gap-1.5 shadow-sm text-xs">
                         <CameraIcon className="w-3.5 h-3.5 text-[#C5A880]" />
                         <span>{formData.petPhoto ? '사진 변경하기' : '사진 등록하기'}</span>
                         <input 
@@ -555,148 +1172,48 @@ export function ApplyRegistrationModal({ isOpen, onClose, onApplySuccess, user }
                   </div>
                 </div>
               </div>
+            </div>
+          )}
 
-              <div className="grid grid-cols-2 gap-3">
+          {/* Step 4: 수령 정보 (배송지 주소 검색 및 전체 주소 표시) */}
+          {step === 4 && (
+            <div className="space-y-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
-                  <label className="block font-semibold mb-1">축종</label>
-                  <select 
-                    value={formData.petType}
-                    onChange={(e) => setFormData({...formData, petType: e.target.value})}
-                    className="w-full px-3 py-2.5 border border-gray-300 focus:outline-none"
-                  >
-                    <option value="dog">반려견 (개)</option>
-                    <option value="cat">반려묘 (고양이)</option>
-                  </select>
-                </div>
-                <div>
-                  <label className="block font-semibold mb-1">품종</label>
+                  <label className="block font-semibold mb-1 text-xs text-[#2C3833]">
+                    받는 사람 성명 <span className="text-red-500">*</span>
+                  </label>
                   <input 
                     type="text" 
-                    value={formData.breed} 
-                    onChange={(e) => setFormData({...formData, breed: e.target.value})}
-                    className="w-full px-3 py-2.5 border border-gray-300 focus:outline-none"
-                    placeholder="예: 말티푸, 포메라니안"
+                    value={formData.recipient} 
+                    onChange={(e) => setFormData({...formData, recipient: e.target.value})}
+                    placeholder="수령인 성명"
+                    className="w-full px-4 py-2.5 border border-gray-300 focus:outline-none focus:border-[#144A42] text-xs sm:text-sm"
                   />
                 </div>
-              </div>
 
-              <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block font-semibold mb-1">성별</label>
-                  <div className="flex gap-2">
-                    {['남아', '여아'].map((g) => (
-                      <button
-                        key={g}
-                        type="button"
-                        onClick={() => setFormData({...formData, gender: g})}
-                        className={`flex-1 py-2 text-xs font-semibold border ${
-                          formData.gender === g ? 'bg-[#144A42] text-white border-[#144A42]' : 'border-gray-200 text-gray-700'
-                        }`}
-                      >
-                        {g}
-                      </button>
-                    ))}
-                  </div>
+                  <label className="block font-semibold mb-1 text-xs text-[#2C3833]">
+                    수령인 연락처 <span className="text-red-500">*</span>
+                  </label>
+                  <input 
+                    type="tel" 
+                    inputMode="numeric"
+                    pattern="[0-9]*"
+                    maxLength={13}
+                    value={formData.recipientPhone} 
+                    onChange={(e) => setFormData({...formData, recipientPhone: formatPhoneNumber(e.target.value)})}
+                    placeholder="010-0000-0000"
+                    className="w-full px-4 py-2.5 border border-gray-300 focus:outline-none focus:border-[#144A42] text-xs sm:text-sm"
+                  />
                 </div>
-                <div>
-                  <label className="block font-semibold mb-1">중성화 여부</label>
-                  <div className="flex gap-2">
-                    {['완료', '미완료'].map((n) => (
-                      <button
-                        key={n}
-                        type="button"
-                        onClick={() => setFormData({...formData, neutered: n})}
-                        className={`flex-1 py-2 text-xs font-semibold border ${
-                          formData.neutered === n ? 'bg-[#144A42] text-white border-[#144A42]' : 'border-gray-200 text-gray-700'
-                        }`}
-                      >
-                        {n}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-              </div>
-
-              <div>
-                <label className="block font-semibold mb-1">생년월일 (추정 가능)</label>
-                <input 
-                  type="date" 
-                  value={formData.petBirth} 
-                  onChange={(e) => setFormData({...formData, petBirth: e.target.value})}
-                  className="w-full px-4 py-2 border border-gray-300 focus:outline-none"
-                />
-              </div>
-            </div>
-          )}
-
-          {/* Step 4: 등록 방식 선택 */}
-          {step === 4 && (
-            <div className="space-y-3">
-              <label className="block font-semibold">등록 방식 선택</label>
-              
-              <div 
-                onClick={() => setFormData({...formData, regType: 'external'})}
-                className={`p-4 border-2 cursor-pointer transition ${
-                  formData.regType === 'external' ? 'border-[#144A42] bg-[#F3F9F7]' : 'border-gray-200 hover:border-gray-300'
-                }`}
-              >
-                <div className="flex items-center justify-between mb-1">
-                  <span className="font-bold text-[#144A42] flex items-center gap-2">
-                    <span className="w-2.5 h-2.5 bg-[#144A42]"></span>
-                    외장형 안심 목걸이 인식표 패키지 (가장 인기)
-                  </span>
-                  <span className="text-xs font-bold text-[#144A42] bg-[#E1F3EE] px-2.5 py-0.5">
-                    수수료 무료
-                  </span>
-                </div>
-                <p className="text-xs text-[#52605A] leading-relaxed">
-                  가볍고 예쁜 생활방수 전자태그 펜던트와 공식 동물등록증 카드가 택배로 배송됩니다.
-                </p>
-              </div>
-
-              <div 
-                onClick={() => setFormData({...formData, regType: 'internal'})}
-                className={`p-4 border-2 cursor-pointer transition ${
-                  formData.regType === 'internal' ? 'border-[#144A42] bg-[#F3F9F7]' : 'border-gray-200 hover:border-gray-300'
-                }`}
-              >
-                <div className="flex items-center justify-between mb-1">
-                  <span className="font-bold text-[#144A42] flex items-center gap-2">
-                    <span className="w-2.5 h-2.5 bg-[#C5A880]"></span>
-                    내장형 마이크로칩 제휴병원 시술권
-                  </span>
-                  <span className="text-xs font-bold text-[#8D6836] bg-[#FAF2E5] px-2.5 py-0.5">
-                    협력 병원 지원
-                  </span>
-                </div>
-                <p className="text-xs text-[#52605A] leading-relaxed">
-                  피하에 쌀알 크기의 칩을 주입하는 방식으로 분실 위험이 전혀 없으며, 슬반생 제휴 병원에서 전문 수의사가 안전하게 시술합니다.
-                </p>
-              </div>
-            </div>
-          )}
-
-          {/* Step 5: 수령 정보 */}
-          {step === 5 && (
-            <div className="space-y-4">
-              <div>
-                <label className="block font-semibold mb-1 text-xs text-[#2C3833]">
-                  받는 사람 성명 <span className="text-red-500">*</span>
-                </label>
-                <input 
-                  type="text" 
-                  value={formData.recipient || formData.ownerName} 
-                  onChange={(e) => setFormData({...formData, recipient: e.target.value})}
-                  placeholder="수령인 성명"
-                  className="w-full px-4 py-2.5 border border-gray-300 focus:outline-none focus:border-[#144A42] text-xs sm:text-sm"
-                />
               </div>
 
               {/* 배송지 주소 섹션 */}
               <div className="space-y-2.5">
                 <div className="flex items-center justify-between">
                   <label className="block font-semibold text-xs text-[#2C3833]">
-                    인식표 배송지 주소 <span className="text-red-500">*</span>
+                    외장칩 배송지 주소 <span className="text-red-500">*</span>
                   </label>
                   <label className="flex items-center gap-1.5 text-xs text-[#144A42] font-semibold cursor-pointer">
                     <input 
@@ -716,7 +1233,7 @@ export function ApplyRegistrationModal({ isOpen, onClose, onApplySuccess, user }
                       }}
                       className="w-3.5 h-3.5 text-[#144A42] focus:ring-0"
                     />
-                    <span>보호자 등록 주소와 동일</span>
+                    <span>보호자 주민등록 주소와 동일</span>
                   </label>
                 </div>
 
@@ -725,17 +1242,18 @@ export function ApplyRegistrationModal({ isOpen, onClose, onApplySuccess, user }
                   <input 
                     type="text" 
                     readOnly
+                    inputMode="numeric"
                     value={formData.shippingPostalCode || ''} 
                     onClick={() => handleOpenPostcode('shipping')}
                     placeholder="우편번호"
-                    className="w-32 px-3 py-2 border border-gray-300 bg-gray-50 text-xs font-mono cursor-pointer"
+                    className="w-32 px-3 py-2 border border-gray-300 bg-gray-50 text-xs cursor-pointer"
                   />
                   <button 
                     type="button" 
                     onClick={() => handleOpenPostcode('shipping')}
                     className="px-3.5 py-2 bg-[#144A42] text-white text-xs font-bold hover:bg-[#0D3832] transition flex items-center gap-1 shrink-0 shadow-xs"
                   >
-                    <SearchIcon className="w-3 h-3" />
+                    <SearchIcon className="w-3 h-3 text-[#C5A880]" />
                     <span>우편번호 검색</span>
                   </button>
                 </div>
@@ -749,7 +1267,7 @@ export function ApplyRegistrationModal({ isOpen, onClose, onApplySuccess, user }
                     if (!formData.shippingAddress) handleOpenPostcode('shipping');
                   }}
                   placeholder="도로명 주소 (우편번호 검색 시 자동 입력)"
-                  className="w-full px-4 py-2.5 border border-gray-300 focus:outline-none focus:border-[#144A42] text-xs sm:text-sm"
+                  className="w-full px-4 py-2.5 border border-gray-300 focus:outline-none focus:border-[#144A42] text-xs sm:text-sm font-medium"
                 />
 
                 {/* 배송지 추가 상세 주소 */}
@@ -761,128 +1279,305 @@ export function ApplyRegistrationModal({ isOpen, onClose, onApplySuccess, user }
                   placeholder="추가 상세 주소 (동, 호수, 층수 등 직접 입력)"
                   className="w-full px-4 py-2.5 border border-gray-300 focus:outline-none focus:border-[#144A42] text-xs sm:text-sm"
                 />
+
+                {/* 배송지 전체 주소 실시간 확인 카드 */}
+                {(formData.shippingAddress || formData.shippingPostalCode) && (
+                  <div className="p-3 bg-[#FAF8F5] border border-[#E7DFD1] text-xs space-y-1">
+                    <span className="font-bold text-[#144A42] text-[11px] block flex items-center gap-1">
+                      <TruckIcon className="w-3.5 h-3.5 text-[#144A42]" />
+                      <span>외장칩 발송 목적지 전체 주소:</span>
+                    </span>
+                    <p className="text-[#2C3B35] font-semibold text-xs leading-relaxed break-all">
+                      {formData.shippingPostalCode ? `[${formData.shippingPostalCode}] ` : ''}
+                      {formData.shippingAddress}
+                      {formData.shippingAddressDetail ? ` ${formData.shippingAddressDetail}` : ''}
+                    </p>
+                  </div>
+                )}
               </div>
 
+              {/* 배송 메모 */}
               <div>
-                <label className="block font-semibold mb-1 text-xs text-[#2C3833]">배송 메모</label>
+                <label className="block font-semibold mb-1 text-xs text-[#2C3833]">배송 요청사항</label>
+                <div className="flex flex-wrap gap-1.5 mb-2">
+                  {shippingMemoOptions.map(memo => (
+                    <button
+                      key={memo}
+                      type="button"
+                      onClick={() => setFormData({...formData, shippingMemo: memo})}
+                      className={`px-2.5 py-1 text-[11px] border transition ${
+                        formData.shippingMemo === memo
+                          ? 'bg-[#144A42] text-white border-[#144A42] font-semibold'
+                          : 'bg-[#FAF8F5] text-gray-700 border-gray-200 hover:bg-gray-100'
+                      }`}
+                    >
+                      {memo}
+                    </button>
+                  ))}
+                </div>
                 <input 
                   type="text" 
                   value={formData.shippingMemo} 
                   onChange={(e) => setFormData({...formData, shippingMemo: e.target.value})}
                   className="w-full px-4 py-2.5 border border-gray-300 focus:outline-none focus:border-[#144A42] text-xs sm:text-sm"
-                  placeholder="예: 부재 시 경비실 또는 문 앞 보관 부탁드립니다"
+                  placeholder="배송 기사님께 전달할 요청사항"
                 />
               </div>
             </div>
           )}
 
-          {/* Step 6: 동의 및 요약 */}
-          {step === 6 && (
+          {/* Step 5: 신청 내용 최종 확인 및 법적 동의 */}
+          {step === 5 && (
             <div className="space-y-4">
-              <div className="bg-[#FAF8F5] p-5 border border-[#EAE3D5] space-y-2 text-xs">
-                <p className="font-bold text-[#144A42] text-sm mb-2">신청 내용 요약</p>
-                <div className="flex justify-between py-1 border-b border-[#EFECE6]">
-                  <span className="text-gray-500">보호자 / 연락처</span>
-                  <span className="font-semibold">{formData.ownerName} ({formData.phone})</span>
-                </div>
-                <div className="flex justify-between py-1.5 border-b border-[#EFECE6]">
-                  <span className="text-gray-500 shrink-0">주민등록상 주소지</span>
-                  <span className="font-semibold text-right break-all max-w-[280px]">
-                    {formData.postalCode ? `(${formData.postalCode}) ` : ''}{formData.address} {formData.addressDetail || ''}
+              <div className="bg-[#FAF8F5] p-4 sm:p-5 border border-[#EAE3D5] space-y-2.5 text-xs">
+                <div className="flex items-center justify-between pb-2 border-b border-[#E0D8C8]">
+                  <p className="font-bold text-[#144A42] text-sm flex items-center gap-1.5">
+                    <ShieldCheckIcon className="w-4 h-4 text-[#144A42]" />
+                    <span>최종 국가 동물등록 신청서 요약</span>
+                  </p>
+                  <span className="text-[11px] font-bold text-[#144A42] bg-[#E5F2EE] px-2 py-0.5">
+                    신청 수수료 0원
                   </span>
                 </div>
+
+                {/* 보호자 정보 요약 */}
+                <div className="flex justify-between py-1 border-b border-[#EFECE6]">
+                  <span className="text-gray-500">소유자(보호자)</span>
+                  <span className="font-semibold text-right">
+                    {formData.ownerName} ({formData.phone})
+                  </span>
+                </div>
+
+                <div className="flex justify-between py-1 border-b border-[#EFECE6]">
+                  <span className="text-gray-500">주민등록번호</span>
+                  <span className="font-semibold text-right">
+                    {formData.ownerJuminFront ? `${formData.ownerJuminFront}-${formData.ownerJuminBack.charAt(0)}******` : '-'}
+                  </span>
+                </div>
+
+                <div className="flex justify-between py-1.5 border-b border-[#EFECE6]">
+                  <span className="text-gray-500 shrink-0">주민등록 주소지</span>
+                  <span className="font-semibold text-right break-all max-w-[280px]">
+                    {formData.postalCode ? `[${formData.postalCode}] ` : ''}{formData.address} {formData.addressDetail || ''}
+                  </span>
+                </div>
+
+                {/* 반려동물 정보 요약 */}
                 <div className="flex justify-between items-center py-1.5 border-b border-[#EFECE6]">
-                  <span className="text-gray-500">반려동물</span>
+                  <span className="text-gray-500">등록 반려동물</span>
                   <div className="flex items-center gap-2">
                     {formData.petPhoto ? (
                       <img 
                         src={formData.petPhoto} 
                         alt="아이 사진" 
-                        className="w-7 h-7 object-cover border border-[#144A42] shrink-0"
+                        className="w-8 h-8 object-cover border border-[#144A42] shrink-0"
                       />
                     ) : (
-                      <div className="w-7 h-7 bg-gray-100 border border-gray-200 flex items-center justify-center shrink-0">
+                      <div className="w-8 h-8 bg-gray-100 border border-gray-200 flex items-center justify-center shrink-0">
                         <PawIcon className="w-4 h-4 text-gray-400" />
                       </div>
                     )}
-                    <span className="font-semibold">{formData.petName} ({formData.breed || '믹스/기타'}, {formData.gender})</span>
+                    <div className="text-right">
+                      <span className="font-bold text-[#144A42] block">{formData.petName}</span>
+                      <span className="text-[11px] text-gray-600 block">
+                        {formData.breed || '믹스/기타'} • {formData.gender} • {formData.petColor} ({formData.neutered === '완료' ? '중성화' : '미중성화'})
+                      </span>
+                    </div>
                   </div>
                 </div>
+
+                {/* 등록 방식 및 배송 정보 */}
                 <div className="flex justify-between py-1 border-b border-[#EFECE6]">
                   <span className="text-gray-500">등록 방식</span>
-                  <span className="font-semibold">{formData.regType === 'external' ? '외장형 목걸이 인식표 패키지' : '내장형 마이크로칩 시술권'}</span>
+                  <span className="font-semibold">
+                    외장형 무선식별장치 (공식 외장칩 패키지)
+                  </span>
                 </div>
-                {formData.regType === 'external' && (
-                  <div className="flex justify-between py-1 border-b border-[#EFECE6]">
-                    <span className="text-gray-500 shrink-0">배송 수령지</span>
-                    <span className="font-semibold text-right break-all max-w-[280px]">
-                      {formData.recipient || formData.ownerName} / {formData.shippingPostalCode ? `(${formData.shippingPostalCode}) ` : ''}{formData.shippingAddress || formData.address} {formData.shippingAddressDetail || formData.addressDetail || ''}
-                    </span>
+
+                <div className="flex justify-between py-1 border-b border-[#EFECE6]">
+                  <span className="text-gray-500 shrink-0">배송 수령지</span>
+                  <span className="font-semibold text-right break-all max-w-[280px]">
+                    {formData.recipient} ({formData.recipientPhone}) / {formData.shippingPostalCode ? `[${formData.shippingPostalCode}] ` : ''}{formData.shippingAddress || formData.address} {formData.shippingAddressDetail || formData.addressDetail || ''}
+                  </span>
+                </div>
+
+                {/* 보호자 전자서명 미리보기 */}
+                {formData.signature && (
+                  <div className="flex justify-between items-center py-2 border-b border-[#EFECE6]">
+                    <span className="text-gray-500">신청인(보호자) 전자서명</span>
+                    <div className="bg-white border border-gray-300 px-2 py-0.5 rounded-xs">
+                      <img 
+                        src={formData.signature} 
+                        alt="보호자 전자서명" 
+                        className="h-8 max-w-[120px] object-contain"
+                      />
+                    </div>
                   </div>
                 )}
-                <div className="flex justify-between py-1">
-                  <span className="text-gray-500">신청 수수료</span>
-                  <span className="font-bold text-[#144A42]">0원 (슬반생 대행 지원)</span>
-                </div>
               </div>
 
-              <div className="space-y-2 pt-2">
-                <label className="flex items-center gap-2 cursor-pointer">
-                  <input 
-                    type="checkbox" 
-                    checked={formData.agreeTerms} 
-                    onChange={(e) => setFormData({...formData, agreeTerms: e.target.checked})}
-                    className="w-4 h-4 text-[#144A42] focus:ring-0"
-                  />
-                  <span className="text-xs font-semibold">[필수] 동물보호법에 따른 동물등록 업무 대행 위임 동의</span>
-                </label>
-                <label className="flex items-center gap-2 cursor-pointer">
-                  <input 
-                    type="checkbox" 
-                    checked={formData.agreeAgency} 
-                    onChange={(e) => setFormData({...formData, agreeAgency: e.target.checked})}
-                    className="w-4 h-4 text-[#144A42] focus:ring-0"
-                  />
-                  <span className="text-xs font-semibold">[필수] 개인정보 수집 및 지자체 전산망 등록 제공 동의</span>
-                </label>
+              {/* 법적 필수 동의 항목 (정부 규격 행정망 기준) */}
+              <div className="space-y-2 pt-1">
+                {/* 전체 동의 버튼 */}
+                <div className="p-2.5 bg-[#FAF8F5] border border-[#E7DFD1] flex items-center justify-between">
+                  <label className="flex items-center gap-2 cursor-pointer font-bold text-xs text-[#144A42]">
+                    <input 
+                      type="checkbox" 
+                      checked={formData.agreeTerms && formData.agreeJumin && formData.agreeAgency && formData.agreeElecSign} 
+                      onChange={(e) => {
+                        const checked = e.target.checked;
+                        setFormData(prev => ({
+                          ...prev,
+                          agreeTerms: checked,
+                          agreeJumin: checked,
+                          agreeAgency: checked,
+                          agreeElecSign: checked,
+                          agreeJuminDoc: checked,
+                          agreeElecSignDoc: checked,
+                        }));
+                      }}
+                      className="w-4 h-4 text-[#144A42] accent-[#144A42] focus:ring-0 rounded"
+                    />
+                    <span>정부 규격 행정 등록 필수 조항 전체 동의</span>
+                  </label>
+                </div>
+
+                {/* 1. 전자문서 신청 및 동물등록 업무 대행 위임 동의 */}
+                <div className="flex items-start justify-between gap-2 py-1 px-1 border-b border-gray-100">
+                  <label className="flex items-start gap-2 cursor-pointer text-xs flex-1">
+                    <input 
+                      type="checkbox" 
+                      checked={formData.agreeTerms} 
+                      onChange={(e) => setFormData({...formData, agreeTerms: e.target.checked})}
+                      className="w-4 h-4 mt-0.5 text-[#144A42] accent-[#144A42] focus:ring-0 shrink-0 rounded"
+                    />
+                    <span className="text-[#333] leading-snug">
+                      <strong className="text-[#144A42]">[필수]</strong> 전자정부법 제7조 및 동물보호법 제12조에 따른 동물등록 업무 대행 위임 동의
+                    </span>
+                  </label>
+                  <button
+                    type="button"
+                    onClick={() => setTermsDetailModal('elec_animal')}
+                    className="text-[11px] text-gray-500 hover:text-[#144A42] underline shrink-0 font-medium cursor-pointer"
+                  >
+                    자세히보기
+                  </button>
+                </div>
+
+                {/* 2. 고유식별정보(주민등록번호) 수집 및 이용 동의 */}
+                <div className="flex items-start justify-between gap-2 py-1 px-1 border-b border-gray-100">
+                  <label className="flex items-start gap-2 cursor-pointer text-xs flex-1">
+                    <input 
+                      type="checkbox" 
+                      checked={formData.agreeJumin} 
+                      onChange={(e) => setFormData({...formData, agreeJumin: e.target.checked, agreeJuminDoc: e.target.checked})}
+                      className="w-4 h-4 mt-0.5 text-[#144A42] accent-[#144A42] focus:ring-0 shrink-0 rounded"
+                    />
+                    <span className="text-[#333] leading-snug">
+                      <strong className="text-[#144A42]">[필수]</strong> 고유식별정보(주민등록번호) 수집 및 이용 동의 (동물보호법 시행규칙 제8조)
+                    </span>
+                  </label>
+                  <button
+                    type="button"
+                    onClick={() => setTermsDetailModal('jumin')}
+                    className="text-[11px] text-gray-500 hover:text-[#144A42] underline shrink-0 font-medium cursor-pointer"
+                  >
+                    자세히보기
+                  </button>
+                </div>
+
+                {/* 3. 행정정보 공동이용 및 지자체 전산망(APMS) 제3자 제공 동의 */}
+                <div className="flex items-start justify-between gap-2 py-1 px-1 border-b border-gray-100">
+                  <label className="flex items-start gap-2 cursor-pointer text-xs flex-1">
+                    <input 
+                      type="checkbox" 
+                      checked={formData.agreeAgency} 
+                      onChange={(e) => setFormData({...formData, agreeAgency: e.target.checked})}
+                      className="w-4 h-4 mt-0.5 text-[#144A42] accent-[#144A42] focus:ring-0 shrink-0 rounded"
+                    />
+                    <span className="text-[#333] leading-snug">
+                      <strong className="text-[#144A42]">[필수]</strong> 전자정부법 제36조에 따른 행정정보 공동이용 및 지자체 전산망(APMS) 개인정보 제3자 제공 동의
+                    </span>
+                  </label>
+                  <button
+                    type="button"
+                    onClick={() => setTermsDetailModal('elec_animal')}
+                    className="text-[11px] text-gray-500 hover:text-[#144A42] underline shrink-0 font-medium cursor-pointer"
+                  >
+                    자세히보기
+                  </button>
+                </div>
+
+                {/* 4. 전자서명법에 따른 서명 대체 및 법적 효력 인정 동의 */}
+                <div className="flex items-start justify-between gap-2 py-1 px-1">
+                  <label className="flex items-start gap-2 cursor-pointer text-xs flex-1">
+                    <input 
+                      type="checkbox" 
+                      checked={formData.agreeElecSign} 
+                      onChange={(e) => setFormData({...formData, agreeElecSign: e.target.checked, agreeElecSignDoc: e.target.checked})}
+                      className="w-4 h-4 mt-0.5 text-[#144A42] accent-[#144A42] focus:ring-0 shrink-0 rounded"
+                    />
+                    <span className="text-[#333] leading-snug">
+                      <strong className="text-[#144A42]">[필수]</strong> 전자서명법 제3조에 따른 본인 전자서명 대체 및 법적 효력 인정 동의
+                    </span>
+                  </label>
+                  <button
+                    type="button"
+                    onClick={() => setTermsDetailModal('elec_animal')}
+                    className="text-[11px] text-gray-500 hover:text-[#144A42] underline shrink-0 font-medium cursor-pointer"
+                  >
+                    자세히보기
+                  </button>
+                </div>
               </div>
             </div>
           )}
 
-          {/* Step 7: 접수 완료 */}
-          {step === 7 && (
+          {/* Step 6: 접수 완료 */}
+          {step === 6 && (
             <div className="py-6 text-center space-y-4">
               <div className="w-16 h-16 bg-[#E5F5F0] text-[#144A42] flex items-center justify-center mx-auto shadow-inner border border-[#144A42]">
                 <CheckIcon className="w-8 h-8" />
               </div>
               <div className="space-y-1">
-                <h4 className="text-xl font-bold text-[#144A42]">동물등록 신청이 접수되었습니다!</h4>
+                <h4 className="text-xl font-bold text-[#144A42]">동물등록 신청이 정상 접수되었습니다!</h4>
                 <p className="text-xs text-[#62706A]">
-                  정부 동물보호관리시스템 검수 및 승인 절차가 신속히 진행됩니다.
+                  정부 동물보호관리시스템(APMS) 행정 전산망 접수 및 승인 검수가 진행됩니다.
                 </p>
               </div>
 
-              <div className="bg-[#FAF8F5] p-5 border border-[#ECE5D8] max-w-sm mx-auto text-xs space-y-1.5 text-left">
+              <div className="bg-[#FAF8F5] p-5 border border-[#ECE5D8] max-w-sm mx-auto text-xs space-y-2 text-left">
                 <div className="flex justify-between">
                   <span className="text-gray-500">접수번호</span>
                   <span className="font-bold text-[#144A42]">{submittedNumber}</span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-gray-500">반려동물</span>
-                  <span className="font-semibold">{formData.petName}</span>
+                  <span className="font-semibold">{formData.petName} ({formData.breed || '믹스/기타'})</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-gray-500">현재 상태</span>
-                  <span className="font-bold text-amber-700 bg-amber-50 px-2 py-0.5">접수 완료 (검수 중)</span>
+                  <span className="text-gray-500">털색 (모색)</span>
+                  <span className="font-semibold">{formData.petColor}</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-gray-500">예상 등록완료일</span>
-                  <span className="font-semibold">영업일 기준 2~3일 이내</span>
+                  <span className="text-gray-500">등록 소유자</span>
+                  <span className="font-semibold">{formData.ownerName}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-gray-500">진행 상태</span>
+                  <span className="font-bold text-amber-700 bg-amber-50 px-2 py-0.5 border border-amber-200">
+                    접수 완료 (검수 대기)
+                  </span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-gray-500">예상 완료일</span>
+                  <span className="font-semibold">영업일 기준 1~2일 이내</span>
                 </div>
               </div>
 
-              <p className="text-[11px] text-[#838F8A]">
-                진행 상황은 상단 [MY 슬반생] 메뉴에서 언제든 실시간 확인하실 수 있습니다.
+              <p className="text-[11px] text-[#838F8A] leading-relaxed">
+                검수 승인 완료 시 모바일 동물등록증이 즉시 발급되며, 외장형 칩 패키지가 안전하게 택배 출고됩니다.<br />
+                진행 상황은 상단 [MY 슬반생] 메뉴에서 실시간 조회하실 수 있습니다.
               </p>
             </div>
           )}
@@ -891,13 +1586,13 @@ export function ApplyRegistrationModal({ isOpen, onClose, onApplySuccess, user }
 
         {/* Footer Buttons */}
         <div className="p-4 bg-[#FAF9F6] border-t border-[#EAE4D7] flex items-center justify-between">
-          {step < 7 ? (
+          {step < 6 ? (
             <>
               {step > 1 ? (
                 <button
                   type="button"
                   onClick={handleBack}
-                  className="px-5 py-2.5 border border-gray-300 text-xs font-semibold text-gray-700 hover:bg-gray-100"
+                  className="px-5 py-2.5 border border-gray-300 text-xs font-semibold text-gray-700 hover:bg-gray-100 transition"
                 >
                   이전 단계
                 </button>
@@ -908,7 +1603,7 @@ export function ApplyRegistrationModal({ isOpen, onClose, onApplySuccess, user }
                 onClick={handleNext}
                 className="px-6 py-2.5 bg-[#144A42] text-white text-xs font-bold hover:bg-[#0D3832] transition flex items-center gap-1.5 shadow-md"
               >
-                <span>{step === 6 ? '동물등록 신청 완료하기' : '다음 단계'}</span>
+                <span>{step === 5 ? '정식 동물등록 신청 완료하기' : '다음 단계'}</span>
                 <ArrowRight className="w-3.5 h-3.5" />
               </button>
             </>
@@ -916,9 +1611,9 @@ export function ApplyRegistrationModal({ isOpen, onClose, onApplySuccess, user }
             <button
               type="button"
               onClick={onClose}
-              className="w-full py-3 bg-[#144A42] text-white text-sm font-bold hover:bg-[#0D3832] transition"
+              className="w-full py-3 bg-[#144A42] text-white text-sm font-bold hover:bg-[#0D3832] transition shadow-md"
             >
-              확인 및 닫기
+              확인 및 마이페이지로 이동
             </button>
           )}
         </div>
@@ -933,13 +1628,13 @@ export function ApplyRegistrationModal({ isOpen, onClose, onApplySuccess, user }
               <div className="flex items-center gap-2">
                 <SearchIcon className="w-4 h-4 text-[#C5A880]" />
                 <span className="font-bold text-sm">
-                  {postcodeTarget === 'owner' ? '보호자 주소지 우편번호 검색' : '배송지 주소 우편번호 검색'}
+                  {postcodeTarget === 'owner' ? '보호자 주민등록 주소지 검색' : '외장칩 배송지 주소 검색'}
                 </span>
               </div>
               <button 
                 type="button" 
                 onClick={() => setIsPostcodeModalOpen(false)}
-                className="p-1 text-white/80 hover:text-white hover:bg-white/10"
+                className="p-1 text-white/80 hover:text-white hover:bg-white/10 rounded transition"
                 aria-label="우편번호 검색창 닫기"
               >
                 <XIcon className="w-5 h-5" />
@@ -965,9 +1660,138 @@ export function ApplyRegistrationModal({ isOpen, onClose, onApplySuccess, user }
           </div>
         </div>
       )}
+
+      {/* 법적 동의약관 및 주민등록번호 안내 상세 모달 (페오펫 정식 표준 & 전자정부법/동물보호법 규격) */}
+      {termsDetailModal && (
+        <div className="fixed inset-0 z-[120] flex items-center justify-center p-3 sm:p-6 bg-black/85 backdrop-blur-sm animate-fade-in overflow-y-auto">
+          <div className="bg-white w-full max-w-xl shadow-2xl overflow-hidden flex flex-col max-h-[88vh] my-auto border border-[#144A42] font-sans">
+            
+            {/* Modal Header */}
+            <div className="bg-[#144A42] text-white px-5 py-3.5 flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <ShieldCheckIcon className="w-5 h-5 text-[#C5A880]" />
+                <span className="font-bold text-sm sm:text-base">
+                  {termsDetailModal === 'jumin' 
+                    ? '주민등록번호 사용 안내 (기타)' 
+                    : '전자서명법 및 동물보호법 행정등록 동의약관'}
+                </span>
+              </div>
+              <button 
+                type="button" 
+                onClick={() => setTermsDetailModal(null)} 
+                className="p-1 text-white/80 hover:text-white transition cursor-pointer"
+                aria-label="닫기"
+              >
+                <XIcon className="w-5 h-5" />
+              </button>
+            </div>
+
+            {/* Modal Body */}
+            <div className="p-4 sm:p-6 overflow-y-auto space-y-4 text-xs text-[#26312D] bg-white">
+              {termsDetailModal === 'jumin' ? (
+                <>
+                  <p className="text-[#333] leading-relaxed font-medium">
+                    ● {(info.name || '슬반생')}({info.juminConsentCollector || info.companyName || '(주)슬기로운반려생활'}) 주민등록번호를 사용하는 목적은 다음과 같습니다. 내용을 자세히 읽어 보신 후 동의 여부를 결정하여 주시기 바랍니다.
+                  </p>
+
+                  {/* 법정 규격 테이블 (페오펫 이미지 2 포맷) */}
+                  <div className="overflow-x-auto border border-gray-200 mt-2">
+                    <table className="w-full text-xs text-left border-collapse min-w-[500px]">
+                      <thead>
+                        <tr className="bg-[#FAF8F5] text-gray-700 font-bold border-b border-gray-200 text-[11px]">
+                          <th className="py-2.5 px-3 border-r border-gray-200 whitespace-nowrap">수집하는 자</th>
+                          <th className="py-2.5 px-3 border-r border-gray-200 whitespace-nowrap">수집목적</th>
+                          <th className="py-2.5 px-2.5 border-r border-gray-200 text-center whitespace-nowrap">필수항목</th>
+                          <th className="py-2.5 px-2.5 border-r border-gray-200 text-center whitespace-nowrap">선택항목</th>
+                          <th className="py-2.5 px-3 border-r border-gray-200 whitespace-nowrap">보유·이용기간</th>
+                          <th className="py-2.5 px-3 whitespace-nowrap">관련법규</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-gray-200 text-[11px] text-[#333] leading-relaxed">
+                        <tr className="align-top">
+                          <td className="py-3 px-3 border-r border-gray-200 font-semibold">{info.juminConsentCollector || info.companyName || '(주)슬기로운반려생활'}</td>
+                          <td className="py-3 px-3 border-r border-gray-200">{info.juminConsentPurpose || '동물등록 업무 대행'}</td>
+                          <td className="py-3 px-2.5 border-r border-gray-200 font-bold text-[#144A42] text-center">{info.juminConsentRequired || '주민등록번호'}</td>
+                          <td className="py-3 px-2.5 border-r border-gray-200 text-gray-400 text-center">{info.juminConsentOptional || '주민등록번호'}</td>
+                          <td className="py-3 px-3 border-r border-gray-200">{info.juminConsentPeriod || '동물 등록 승인 시점 까지'}</td>
+                          <td className="py-3 px-3 text-[10px] leading-snug text-gray-600">{info.juminConsentLaws || '동물보호법 제12조(등록대상동물의 등록 등) 제1항, 동물보호법 시행규칙 제8조(등록대상동물의 등록사항 및 방법 등) 제1항'}</td>
+                        </tr>
+                      </tbody>
+                    </table>
+                  </div>
+
+                  <div className="space-y-2 text-xs text-[#555] leading-relaxed pt-1">
+                    <p className="text-[11px] text-gray-500">
+                      자세한 내용은 <span className="text-[#144A42] font-semibold underline cursor-pointer" onClick={() => setTermsDetailModal(null)}>개인정보처리방침</span>을 확인해주세요.
+                    </p>
+                    <div className="p-3 bg-[#FAF8F5] border border-gray-200 text-[11px] text-gray-600 leading-relaxed">
+                      {info.juminConsentNotice || '귀하는 위와 같이 개인정보를 수집·이용하는데 동의를 거부할 권리가 있습니다. 필수 수집 항목에 대한 동의를 거절하는 경우 서비스 이용이 제한 될 수 있습니다. 선택 수집 항목에 동의를 하지 않으시는 경우 별도의 불이익은 없습니다.'}
+                    </div>
+                  </div>
+                </>
+              ) : (
+                <>
+                  <div className="p-3 bg-[#EAF5F2] border border-[#CDE5DF] text-xs text-[#144A42] flex items-start gap-2">
+                    <ShieldCheckIcon className="w-4 h-4 text-[#144A42] mt-0.5 shrink-0" />
+                    <span className="leading-relaxed">
+                      본 동의약관은 <strong>「전자정부법」, 「동물보호법」, 「전자서명법」</strong>에 따른 정부 동물보호관리시스템(APMS) 행정 전산망 공식 대행 등록에 요구되는 법적 필수 규정입니다.
+                    </span>
+                  </div>
+
+                  <div className="space-y-2.5 max-h-[360px] overflow-y-auto pr-1">
+                    {(info.animalRegTermsText || BRAND_INFO.animalRegTermsText).split('\n\n').map((clause, idx) => (
+                      <div key={idx} className="p-3 bg-[#FAF8F5] border border-gray-200 text-xs text-[#2C3833] leading-relaxed shadow-2xs">
+                        <p className="whitespace-pre-line">{clause}</p>
+                      </div>
+                    ))}
+                  </div>
+
+                  <div className="p-2.5 bg-[#FAF8F5] border border-[#DDD5C7] text-center font-bold text-xs text-[#144A42]">
+                    상기와 같이 정식 동물등록 신청에 동의합니다.
+                  </div>
+                </>
+              )}
+            </div>
+
+            {/* Modal Footer */}
+            <div className="p-3.5 bg-[#FAF8F5] border-t border-[#EAE4D7] flex items-center justify-between">
+              <button
+                type="button"
+                onClick={() => setTermsDetailModal(null)}
+                className="px-4 py-2 border border-gray-300 text-xs font-semibold text-gray-600 hover:bg-gray-100 transition cursor-pointer"
+              >
+                닫기
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  if (termsDetailModal === 'jumin') {
+                    setFormData(prev => ({ ...prev, agreeJuminDoc: true, agreeJumin: true }));
+                  } else {
+                    setFormData(prev => ({ 
+                      ...prev, 
+                      agreeElecSignDoc: true, 
+                      agreeTerms: true, 
+                      agreeAgency: true, 
+                      agreeElecSign: true 
+                    }));
+                  }
+                  setTermsDetailModal(null);
+                }}
+                className="px-5 py-2 bg-[#144A42] text-white text-xs font-bold hover:bg-[#0D3832] transition flex items-center gap-1.5 shadow-sm cursor-pointer"
+              >
+                <CheckIcon className="w-3.5 h-3.5 text-[#C5A880]" />
+                <span>동의하고 닫기</span>
+              </button>
+            </div>
+
+          </div>
+        </div>
+      )}
     </div>
   );
 }
+
 
 // 2. 멤버십 혜택 & 사전신청 모달 (MEM-001 & MEM-002)
 export function MembershipModal({ isOpen, onClose, onLeadSubmit }) {
