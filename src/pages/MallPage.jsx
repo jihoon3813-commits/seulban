@@ -259,10 +259,10 @@ export default function MallPage({
             <div>
               <div className="flex items-center gap-2 flex-wrap">
                 <h1 className="font-extrabold text-lg sm:text-2xl tracking-tight">
-                  {activePartner.name}
+                  슬반생 회원 특가몰
                 </h1>
                 <span className="bg-[#E11D48] text-white text-[10px] sm:text-xs font-bold px-2.5 py-0.5 uppercase tracking-wider">
-                  슬반생 회원 특가몰
+                  회원 전용 단독 혜택
                 </span>
               </div>
               <p className="text-xs sm:text-sm text-[#BED2CC] mt-1">

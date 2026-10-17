@@ -5,19 +5,8 @@ function sanitizeDoc(doc) {
   if (doc === undefined || doc === null) return null;
   const clean = {};
   for (const [key, value] of Object.entries(doc)) {
-    if (value !== undefined) {
+    if (value !== undefined && key !== 'products') {
       clean[key] = value;
-    }
-  }
-  // If products is the large static catalog (> 50 items or > 100KB), remove it from document storage
-  // The client application automatically hydrates REDPUPPY_PRODUCTS from the bundled file.
-  if (clean.products) {
-    try {
-      if (Array.isArray(clean.products) && (clean.products.length > 50 || JSON.stringify(clean.products).length > 100000)) {
-        delete clean.products;
-      }
-    } catch {
-      delete clean.products;
     }
   }
   return clean;

@@ -809,21 +809,11 @@ export default function App() {
     return clean;
   };
 
-  // Helper to ensure partners list does not embed massive 1.2MB static catalog into DB rows
+  // Convex 서버에는 쇼핑몰 제품 목록을 제외하고 제휴처 기본 정보 및 설정만 전송 (제품 목록은 프론트엔드 정적 번들에서 즉시 로드)
   const preparePartnersForConvex = (partnersList) => {
     return (partnersList || []).map(p => {
-      const { _id, _creationTime, ...rest } = p;
-      const clean = sanitizeForConvex(rest);
-      if (clean && clean.products) {
-        try {
-          if (Array.isArray(clean.products) && (clean.products.length > 50 || JSON.stringify(clean.products).length > 100000)) {
-            delete clean.products;
-          }
-        } catch {
-          delete clean.products;
-        }
-      }
-      return clean;
+      const { _id, _creationTime, products, ...rest } = p;
+      return sanitizeForConvex(rest);
     });
   };
 
