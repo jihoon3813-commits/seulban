@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { 
   LogoEmblem, PawIcon, HeartIcon, HomeIcon, ScissorsIcon, 
   StethoscopeIcon, FlowerIcon, SparklesIcon, ShieldCheckIcon, 
@@ -9,6 +10,52 @@ import {
 } from '../components/Icons';
 import { compressImage } from '../utils/imageCompressor';
 import { BRAND_INFO, REDPUPPY_PRODUCTS, DEFAULT_MENU_VISIBILITY, NAV_MENU_CONFIG } from '../data/mockData';
+
+// Portal-based Fullscreen Modal (isolates from parent CSS transforms / ensures 100vw backdrop & no clipping)
+function AdminPortalModal({ isOpen, onClose, title, badge, subtitle, children, maxWidth = "max-w-4xl" }) {
+  if (!isOpen) return null;
+
+  return createPortal(
+    <div className="fixed inset-0 z-[9999] flex items-center justify-center p-3 sm:p-5 md:p-6 bg-black/60 backdrop-blur-xs overflow-y-auto animate-fade-in">
+      {/* Background click to close */}
+      <div className="fixed inset-0" onClick={onClose} aria-hidden="true" />
+      
+      {/* Modal Dialog */}
+      <div 
+        className={`relative bg-white w-full ${maxWidth} max-h-[88vh] shadow-2xl border border-[#ECE5D8] flex flex-col rounded-xl overflow-hidden my-auto z-10`}
+        onClick={(e) => e.stopPropagation()}
+      >
+        {/* Header */}
+        <div className="px-6 py-4 border-b border-[#ECE5D8] bg-[#FAF8F5] flex justify-between items-center shrink-0">
+          <div>
+            <div className="flex items-center gap-2">
+              <span className="w-2.5 h-2.5 rounded-full bg-[#144A42]"></span>
+              <h3 className="font-bold text-base sm:text-lg text-[#144A42]">{title}</h3>
+              {badge && (
+                <span className="text-[11px] px-2 py-0.5 bg-[#144A42]/10 text-[#144A42] font-semibold rounded">
+                  {badge}
+                </span>
+              )}
+            </div>
+            {subtitle && <p className="text-xs text-gray-500 mt-1">{subtitle}</p>}
+          </div>
+          <button 
+            type="button"
+            onClick={onClose} 
+            className="p-1.5 text-gray-400 hover:text-gray-700 hover:bg-gray-100 rounded-lg transition"
+            aria-label="닫기"
+          >
+            <XIcon className="w-5 h-5" />
+          </button>
+        </div>
+
+        {/* Modal Form / Content */}
+        {children}
+      </div>
+    </div>,
+    document.body
+  );
+}
 
 export default function AdminPage({
   onNavigateHome,
@@ -2153,30 +2200,15 @@ export default function AdminPage({
             </div>
 
             {/* Modal: 신규 제휴처 등록 */}
-            {isAddPartnerOpen && (
-              <div className="fixed inset-0 z-[100] flex items-center justify-center p-2 sm:p-4 md:p-6 bg-black/80 backdrop-blur-sm animate-fade-in">
-                <div className="bg-white w-full max-w-5xl h-[92vh] max-h-[980px] min-h-[580px] shadow-2xl border border-[#ECE5D8] flex flex-col rounded-xl overflow-hidden">
-                  {/* Modal Header */}
-                  <div className="px-6 py-4 border-b border-[#ECE5D8] bg-[#FAF8F5] flex justify-between items-center shrink-0">
-                    <div>
-                      <div className="flex items-center gap-2">
-                        <span className="w-2.5 h-2.5 rounded-full bg-[#144A42]"></span>
-                        <h3 className="font-bold text-base sm:text-lg text-[#144A42]">신규 제휴처 추가 등록</h3>
-                        <span className="text-[11px] px-2 py-0.5 bg-[#144A42]/10 text-[#144A42] font-semibold rounded">제휴처</span>
-                      </div>
-                      <p className="text-xs text-gray-500 mt-1">슬기로운 반려생활 회원 전용 혜택을 제공할 공식 제휴처를 등록합니다.</p>
-                    </div>
-                    <button 
-                      onClick={() => setIsAddPartnerOpen(false)} 
-                      className="p-1.5 text-gray-400 hover:text-gray-700 hover:bg-gray-100 rounded-lg transition"
-                      aria-label="닫기"
-                    >
-                      <XIcon className="w-5 h-5" />
-                    </button>
-                  </div>
-
-                  {/* Modal Form */}
-                  <form onSubmit={(e) => {
+            <AdminPortalModal
+              isOpen={isAddPartnerOpen}
+              onClose={() => setIsAddPartnerOpen(false)}
+              title="신규 제휴처 추가 등록"
+              badge="제휴처"
+              subtitle="슬기로운 반려생활 회원 전용 혜택을 제공할 공식 제휴처를 등록합니다."
+              maxWidth="max-w-4xl"
+            >
+<form onSubmit={(e) => {
                     e.preventDefault();
                     onAddPartner({
                       ...newPartner,
@@ -2425,36 +2457,20 @@ export default function AdminPage({
                         </button>
                       </div>
                     </div>
-                  </form>
-                </div>
-              </div>
-            )}
+                  
+</form>
+            </AdminPortalModal>
 
             {/* Modal: 제휴처 정보 수정 */}
-            {isEditPartnerOpen && editingPartner && (
-              <div className="fixed inset-0 z-[100] flex items-center justify-center p-2 sm:p-4 md:p-6 bg-black/80 backdrop-blur-sm animate-fade-in">
-                <div className="bg-white w-full max-w-5xl h-[92vh] max-h-[980px] min-h-[580px] shadow-2xl border border-[#ECE5D8] flex flex-col rounded-xl overflow-hidden">
-                  {/* Modal Header */}
-                  <div className="px-6 py-4 border-b border-[#ECE5D8] bg-[#FAF8F5] flex justify-between items-center shrink-0">
-                    <div>
-                      <div className="flex items-center gap-2">
-                        <span className="w-2.5 h-2.5 rounded-full bg-[#144A42]"></span>
-                        <h3 className="font-bold text-base sm:text-lg text-[#144A42]">제휴처 정보 수정</h3>
-                        <span className="text-[11px] px-2 py-0.5 bg-[#144A42]/10 text-[#144A42] font-semibold rounded">수정 모드</span>
-                      </div>
-                      <p className="text-xs text-gray-500 mt-1">제휴처의 상세 내용 및 대표 이미지를 수정합니다.</p>
-                    </div>
-                    <button 
-                      onClick={() => { setIsEditPartnerOpen(false); setEditingPartner(null); }} 
-                      className="p-1.5 text-gray-400 hover:text-gray-700 hover:bg-gray-100 rounded-lg transition"
-                      aria-label="닫기"
-                    >
-                      <XIcon className="w-5 h-5" />
-                    </button>
-                  </div>
-
-                  {/* Modal Form */}
-                  <form onSubmit={(e) => {
+            <AdminPortalModal
+              isOpen={Boolean(isEditPartnerOpen && editingPartner)}
+              onClose={() => { setIsEditPartnerOpen(false); setEditingPartner(null); }}
+              title="제휴처 정보 수정"
+              badge="수정 모드"
+              subtitle="제휴처의 상세 내용 및 대표 이미지를 수정합니다."
+              maxWidth="max-w-4xl"
+            >
+<form onSubmit={(e) => {
                     e.preventDefault();
                     if (onUpdatePartner) {
                       onUpdatePartner(editingPartner);
@@ -2714,10 +2730,9 @@ export default function AdminPage({
                         </button>
                       </div>
                     </div>
-                  </form>
-                </div>
-              </div>
-            )}
+                  
+</form>
+            </AdminPortalModal>
 
             {/* Modal: 쇼핑몰 연동 제휴처 상품 및 할인율 관리 */}
             {isShopProductsOpen && selectedShopPartner && (
@@ -3842,30 +3857,15 @@ export default function AdminPage({
             </div>
 
             {/* Modal: 입양 동물 추가 */}
-            {isAddAdoptionOpen && (
-              <div className="fixed inset-0 z-[100] flex items-center justify-center p-2 sm:p-4 md:p-6 bg-black/80 backdrop-blur-sm animate-fade-in">
-                <div className="bg-white w-full max-w-5xl h-[92vh] max-h-[980px] min-h-[580px] shadow-2xl border border-[#ECE5D8] flex flex-col rounded-xl overflow-hidden">
-                  {/* Modal Header */}
-                  <div className="px-6 py-4 border-b border-[#ECE5D8] bg-[#FAF8F5] flex justify-between items-center shrink-0">
-                    <div>
-                      <div className="flex items-center gap-2">
-                        <span className="w-2.5 h-2.5 rounded-full bg-[#144A42]"></span>
-                        <h3 className="font-bold text-base sm:text-lg text-[#144A42]">신규 입양 동물 등록</h3>
-                        <span className="text-[11px] px-2 py-0.5 bg-[#144A42]/10 text-[#144A42] font-semibold rounded">입양 케어</span>
-                      </div>
-                      <p className="text-xs text-gray-500 mt-1">새로운 가족을 기다리는 입양 동물의 프로필을 등록합니다.</p>
-                    </div>
-                    <button 
-                      onClick={() => setIsAddAdoptionOpen(false)} 
-                      className="p-1.5 text-gray-400 hover:text-gray-700 hover:bg-gray-100 rounded-lg transition"
-                      aria-label="닫기"
-                    >
-                      <XIcon className="w-5 h-5" />
-                    </button>
-                  </div>
-
-                  {/* Modal Form */}
-                  <form onSubmit={(e) => {
+            <AdminPortalModal
+              isOpen={isAddAdoptionOpen}
+              onClose={() => setIsAddAdoptionOpen(false)}
+              title="신규 입양 동물 등록"
+              badge="입양 케어"
+              subtitle="새로운 가족을 기다리는 입양 동물의 프로필을 등록합니다."
+              maxWidth="max-w-4xl"
+            >
+<form onSubmit={(e) => {
                     e.preventDefault();
                     onAddAdoption({
                       ...newAdoption,
@@ -4103,36 +4103,20 @@ export default function AdminPage({
                         </button>
                       </div>
                     </div>
-                  </form>
-                </div>
-              </div>
-            )}
+                  
+</form>
+            </AdminPortalModal>
 
             {/* Modal: 입양 동물 정보 수정 */}
-            {isEditAdoptionOpen && editingAdoption && (
-              <div className="fixed inset-0 z-[100] flex items-center justify-center p-2 sm:p-4 md:p-6 bg-black/80 backdrop-blur-sm animate-fade-in">
-                <div className="bg-white w-full max-w-5xl h-[92vh] max-h-[980px] min-h-[580px] shadow-2xl border border-[#ECE5D8] flex flex-col rounded-xl overflow-hidden">
-                  {/* Modal Header */}
-                  <div className="px-6 py-4 border-b border-[#ECE5D8] bg-[#FAF8F5] flex justify-between items-center shrink-0">
-                    <div>
-                      <div className="flex items-center gap-2">
-                        <span className="w-2.5 h-2.5 rounded-full bg-[#144A42]"></span>
-                        <h3 className="font-bold text-base sm:text-lg text-[#144A42]">입양 동물 정보 수정</h3>
-                        <span className="text-[11px] px-2 py-0.5 bg-[#144A42]/10 text-[#144A42] font-semibold rounded">수정 모드</span>
-                      </div>
-                      <p className="text-xs text-gray-500 mt-1">아이의 프로필 및 대표 사진을 수정합니다.</p>
-                    </div>
-                    <button 
-                      onClick={() => { setIsEditAdoptionOpen(false); setEditingAdoption(null); }} 
-                      className="p-1.5 text-gray-400 hover:text-gray-700 hover:bg-gray-100 rounded-lg transition"
-                      aria-label="닫기"
-                    >
-                      <XIcon className="w-5 h-5" />
-                    </button>
-                  </div>
-
-                  {/* Modal Form */}
-                  <form onSubmit={(e) => {
+            <AdminPortalModal
+              isOpen={Boolean(isEditAdoptionOpen && editingAdoption)}
+              onClose={() => { setIsEditAdoptionOpen(false); setEditingAdoption(null); }}
+              title="입양 동물 정보 수정"
+              badge="수정 모드"
+              subtitle="아이의 프로필 및 대표 사진을 수정합니다."
+              maxWidth="max-w-4xl"
+            >
+<form onSubmit={(e) => {
                     e.preventDefault();
                     if (onUpdateAdoption) {
                       onUpdateAdoption({
@@ -4370,10 +4354,9 @@ export default function AdminPage({
                         </button>
                       </div>
                     </div>
-                  </form>
-                </div>
-              </div>
-            )}
+                  
+</form>
+            </AdminPortalModal>
           </div>
         )}
 
@@ -4483,30 +4466,15 @@ export default function AdminPage({
             </div>
 
             {/* Modal: 숙소 추가 */}
-            {isAddTravelOpen && (
-              <div className="fixed inset-0 z-[100] flex items-center justify-center p-2 sm:p-4 md:p-6 bg-black/80 backdrop-blur-sm animate-fade-in">
-                <div className="bg-white w-full max-w-5xl h-[92vh] max-h-[980px] min-h-[580px] shadow-2xl border border-[#ECE5D8] flex flex-col rounded-xl overflow-hidden">
-                  {/* Modal Header */}
-                  <div className="px-6 py-4 border-b border-[#ECE5D8] bg-[#FAF8F5] flex justify-between items-center shrink-0">
-                    <div>
-                      <div className="flex items-center gap-2">
-                        <span className="w-2.5 h-2.5 rounded-full bg-[#144A42]"></span>
-                        <h3 className="font-bold text-base sm:text-lg text-[#144A42]">신규 동반 숙소 등록</h3>
-                        <span className="text-[11px] px-2 py-0.5 bg-[#144A42]/10 text-[#144A42] font-semibold rounded">반려여행</span>
-                      </div>
-                      <p className="text-xs text-gray-500 mt-1">반려동물과 함께 머물 수 있는 추천 여행지 및 숙소를 등록합니다.</p>
-                    </div>
-                    <button 
-                      onClick={() => setIsAddTravelOpen(false)} 
-                      className="p-1.5 text-gray-400 hover:text-gray-700 hover:bg-gray-100 rounded-lg transition"
-                      aria-label="닫기"
-                    >
-                      <XIcon className="w-5 h-5" />
-                    </button>
-                  </div>
-
-                  {/* Modal Form */}
-                  <form onSubmit={(e) => {
+            <AdminPortalModal
+              isOpen={isAddTravelOpen}
+              onClose={() => setIsAddTravelOpen(false)}
+              title="신규 동반 숙소 등록"
+              badge="반려여행"
+              subtitle="반려동물과 함께 머물 수 있는 추천 여행지 및 숙소를 등록합니다."
+              maxWidth="max-w-4xl"
+            >
+<form onSubmit={(e) => {
                     e.preventDefault();
                     onAddTravel({
                       ...newTravel,
@@ -4750,36 +4718,20 @@ export default function AdminPage({
                         </button>
                       </div>
                     </div>
-                  </form>
-                </div>
-              </div>
-            )}
+                  
+</form>
+            </AdminPortalModal>
 
             {/* Modal: 반려여행 숙소 정보 수정 */}
-            {isEditTravelOpen && editingTravel && (
-              <div className="fixed inset-0 z-[100] flex items-center justify-center p-2 sm:p-4 md:p-6 bg-black/80 backdrop-blur-sm animate-fade-in">
-                <div className="bg-white w-full max-w-5xl h-[92vh] max-h-[980px] min-h-[580px] shadow-2xl border border-[#ECE5D8] flex flex-col rounded-xl overflow-hidden">
-                  {/* Modal Header */}
-                  <div className="px-6 py-4 border-b border-[#ECE5D8] bg-[#FAF8F5] flex justify-between items-center shrink-0">
-                    <div>
-                      <div className="flex items-center gap-2">
-                        <span className="w-2.5 h-2.5 rounded-full bg-[#144A42]"></span>
-                        <h3 className="font-bold text-base sm:text-lg text-[#144A42]">동반 여행지 숙소 정보 수정</h3>
-                        <span className="text-[11px] px-2 py-0.5 bg-[#144A42]/10 text-[#144A42] font-semibold rounded">수정 모드</span>
-                      </div>
-                      <p className="text-xs text-gray-500 mt-1">숙소의 상세 정보 및 대표 사진을 수정합니다.</p>
-                    </div>
-                    <button 
-                      onClick={() => { setIsEditTravelOpen(false); setEditingTravel(null); }} 
-                      className="p-1.5 text-gray-400 hover:text-gray-700 hover:bg-gray-100 rounded-lg transition"
-                      aria-label="닫기"
-                    >
-                      <XIcon className="w-5 h-5" />
-                    </button>
-                  </div>
-
-                  {/* Modal Form */}
-                  <form onSubmit={(e) => {
+            <AdminPortalModal
+              isOpen={Boolean(isEditTravelOpen && editingTravel)}
+              onClose={() => { setIsEditTravelOpen(false); setEditingTravel(null); }}
+              title="동반 여행지 숙소 정보 수정"
+              badge="수정 모드"
+              subtitle="숙소의 상세 정보 및 대표 사진을 수정합니다."
+              maxWidth="max-w-4xl"
+            >
+<form onSubmit={(e) => {
                     e.preventDefault();
                     if (onUpdateTravel) {
                       onUpdateTravel({
@@ -5019,10 +4971,9 @@ export default function AdminPage({
                         </button>
                       </div>
                     </div>
-                  </form>
-                </div>
-              </div>
-            )}
+                  
+</form>
+            </AdminPortalModal>
           </div>
         )}
 
