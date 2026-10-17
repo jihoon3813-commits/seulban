@@ -2154,8 +2154,8 @@ export default function AdminPage({
 
             {/* Modal: 신규 제휴처 등록 */}
             {isAddPartnerOpen && (
-              <div className="fixed inset-0 z-[100] flex items-center justify-center p-3 sm:p-6 bg-black/80 backdrop-blur-sm animate-fade-in overflow-y-auto">
-                <div className="bg-white w-full max-w-4xl shadow-2xl border border-[#ECE5D8] max-h-[90vh] my-auto flex flex-col rounded-lg overflow-hidden">
+              <div className="fixed inset-0 z-[100] flex items-center justify-center p-2 sm:p-4 md:p-6 bg-black/80 backdrop-blur-sm animate-fade-in">
+                <div className="bg-white w-full max-w-5xl h-[92vh] max-h-[980px] min-h-[580px] shadow-2xl border border-[#ECE5D8] flex flex-col rounded-xl overflow-hidden">
                   {/* Modal Header */}
                   <div className="px-6 py-4 border-b border-[#ECE5D8] bg-[#FAF8F5] flex justify-between items-center shrink-0">
                     <div>
@@ -2184,8 +2184,8 @@ export default function AdminPage({
                     });
                     setIsAddPartnerOpen(false);
                     showToast('새로운 제휴처가 성공적으로 등록되었습니다.');
-                  }} className="flex flex-col flex-1 overflow-hidden">
-                    <div className="p-6 overflow-y-auto flex-1 text-xs">
+                  }} className="flex flex-col flex-1 min-h-0 overflow-hidden">
+                    <div className="p-6 md:p-7 overflow-y-auto flex-1 min-h-0 text-xs">
                       <div className="grid grid-cols-1 md:grid-cols-12 gap-6">
                         {/* Left Column: 제휴처 기본 정보 (7 cols) */}
                         <div className="md:col-span-7 space-y-4">
@@ -2375,7 +2375,7 @@ export default function AdminPage({
                             <div className="mt-2">
                               <span className="block text-[11px] font-bold text-gray-600 mb-1.5">미리보기</span>
                               {newPartner.imageUrl ? (
-                                <div className="relative w-full aspect-video bg-gray-100 rounded overflow-hidden border border-gray-300 group shadow-inner">
+                                <div className="relative w-full h-44 sm:h-52 bg-gray-100 rounded overflow-hidden border border-gray-300 group shadow-inner">
                                   <img
                                     src={newPartner.imageUrl}
                                     alt="제휴처 미리보기"
@@ -2392,7 +2392,7 @@ export default function AdminPage({
                                   </div>
                                 </div>
                               ) : (
-                                <div className="w-full aspect-video bg-white rounded border-2 border-dashed border-gray-300 flex flex-col items-center justify-center text-gray-400 p-4 text-center">
+                                <div className="w-full h-44 sm:h-52 bg-white rounded border-2 border-dashed border-gray-300 flex flex-col items-center justify-center text-gray-400 p-4 text-center">
                                   <CameraIcon className="w-8 h-8 mb-1.5 text-gray-300" />
                                   <span className="text-xs font-medium">등록된 대표 사진이 없습니다</span>
                                   <span className="text-[10px] text-gray-400 mt-0.5">파일을 업로드하거나 URL을 입력하세요</span>
@@ -2432,8 +2432,8 @@ export default function AdminPage({
 
             {/* Modal: 제휴처 정보 수정 */}
             {isEditPartnerOpen && editingPartner && (
-              <div className="fixed inset-0 z-[100] flex items-center justify-center p-3 sm:p-6 bg-black/80 backdrop-blur-sm animate-fade-in overflow-y-auto">
-                <div className="bg-white w-full max-w-4xl shadow-2xl border border-[#ECE5D8] max-h-[90vh] my-auto flex flex-col rounded-lg overflow-hidden">
+              <div className="fixed inset-0 z-[100] flex items-center justify-center p-2 sm:p-4 md:p-6 bg-black/80 backdrop-blur-sm animate-fade-in">
+                <div className="bg-white w-full max-w-5xl h-[92vh] max-h-[980px] min-h-[580px] shadow-2xl border border-[#ECE5D8] flex flex-col rounded-xl overflow-hidden">
                   {/* Modal Header */}
                   <div className="px-6 py-4 border-b border-[#ECE5D8] bg-[#FAF8F5] flex justify-between items-center shrink-0">
                     <div>
@@ -2461,8 +2461,8 @@ export default function AdminPage({
                     }
                     setIsEditPartnerOpen(false);
                     setEditingPartner(null);
-                  }} className="flex flex-col flex-1 overflow-hidden">
-                    <div className="p-6 overflow-y-auto flex-1 text-xs">
+                  }} className="flex flex-col flex-1 min-h-0 overflow-hidden">
+                    <div className="p-6 md:p-7 overflow-y-auto flex-1 min-h-0 text-xs">
                       <div className="grid grid-cols-1 md:grid-cols-12 gap-6">
                         {/* Left Column: 제휴처 기본 정보 (7 cols) */}
                         <div className="md:col-span-7 space-y-4">
@@ -2664,7 +2664,7 @@ export default function AdminPage({
                             <div className="mt-2">
                               <span className="block text-[11px] font-bold text-gray-600 mb-1.5">미리보기</span>
                               {editingPartner.imageUrl ? (
-                                <div className="relative w-full aspect-video bg-gray-100 rounded overflow-hidden border border-gray-300 group shadow-inner">
+                                <div className="relative w-full h-44 sm:h-52 bg-gray-100 rounded overflow-hidden border border-gray-300 group shadow-inner">
                                   <img
                                     src={editingPartner.imageUrl}
                                     alt="제휴처 미리보기"
@@ -2681,7 +2681,7 @@ export default function AdminPage({
                                   </div>
                                 </div>
                               ) : (
-                                <div className="w-full aspect-video bg-white rounded border-2 border-dashed border-gray-300 flex flex-col items-center justify-center text-gray-400 p-4 text-center">
+                                <div className="w-full h-44 sm:h-52 bg-white rounded border-2 border-dashed border-gray-300 flex flex-col items-center justify-center text-gray-400 p-4 text-center">
                                   <CameraIcon className="w-8 h-8 mb-1.5 text-gray-300" />
                                   <span className="text-xs font-medium">등록된 대표 사진이 없습니다</span>
                                   <span className="text-[10px] text-gray-400 mt-0.5">파일을 업로드하거나 URL을 입력하세요</span>
@@ -3843,8 +3843,8 @@ export default function AdminPage({
 
             {/* Modal: 입양 동물 추가 */}
             {isAddAdoptionOpen && (
-              <div className="fixed inset-0 z-[100] flex items-center justify-center p-3 sm:p-6 bg-black/80 backdrop-blur-sm animate-fade-in overflow-y-auto">
-                <div className="bg-white w-full max-w-4xl shadow-2xl border border-[#ECE5D8] max-h-[90vh] my-auto flex flex-col rounded-lg overflow-hidden">
+              <div className="fixed inset-0 z-[100] flex items-center justify-center p-2 sm:p-4 md:p-6 bg-black/80 backdrop-blur-sm animate-fade-in">
+                <div className="bg-white w-full max-w-5xl h-[92vh] max-h-[980px] min-h-[580px] shadow-2xl border border-[#ECE5D8] flex flex-col rounded-xl overflow-hidden">
                   {/* Modal Header */}
                   <div className="px-6 py-4 border-b border-[#ECE5D8] bg-[#FAF8F5] flex justify-between items-center shrink-0">
                     <div>
@@ -3874,8 +3874,8 @@ export default function AdminPage({
                     });
                     setIsAddAdoptionOpen(false);
                     showToast('새로운 입양 동물이 등록되었습니다.');
-                  }} className="flex flex-col flex-1 overflow-hidden">
-                    <div className="p-6 overflow-y-auto flex-1 text-xs">
+                  }} className="flex flex-col flex-1 min-h-0 overflow-hidden">
+                    <div className="p-6 md:p-7 overflow-y-auto flex-1 min-h-0 text-xs">
                       <div className="grid grid-cols-1 md:grid-cols-12 gap-6">
                         {/* Left Column: 아이 기본 프로필 (7 cols) */}
                         <div className="md:col-span-7 space-y-4">
@@ -4044,7 +4044,7 @@ export default function AdminPage({
                             <div className="mt-2">
                               <span className="block text-[11px] font-bold text-gray-600 mb-1.5">미리보기</span>
                               {newAdoption.photoUrl ? (
-                                <div className="relative w-full aspect-video bg-gray-100 rounded overflow-hidden border border-gray-300 group shadow-inner">
+                                <div className="relative w-full h-44 sm:h-52 bg-gray-100 rounded overflow-hidden border border-gray-300 group shadow-inner">
                                   <img
                                     src={newAdoption.photoUrl}
                                     alt="입양 동물 미리보기"
@@ -4061,7 +4061,7 @@ export default function AdminPage({
                                   </div>
                                 </div>
                               ) : (
-                                <div className="w-full aspect-video bg-white rounded border-2 border-dashed border-gray-300 flex flex-col items-center justify-center text-gray-400 p-4 text-center">
+                                <div className="w-full h-44 sm:h-52 bg-white rounded border-2 border-dashed border-gray-300 flex flex-col items-center justify-center text-gray-400 p-4 text-center">
                                   <CameraIcon className="w-8 h-8 mb-1.5 text-gray-300" />
                                   <span className="text-xs font-medium">등록된 대표 사진이 없습니다</span>
                                   <span className="text-[10px] text-gray-400 mt-0.5">파일을 업로드하거나 URL을 입력하세요</span>
@@ -4110,8 +4110,8 @@ export default function AdminPage({
 
             {/* Modal: 입양 동물 정보 수정 */}
             {isEditAdoptionOpen && editingAdoption && (
-              <div className="fixed inset-0 z-[100] flex items-center justify-center p-3 sm:p-6 bg-black/80 backdrop-blur-sm animate-fade-in overflow-y-auto">
-                <div className="bg-white w-full max-w-4xl shadow-2xl border border-[#ECE5D8] max-h-[90vh] my-auto flex flex-col rounded-lg overflow-hidden">
+              <div className="fixed inset-0 z-[100] flex items-center justify-center p-2 sm:p-4 md:p-6 bg-black/80 backdrop-blur-sm animate-fade-in">
+                <div className="bg-white w-full max-w-5xl h-[92vh] max-h-[980px] min-h-[580px] shadow-2xl border border-[#ECE5D8] flex flex-col rounded-xl overflow-hidden">
                   {/* Modal Header */}
                   <div className="px-6 py-4 border-b border-[#ECE5D8] bg-[#FAF8F5] flex justify-between items-center shrink-0">
                     <div>
@@ -4144,8 +4144,8 @@ export default function AdminPage({
                     }
                     setIsEditAdoptionOpen(false);
                     setEditingAdoption(null);
-                  }} className="flex flex-col flex-1 overflow-hidden">
-                    <div className="p-6 overflow-y-auto flex-1 text-xs">
+                  }} className="flex flex-col flex-1 min-h-0 overflow-hidden">
+                    <div className="p-6 md:p-7 overflow-y-auto flex-1 min-h-0 text-xs">
                       <div className="grid grid-cols-1 md:grid-cols-12 gap-6">
                         {/* Left Column: 아이 기본 프로필 (7 cols) */}
                         <div className="md:col-span-7 space-y-4">
@@ -4320,7 +4320,7 @@ export default function AdminPage({
                             <div className="mt-2">
                               <span className="block text-[11px] font-bold text-gray-600 mb-1.5">미리보기</span>
                               {editingAdoption.photoUrl ? (
-                                <div className="relative w-full aspect-video bg-gray-100 rounded overflow-hidden border border-gray-300 group shadow-inner">
+                                <div className="relative w-full h-44 sm:h-52 bg-gray-100 rounded overflow-hidden border border-gray-300 group shadow-inner">
                                   <img
                                     src={editingAdoption.photoUrl}
                                     alt="입양 동물 미리보기"
@@ -4337,7 +4337,7 @@ export default function AdminPage({
                                   </div>
                                 </div>
                               ) : (
-                                <div className="w-full aspect-video bg-white rounded border-2 border-dashed border-gray-300 flex flex-col items-center justify-center text-gray-400 p-4 text-center">
+                                <div className="w-full h-44 sm:h-52 bg-white rounded border-2 border-dashed border-gray-300 flex flex-col items-center justify-center text-gray-400 p-4 text-center">
                                   <CameraIcon className="w-8 h-8 mb-1.5 text-gray-300" />
                                   <span className="text-xs font-medium">등록된 대표 사진이 없습니다</span>
                                   <span className="text-[10px] text-gray-400 mt-0.5">파일을 업로드하거나 URL을 입력하세요</span>
@@ -4484,8 +4484,8 @@ export default function AdminPage({
 
             {/* Modal: 숙소 추가 */}
             {isAddTravelOpen && (
-              <div className="fixed inset-0 z-[100] flex items-center justify-center p-3 sm:p-6 bg-black/80 backdrop-blur-sm animate-fade-in overflow-y-auto">
-                <div className="bg-white w-full max-w-4xl shadow-2xl border border-[#ECE5D8] max-h-[90vh] my-auto flex flex-col rounded-lg overflow-hidden">
+              <div className="fixed inset-0 z-[100] flex items-center justify-center p-2 sm:p-4 md:p-6 bg-black/80 backdrop-blur-sm animate-fade-in">
+                <div className="bg-white w-full max-w-5xl h-[92vh] max-h-[980px] min-h-[580px] shadow-2xl border border-[#ECE5D8] flex flex-col rounded-xl overflow-hidden">
                   {/* Modal Header */}
                   <div className="px-6 py-4 border-b border-[#ECE5D8] bg-[#FAF8F5] flex justify-between items-center shrink-0">
                     <div>
@@ -4515,8 +4515,8 @@ export default function AdminPage({
                     });
                     setIsAddTravelOpen(false);
                     showToast('새로운 동반 여행 숙소가 등록되었습니다.');
-                  }} className="flex flex-col flex-1 overflow-hidden">
-                    <div className="p-6 overflow-y-auto flex-1 text-xs">
+                  }} className="flex flex-col flex-1 min-h-0 overflow-hidden">
+                    <div className="p-6 md:p-7 overflow-y-auto flex-1 min-h-0 text-xs">
                       <div className="grid grid-cols-1 md:grid-cols-12 gap-6">
                         {/* Left Column: 숙소 기본 정보 (7 cols) */}
                         <div className="md:col-span-7 space-y-4">
@@ -4691,7 +4691,7 @@ export default function AdminPage({
                             <div className="mt-2">
                               <span className="block text-[11px] font-bold text-gray-600 mb-1.5">미리보기</span>
                               {newTravel.imageUrl ? (
-                                <div className="relative w-full aspect-video bg-gray-100 rounded overflow-hidden border border-gray-300 group shadow-inner">
+                                <div className="relative w-full h-44 sm:h-52 bg-gray-100 rounded overflow-hidden border border-gray-300 group shadow-inner">
                                   <img
                                     src={newTravel.imageUrl}
                                     alt="숙소 미리보기"
@@ -4708,7 +4708,7 @@ export default function AdminPage({
                                   </div>
                                 </div>
                               ) : (
-                                <div className="w-full aspect-video bg-white rounded border-2 border-dashed border-gray-300 flex flex-col items-center justify-center text-gray-400 p-4 text-center">
+                                <div className="w-full h-44 sm:h-52 bg-white rounded border-2 border-dashed border-gray-300 flex flex-col items-center justify-center text-gray-400 p-4 text-center">
                                   <CameraIcon className="w-8 h-8 mb-1.5 text-gray-300" />
                                   <span className="text-xs font-medium">등록된 대표 사진이 없습니다</span>
                                   <span className="text-[10px] text-gray-400 mt-0.5">파일을 업로드하거나 URL을 입력하세요</span>
@@ -4757,8 +4757,8 @@ export default function AdminPage({
 
             {/* Modal: 반려여행 숙소 정보 수정 */}
             {isEditTravelOpen && editingTravel && (
-              <div className="fixed inset-0 z-[100] flex items-center justify-center p-3 sm:p-6 bg-black/80 backdrop-blur-sm animate-fade-in overflow-y-auto">
-                <div className="bg-white w-full max-w-4xl shadow-2xl border border-[#ECE5D8] max-h-[90vh] my-auto flex flex-col rounded-lg overflow-hidden">
+              <div className="fixed inset-0 z-[100] flex items-center justify-center p-2 sm:p-4 md:p-6 bg-black/80 backdrop-blur-sm animate-fade-in">
+                <div className="bg-white w-full max-w-5xl h-[92vh] max-h-[980px] min-h-[580px] shadow-2xl border border-[#ECE5D8] flex flex-col rounded-xl overflow-hidden">
                   {/* Modal Header */}
                   <div className="px-6 py-4 border-b border-[#ECE5D8] bg-[#FAF8F5] flex justify-between items-center shrink-0">
                     <div>
@@ -4791,8 +4791,8 @@ export default function AdminPage({
                     }
                     setIsEditTravelOpen(false);
                     setEditingTravel(null);
-                  }} className="flex flex-col flex-1 overflow-hidden">
-                    <div className="p-6 overflow-y-auto flex-1 text-xs">
+                  }} className="flex flex-col flex-1 min-h-0 overflow-hidden">
+                    <div className="p-6 md:p-7 overflow-y-auto flex-1 min-h-0 text-xs">
                       <div className="grid grid-cols-1 md:grid-cols-12 gap-6">
                         {/* Left Column: 숙소 기본 정보 (7 cols) */}
                         <div className="md:col-span-7 space-y-4">
@@ -4960,7 +4960,7 @@ export default function AdminPage({
                             <div className="mt-2">
                               <span className="block text-[11px] font-bold text-gray-600 mb-1.5">미리보기</span>
                               {editingTravel.imageUrl ? (
-                                <div className="relative w-full aspect-video bg-gray-100 rounded overflow-hidden border border-gray-300 group shadow-inner">
+                                <div className="relative w-full h-44 sm:h-52 bg-gray-100 rounded overflow-hidden border border-gray-300 group shadow-inner">
                                   <img
                                     src={editingTravel.imageUrl}
                                     alt="숙소 미리보기"
@@ -4977,7 +4977,7 @@ export default function AdminPage({
                                   </div>
                                 </div>
                               ) : (
-                                <div className="w-full aspect-video bg-white rounded border-2 border-dashed border-gray-300 flex flex-col items-center justify-center text-gray-400 p-4 text-center">
+                                <div className="w-full h-44 sm:h-52 bg-white rounded border-2 border-dashed border-gray-300 flex flex-col items-center justify-center text-gray-400 p-4 text-center">
                                   <CameraIcon className="w-8 h-8 mb-1.5 text-gray-300" />
                                   <span className="text-xs font-medium">등록된 대표 사진이 없습니다</span>
                                   <span className="text-[10px] text-gray-400 mt-0.5">파일을 업로드하거나 URL을 입력하세요</span>
