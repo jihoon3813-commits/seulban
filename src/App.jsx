@@ -32,14 +32,8 @@ import { useQuery, useMutation } from 'convex/react';
 import { ConvexHttpClient } from 'convex/browser';
 import { api } from '../convex/_generated/api';
 import { 
-  INITIAL_PET, 
-  INITIAL_APPLICATION, 
   BRAND_INFO, 
   PARTNER_LIST, 
-  ADOPTION_LIST, 
-  TRAVEL_LIST,
-  INITIAL_POPUPS,
-  INITIAL_SHOP_ORDERS,
   REDPUPPY_PRODUCTS,
   DEFAULT_MENU_VISIBILITY
 } from './data/mockData';
@@ -247,13 +241,14 @@ export default function App() {
 
   const partners = React.useMemo(() => {
     return (rawPartners || []).map(p => {
-      let b = p.benefit || '전 상품 20% 회원 단독 할인';
+      const isShop = p.partnerType === 'shop' || p.category === 'shopping' || p.id === 'p_redpuppy';
+      let b = p.benefit || (isShop ? '전 상품 20% 회원 단독 할인' : '회원 특별 우대 혜택');
       if (b.includes('25%')) {
         b = b.replace('25%', '20%');
       }
       let prods = p.products;
       if (!prods || prods.length === 0) {
-        if (p.id === 'p_redpuppy' || p.partnerType === 'shop' || p.name?.includes('레드퍼피')) {
+        if (isShop) {
           prods = REDPUPPY_PRODUCTS;
         }
       }
@@ -295,7 +290,7 @@ export default function App() {
     : localConsultations;
 
   // Shop Orders State (제휴 쇼핑몰 주문 내역)
-  const [localShopOrders, setLocalShopOrders] = useState(INITIAL_SHOP_ORDERS);
+  const [localShopOrders, setLocalShopOrders] = useState([]);
   const shopOrders = (convexShopOrders && Array.isArray(convexShopOrders))
     ? convexShopOrders
     : localShopOrders;
@@ -1023,8 +1018,10 @@ export default function App() {
           onRefreshData={handleRefreshAdminData}
           menuVisibility={menuVisibility}
           onUpdateMenuVisibility={handleUpdateMenuVisibility}
+          isServerLoading={convexPartners === undefined || convexApps === undefined}
           serverStatus={{
             isConnected: !!convexApps,
+            isLoaded: convexPartners !== undefined && convexApps !== undefined,
             convexPartnersCount: convexPartners ? convexPartners.length : 0,
             env: 'production',
             convexUrl: PROD_CONVEX_URL,
@@ -1116,7 +1113,7 @@ export default function App() {
 
         {activeTab === 'mall' && (
           <MallPage
-            partner={partners.find(p => p.id === 'p_redpuppy' || p.partnerType === 'shop' || p.name?.includes('레드퍼피')) || PARTNER_LIST.find(p => p.id === 'p_redpuppy')}
+            partner={partners.find(p => p.partnerType === 'shop' || p.category === 'shopping' || p.id === 'p_redpuppy') || PARTNER_LIST.find(p => p.id === 'p_redpuppy')}
             onOrderSubmit={handleCreateShopOrder}
             user={user}
             brandInfo={brandInfo}

@@ -1985,9 +1985,7 @@ export function PartnerModal({ partner, isOpen, onClose, onToggleBookmark, isBoo
 
   const isShopPartner = partner.partnerType === 'shop' || 
     partner.category === 'shopping' || 
-    partner.id === 'p_redpuppy' || 
-    partner.name?.includes('레드퍼피') || 
-    (partner.products && partner.products.length > 0);
+    partner.id === 'p_redpuppy';
 
   return (
     <div className="fixed inset-0 z-[100] flex items-center justify-center p-3 sm:p-6 bg-black/80 backdrop-blur-sm animate-fade-in overflow-y-auto">

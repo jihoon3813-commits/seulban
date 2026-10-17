@@ -59,22 +59,22 @@ function AdminPortalModal({ isOpen, onClose, title, badge, subtitle, children, m
 
 export default function AdminPage({
   onNavigateHome,
-  applications,
+  applications = [],
   onUpdateAppStatus,
   onUpdateApplication,
   onDeleteApplication,
-  partners,
+  partners = [],
   onAddPartner,
   onUpdatePartner,
   onDeletePartner,
   shopOrders = [],
   onUpdateShopOrderStatus,
   onDeleteShopOrder,
-  adoptionList,
+  adoptionList = [],
   onAddAdoption,
   onUpdateAdoption,
   onDeleteAdoption,
-  travelList,
+  travelList = [],
   onAddTravel,
   onUpdateTravel,
   onDeleteTravel,
@@ -90,6 +90,7 @@ export default function AdminPage({
   onRefreshData,
   menuVisibility = DEFAULT_MENU_VISIBILITY,
   onUpdateMenuVisibility,
+  isServerLoading = false,
   serverStatus,
   showToast
 }) {
@@ -649,13 +650,13 @@ export default function AdminPage({
   const menuItems = [
     { id: 'dashboard', label: '대시보드 요약', icon: SparklesIcon },
     { id: 'menu_settings', label: '메뉴 노출 관리', icon: MenuIcon, badge: 'NEW', badgeColor: 'bg-emerald-600 text-white' },
-    { id: 'consultations', label: '빠른상담 내역', icon: HeadphoneIcon, badge: consultations.length, badgeColor: 'bg-amber-500 text-white' },
-    { id: 'applications', label: '동물등록 관리', icon: PawIcon, badge: applications.length, badgeColor: 'bg-emerald-600 text-white' },
-    { id: 'popups', label: '팝업 관리', icon: SparklesIcon, badge: popups.length },
-    { id: 'partners', label: '제휴처 관리', icon: StethoscopeIcon, badge: partners.length },
-    { id: 'shop_orders', label: '제휴몰 주문/배송', icon: ShoppingBagIcon, badge: shopOrders.length, badgeColor: 'bg-rose-600 text-white' },
-    { id: 'adoption', label: '안심입양 관리', icon: HeartIcon, badge: adoptionList.length },
-    { id: 'travel', label: '반려여행 관리', icon: HomeIcon, badge: travelList.length },
+    { id: 'consultations', label: '빠른상담 내역', icon: HeadphoneIcon, badge: isServerLoading ? undefined : consultations.length, badgeColor: 'bg-amber-500 text-white' },
+    { id: 'applications', label: '동물등록 관리', icon: PawIcon, badge: isServerLoading ? undefined : applications.length, badgeColor: 'bg-emerald-600 text-white' },
+    { id: 'popups', label: '팝업 관리', icon: SparklesIcon, badge: isServerLoading ? undefined : popups.length },
+    { id: 'partners', label: '제휴처 관리', icon: StethoscopeIcon, badge: isServerLoading ? undefined : partners.length },
+    { id: 'shop_orders', label: '제휴몰 주문/배송', icon: ShoppingBagIcon, badge: isServerLoading ? undefined : shopOrders.length, badgeColor: 'bg-rose-600 text-white' },
+    { id: 'adoption', label: '안심입양 관리', icon: HeartIcon, badge: isServerLoading ? undefined : adoptionList.length },
+    { id: 'travel', label: '반려여행 관리', icon: HomeIcon, badge: isServerLoading ? undefined : travelList.length },
     { id: 'brand', label: '사이트·SEO 설정', icon: ShieldCheckIcon },
     { id: 'policy', label: '약관·개인정보·상담동의', icon: FileTextIcon },
     { id: 'settings', label: '보안·계정설정', icon: ShieldCheckIcon },
@@ -814,7 +815,7 @@ export default function AdminPage({
                   <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-600"></span>
                 </span>
                 <span>실시간 자동 저장 중</span>
-                <span className="text-emerald-700/60 font-medium text-[11px]">| 제휴처 {partners.length}개</span>
+                <span className="text-emerald-700/60 font-medium text-[11px]">| 제휴처 {isServerLoading ? '···' : `${partners.length}개`}</span>
               </div>
             )}
 
@@ -912,27 +913,27 @@ export default function AdminPage({
                 className="bg-white p-5 border border-[#E2DDD3] shadow-xs cursor-pointer hover:border-[#144A42] transition"
               >
                 <span className="text-xs text-gray-500 font-medium">메인 팝업 관리</span>
-                <p className="text-3xl font-black text-[#144A42] mt-2">{popups.length}개</p>
+                <p className="text-3xl font-black text-[#144A42] mt-2">{isServerLoading ? '···' : `${popups.length}개`}</p>
                 <div className="mt-3 flex items-center gap-1.5 text-[11px] text-emerald-800 bg-emerald-50 px-2 py-1 w-fit">
-                  <span>활성: {popups.filter(p => p.active !== false).length}개 (3:4)</span>
+                  <span>활성: {isServerLoading ? '···' : `${popups.filter(p => p.active !== false).length}개 (3:4)`}</span>
                 </div>
               </div>
 
               <div className="bg-white p-5 border border-[#E2DDD3] shadow-xs">
                 <span className="text-xs text-gray-500 font-medium">등록 제휴처</span>
-                <p className="text-3xl font-black text-[#144A42] mt-2">{partners.length}곳</p>
+                <p className="text-3xl font-black text-[#144A42] mt-2">{isServerLoading ? '···' : `${partners.length}곳`}</p>
                 <p className="text-[11px] text-gray-500 mt-3">병원, 미용, 스파</p>
               </div>
 
               <div className="bg-white p-5 border border-[#E2DDD3] shadow-xs">
                 <span className="text-xs text-gray-500 font-medium">안심 입양 등록</span>
-                <p className="text-3xl font-black text-[#144A42] mt-2">{adoptionList.length}마리</p>
+                <p className="text-3xl font-black text-[#144A42] mt-2">{isServerLoading ? '···' : `${adoptionList.length}마리`}</p>
                 <p className="text-[11px] text-gray-500 mt-3">보호센터 연계</p>
               </div>
 
               <div className="bg-white p-5 border border-[#E2DDD3] shadow-xs">
                 <span className="text-xs text-gray-500 font-medium">엄선 동반 여행지</span>
-                <p className="text-3xl font-black text-[#144A42] mt-2">{travelList.length}곳</p>
+                <p className="text-3xl font-black text-[#144A42] mt-2">{isServerLoading ? '···' : `${travelList.length}곳`}</p>
                 <p className="text-[11px] text-gray-500 mt-3">리조트, 독채펜션</p>
               </div>
 
@@ -2044,7 +2045,7 @@ export default function AdminPage({
               <div>
                 <span className="text-xs font-bold tracking-widest text-[#B48B55] uppercase">PARTNER NETWORK</span>
                 <h2 className="text-2xl sm:text-3xl font-extrabold text-[#142C27] tracking-tight">
-                  반려생활 제휴처 관리 ({partners.length}곳)
+                  반려생활 제휴처 관리 ({isServerLoading ? '···' : `${partners.length}곳`})
                 </h2>
                 <p className="text-xs text-[#6B7973] mt-1">
                   [반려생활] 페이지 및 마이페이지 찜에 노출되는 동물병원, 미용실, 스파 등의 제휴처를 등록/관리합니다.
@@ -2053,13 +2054,27 @@ export default function AdminPage({
 
               <button
                 onClick={() => setIsAddPartnerOpen(true)}
-                className="px-5 py-2.5 bg-[#144A42] text-white text-xs font-bold hover:bg-[#0D3832] transition flex items-center gap-1.5 shadow-xs w-fit"
+                className="px-5 py-2.5 bg-[#144A42] text-white text-xs font-bold hover:bg-[#0D3832] transition flex items-center gap-1.5 shadow-xs w-fit cursor-pointer"
               >
                 <span>+ 신규 제휴처 등록</span>
               </button>
             </div>
 
             {/* Partners Grid */}
+            {isServerLoading ? (
+              <div className="bg-white p-12 border border-[#E2DDD3] text-center space-y-3">
+                <div className="w-7 h-7 border-2 border-[#144A42] border-t-transparent rounded-full animate-spin mx-auto"></div>
+                <p className="text-xs text-gray-500 font-medium">운영 서버에서 최신 제휴처 목록을 불러오는 중입니다...</p>
+              </div>
+            ) : partners.length === 0 ? (
+              <div className="bg-white p-12 border border-[#E2DDD3] text-center space-y-3">
+                <div className="w-12 h-12 bg-gray-50 rounded-full flex items-center justify-center mx-auto text-gray-400">
+                  <StethoscopeIcon className="w-6 h-6 text-[#144A42]" />
+                </div>
+                <p className="text-sm font-bold text-gray-800">등록된 제휴처가 없습니다.</p>
+                <p className="text-xs text-gray-500">우측 상단의 [+ 신규 제휴처 등록] 버튼을 눌러 새로운 제휴처를 등록해 주세요.</p>
+              </div>
+            ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
               {partners.map((partner) => (
                 <div key={partner.id} className="bg-white border border-[#E2DDD3] overflow-hidden shadow-xs flex flex-col justify-between">
@@ -2151,6 +2166,7 @@ export default function AdminPage({
                 </div>
               ))}
             </div>
+            )}
 
             {/* Modal: 신규 제휴처 등록 */}
             {isAddPartnerOpen && (

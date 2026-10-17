@@ -1,9 +1,8 @@
 import React, { useState } from 'react';
 import { 
   SearchIcon, MapPinIcon, HeartIcon, PhoneIcon, StethoscopeIcon, 
-  ScissorsIcon, HomeIcon, CheckIcon 
+  ScissorsIcon, HomeIcon, CheckIcon, CoffeeIcon, PawIcon 
 } from '../components/Icons';
-import { PARTNER_LIST } from '../data/mockData';
 
 export default function PartnersPage({ 
   onOpenPartnerModal, 
@@ -17,7 +16,7 @@ export default function PartnersPage({
   const [keyword, setKeyword] = useState('');
 
   const filtered = partners.filter(item => {
-    if (item.id === 'p_redpuppy' || item.partnerType === 'shop' || item.category === 'shopping' || item.name?.includes('레드퍼피')) {
+    if (item.partnerType === 'shop' || item.category === 'shopping') {
       return false;
     }
     const matchCat = 
@@ -25,8 +24,8 @@ export default function PartnersPage({
       item.category === selectedCat ||
       (selectedCat === 'hotel' && (item.category === 'kindergarten' || item.category === 'hotel')) ||
       (selectedCat === 'kindergarten' && (item.category === 'hotel' || item.category === 'kindergarten'));
-    const matchRegion = region === 'all' || item.location.includes(region);
-    const matchKey = !keyword || item.name.includes(keyword) || item.location.includes(keyword) || item.desc.includes(keyword);
+    const matchRegion = region === 'all' || (item.location && item.location.includes(region));
+    const matchKey = !keyword || item.name?.includes(keyword) || item.location?.includes(keyword) || item.desc?.includes(keyword);
     return matchCat && matchRegion && matchKey;
   });
 
@@ -186,6 +185,8 @@ export default function PartnersPage({
                         {item.icon === 'stethoscope' && <StethoscopeIcon className="w-5 h-5 sm:w-6 sm:h-6" />}
                         {item.icon === 'scissors' && <ScissorsIcon className="w-5 h-5 sm:w-6 sm:h-6" />}
                         {item.icon === 'home' && <HomeIcon className="w-5 h-5 sm:w-6 sm:h-6" />}
+                        {(item.icon === 'cafe' || item.category === 'cafe') && <CoffeeIcon className="w-5 h-5 sm:w-6 sm:h-6" />}
+                        {!['stethoscope', 'scissors', 'home', 'cafe'].includes(item.icon) && item.category !== 'cafe' && <PawIcon className="w-5 h-5 sm:w-6 sm:h-6" />}
                       </div>
                       <span className="text-[10px] sm:text-[11px] font-extrabold tracking-wider uppercase opacity-80">
                         {item.categoryName}
