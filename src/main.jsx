@@ -4,17 +4,15 @@ import { ConvexProvider, ConvexReactClient } from 'convex/react'
 import './index.css'
 import App from './App.jsx'
 
-const convexUrl = import.meta.env.VITE_CONVEX_URL;
-const convex = convexUrl ? new ConvexReactClient(convexUrl) : null;
+const PROD_CONVEX_URL = 'https://uncommon-opossum-624.convex.cloud';
+const convex = new ConvexReactClient(PROD_CONVEX_URL);
 
 createRoot(document.getElementById('root')).render(
   <StrictMode>
-    {convex ? (
-      <ConvexProvider client={convex}>
-        <App />
-      </ConvexProvider>
-    ) : (
+    <ConvexProvider client={convex}>
       <App />
-    )}
+    </ConvexProvider>
   </StrictMode>,
 )
+
+

@@ -55,7 +55,7 @@ export default function TravelPage({ travelList = TRAVEL_LIST }) {
         {/* Listings */}
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 sm:gap-8">
           {filtered.map((item) => (
-            <div key={item.id} className="bg-white overflow-hidden border border-[#EAE4D6] shadow-xs hover:shadow-xl transition-all duration-300 flex flex-col justify-between">
+            <div key={item._id || item.id} className="bg-white overflow-hidden border border-[#EAE4D6] shadow-xs hover:shadow-xl transition-all duration-300 flex flex-col justify-between">
               <div>
                 {/* Photo */}
                 <div className="relative aspect-[16/10] bg-gray-100 overflow-hidden">

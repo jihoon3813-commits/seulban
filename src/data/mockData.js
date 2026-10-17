@@ -314,18 +314,6 @@ export const PARTNER_LIST = [
 // Travel Accommodations
 export const TRAVEL_LIST = [
   {
-    id: "t1",
-    type: "리조트",
-    name: "숲속의 정원 펫리조트 강촌",
-    location: "강원도 춘천시",
-    weightLimit: "전 견종 가능 (대형견 환영)",
-    price: "180,000원~",
-    features: ["500평 인조잔디", "사계절 온수 미온수풀", "바베큐"],
-    memberBenefit: "슬반생 회원 주중 20% 추가 할인 + 웰컴간식",
-    phone: "033-261-0091",
-    imageUrl: "https://images.unsplash.com/photo-1540555700478-4be289fbecef?w=700&auto=format&fit=crop&q=80",
-  },
-  {
     id: "t2",
     type: "독채펜션",
     name: "양평 로그하우스 프라이빗 펜션",
@@ -364,6 +352,7 @@ export const ADOPTION_LIST = [
     story: "사람을 너무 좋아하고 온순하며, 기본 배변훈련과 앉아 교육이 완료된 사랑스러운 친구입니다.",
     tags: ["애교만점", "사회성 우수", "예방접종 3차"],
     status: "입양 상담 가능",
+    photoUrl: "https://images.unsplash.com/photo-1543466835-00a7907e9de1?w=700&auto=format&fit=crop&q=80",
   },
   {
     id: "a2",
@@ -376,6 +365,7 @@ export const ADOPTION_LIST = [
     story: "조용하고 차분한 성격으로, 실내에서 보호자와 교감하는 것을 가장 행복해합니다.",
     tags: ["털빠짐 적음", "실내견 적합", "건강검진 완료"],
     status: "입양 상담 가능",
+    photoUrl: "https://images.unsplash.com/photo-1587300003388-59208cc962cb?w=700&auto=format&fit=crop&q=80",
   },
   {
     id: "a3",
@@ -388,6 +378,7 @@ export const ADOPTION_LIST = [
     story: "골골송을 잘 부르는 개냥이 성격으로, 사람 손길을 매우 좋아합니다.",
     tags: ["개냥이", "호기심 대장", "중성화 완료"],
     status: "입양 상담 가능",
+    photoUrl: "https://images.unsplash.com/photo-1514888286974-6c03e2ca1dba?w=700&auto=format&fit=crop&q=80",
   },
 ];
 

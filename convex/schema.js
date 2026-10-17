@@ -82,6 +82,7 @@ export default defineSchema({
 
   // 안심입양 동물 (Adoption)
   adoptions: defineTable({
+    id: v.optional(v.string()),
     name: v.string(),
     breed: v.string(),
     gender: v.string(),
@@ -92,10 +93,11 @@ export default defineSchema({
     tags: v.array(v.string()),
     status: v.string(),
     photoUrl: v.optional(v.string()),
-  }),
+  }).index("by_adoption_id", ["id"]),
 
   // 반려여행 숙소 (Travel)
   travels: defineTable({
+    id: v.optional(v.string()),
     type: v.string(), // 리조트, 독채펜션, 글램핑
     name: v.string(),
     location: v.string(),
@@ -105,10 +107,11 @@ export default defineSchema({
     memberBenefit: v.string(),
     phone: v.string(),
     imageUrl: v.optional(v.string()),
-  }),
+  }).index("by_travel_id", ["id"]),
 
   // 팝업 관리 (Popups - 3:4 비율)
   popups: defineTable({
+    id: v.optional(v.string()),
     title: v.string(),
     imageUrl: v.string(),
     linkType: v.string(), // none, url, internal
@@ -116,7 +119,7 @@ export default defineSchema({
     internalTab: v.optional(v.string()),
     active: v.boolean(),
     createdAt: v.optional(v.string()),
-  }),
+  }).index("by_popup_id", ["id"]),
 
   // 브랜드 및 관리자 설정 (Settings)
   settings: defineTable({

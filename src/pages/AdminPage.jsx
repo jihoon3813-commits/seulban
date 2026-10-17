@@ -3633,7 +3633,7 @@ export default function AdminPage({
             {/* Adoption Grid */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
               {adoptionList.map((animal) => (
-                <div key={animal.id} className="bg-white border border-[#E2DDD3] overflow-hidden shadow-xs flex flex-col justify-between">
+                <div key={animal._id || animal.id} className="bg-white border border-[#E2DDD3] overflow-hidden shadow-xs flex flex-col justify-between">
                   <div>
                     {animal.photoUrl ? (
                       <div className="relative w-full h-44 bg-gray-100 overflow-hidden border-b border-[#ECE5D8]">
@@ -4146,7 +4146,7 @@ export default function AdminPage({
             {/* Travel Grid */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
               {travelList.map((item) => (
-                <div key={item.id} className="bg-white border border-[#E2DDD3] overflow-hidden shadow-xs flex flex-col justify-between">
+                <div key={item._id || item.id} className="bg-white border border-[#E2DDD3] overflow-hidden shadow-xs flex flex-col justify-between">
                   <div>
                     {item.imageUrl ? (
                       <div className="relative w-full h-40 bg-gray-100 overflow-hidden border-b border-[#ECE5D8]">

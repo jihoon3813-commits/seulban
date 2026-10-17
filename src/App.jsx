@@ -115,41 +115,46 @@ export default function App() {
   const addAdoptionMutation = useMutation(api.adoptions.add);
   const updateAdoptionMutation = useMutation(api.adoptions.update);
   const removeAdoptionMutation = useMutation(api.adoptions.remove);
+  const syncAdoptionsMutation = useMutation(api.adoptions.syncAll);
   const addTravelMutation = useMutation(api.travels.add);
   const updateTravelMutation = useMutation(api.travels.update);
   const removeTravelMutation = useMutation(api.travels.remove);
+  const syncTravelsMutation = useMutation(api.travels.syncAll);
   const addPopupMutation = useMutation(api.popups.add);
   const togglePopupMutation = useMutation(api.popups.toggleActive);
   const removePopupMutation = useMutation(api.popups.remove);
+  const syncPopupsMutation = useMutation(api.popups.syncAll);
   const setSettingMutation = useMutation(api.settings.set);
   const syncSettingsMutation = useMutation(api.settings.syncAllSettings);
 
-  // Local state as fallback & optimistic store
-  const [localPet, setLocalPet] = useState(null);
-
-  const [localApplications, setLocalApplications] = useState(() => {
-    try {
-      const saved = localStorage.getItem('seulban_applications');
-      return saved ? JSON.parse(saved) : [];
-    } catch {
-      return [];
-    }
-  });
-
-  // Seamlessly merge Convex applications with optimistic local applications
-  const applications = React.useMemo(() => {
-    const map = new Map();
-    // 1) First add local applications
-    (localApplications || []).forEach(app => {
-      if (app && app.id) map.set(app.id, app);
+  // 기존 브라우저 로컬 스토리지에 남아있던 구버전 데이터 캐시 일괄 정리 (모든 PC에서 운영 서버 단일 데이터만 참조)
+  useEffect(() => {
+    const legacyKeys = [
+      'seulban_partners',
+      'seulban_adoption',
+      'seulban_travel',
+      'seulban_brand',
+      'seulban_popups',
+      'seulban_consultations',
+      'seulban_shop_orders',
+      'seulban_menu_visibility',
+      'seulban_applications',
+    ];
+    legacyKeys.forEach((k) => {
+      try {
+        localStorage.removeItem(k);
+      } catch {}
     });
-    // 2) Merge Convex applications (server truth)
-    if (convexApps && convexApps.length > 0) {
-      convexApps.forEach(app => {
-        if (app && app.id) map.set(app.id, app);
-      });
-    }
-    return Array.from(map.values()).sort((a, b) => {
+  }, []);
+
+  // In-memory optimistic state (used only while Convex queries load or mutations are in flight)
+  const [localPet, setLocalPet] = useState(null);
+  const [localApplications, setLocalApplications] = useState([]);
+
+  // Server truth from Convex (with in-flight optimistic fallback only before server responds)
+  const applications = React.useMemo(() => {
+    const source = convexApps !== undefined ? convexApps : localApplications;
+    return [...(source || [])].sort((a, b) => {
       return (b.appliedDate || '').localeCompare(a.appliedDate || '');
     });
   }, [convexApps, localApplications]);
@@ -158,19 +163,16 @@ export default function App() {
   const userApplications = React.useMemo(() => {
     if (!user) return [];
     return applications.filter(app => {
-      // 1) Direct email match (case-insensitive)
       if (user.email && app.ownerEmail && app.ownerEmail.trim().toLowerCase() === user.email.trim().toLowerCase()) return true;
-      // 2) Direct phone match
       const cleanUserPhone = (user.phone || '').replace(/[^0-9]/g, '');
       const cleanAppPhone = (app.phone || '').replace(/[^0-9]/g, '');
       if (cleanUserPhone && cleanAppPhone && cleanUserPhone === cleanAppPhone) return true;
-      // 3) Exact name match (excluding default mock applicant unless matching user)
       if (user.name && app.ownerName && app.ownerName.trim() === user.name.trim()) return true;
       return false;
     });
   }, [user, applications]);
 
-  // Pet profile specifically for the logged-in user (null by default for newly joined users)
+  // Pet profile specifically for the logged-in user
   const userPet = React.useMemo(() => {
     if (!user) return null;
 
@@ -206,22 +208,13 @@ export default function App() {
       };
     }
 
-    // 3) Match from localPet state
+    // 3) Match from in-memory localPet state
     if (localPet) {
       const isOwner = (user.email && localPet.ownerEmail && localPet.ownerEmail.trim().toLowerCase() === user.email.trim().toLowerCase())
         || (user.name && localPet.ownerName && localPet.ownerName.trim() === user.name.trim());
       if (isOwner) return localPet;
     }
 
-    // 4) Match from user-specific localStorage
-    try {
-      if (user.email) {
-        const savedUserPet = localStorage.getItem(`seulban_pet_${user.email}`);
-        if (savedUserPet) return JSON.parse(savedUserPet);
-      }
-    } catch (e) {}
-
-    // Fresh user has no pet registered yet
     return null;
   }, [user, convexPets, userApplications, localPet]);
 
@@ -248,43 +241,15 @@ export default function App() {
     }
   }, [user]);
 
-  // Dynamic Content States
-  const [localPartners, setLocalPartners] = useState(() => {
-    const saved = localStorage.getItem('seulban_partners');
-    if (saved) {
-      try {
-        const parsed = JSON.parse(saved);
-        // 만약 예전 목업 제휴처(p1, p4 등)만 남아있고 실제 3대 제휴처(설악포유, 오블라디 등)가 없다면 최신 PARTNER_LIST로 갱신
-        const hasLegacyOnly = Array.isArray(parsed) && parsed.some(p => p.id === 'p1' || p.id === 'p4') && !parsed.some(p => p.id === 'p_seorak' || p.name?.includes('설악'));
-        if (hasLegacyOnly) {
-          localStorage.setItem('seulban_partners', JSON.stringify(PARTNER_LIST));
-          return PARTNER_LIST;
-        }
-        return parsed;
-      } catch {
-        return PARTNER_LIST;
-      }
-    }
-    return PARTNER_LIST;
-  });
-
-  // Convex DB에 저장된 제휴처 목록이 수신되면 로컬 스토리지도 최신으로 일치 유지
-  useEffect(() => {
-    if (convexPartners && convexPartners.length > 0) {
-      try {
-        localStorage.setItem('seulban_partners', JSON.stringify(convexPartners));
-      } catch (e) {}
-    }
-  }, [convexPartners]);
-
-  const rawPartners = (convexPartners && convexPartners.length > 0) ? convexPartners : localPartners;
+  // Server-driven Content States (Convex Server Truth)
+  const [localPartners, setLocalPartners] = useState(PARTNER_LIST);
+  const rawPartners = convexPartners !== undefined ? convexPartners : localPartners;
   const partners = React.useMemo(() => {
     return (rawPartners || []).map(p => {
       let b = p.benefit || '전 상품 20% 회원 단독 할인';
       if (b.includes('25%')) {
         b = b.replace('25%', '20%');
       }
-      // If products is missing (stripped for 1MB Convex storage limit) and it's a shop partner, hydrate from bundled file
       let prods = p.products;
       if (!prods || prods.length === 0) {
         if (p.id === 'p_redpuppy' || p.partnerType === 'shop' || p.name?.includes('레드퍼피')) {
@@ -300,40 +265,16 @@ export default function App() {
     });
   }, [convexPartners, localPartners]);
 
-  const [localAdoptionList, setLocalAdoptionList] = useState(() => {
-    const saved = localStorage.getItem('seulban_adoption');
-    return saved ? JSON.parse(saved) : ADOPTION_LIST;
-  });
-  const adoptionList = (convexAdoptions && convexAdoptions.length > 0) ? convexAdoptions : localAdoptionList;
+  const [localAdoptionList, setLocalAdoptionList] = useState(ADOPTION_LIST);
+  const adoptionList = convexAdoptions !== undefined ? convexAdoptions : localAdoptionList;
 
-  const [localTravelList, setLocalTravelList] = useState(() => {
-    const saved = localStorage.getItem('seulban_travel');
-    return saved ? JSON.parse(saved) : TRAVEL_LIST;
-  });
-  const travelList = (convexTravels && convexTravels.length > 0) ? convexTravels : localTravelList;
+  const [localTravelList, setLocalTravelList] = useState(TRAVEL_LIST);
+  const travelList = convexTravels !== undefined ? convexTravels : localTravelList;
 
-  const [localBrandInfo, setLocalBrandInfo] = useState(() => {
-    const saved = localStorage.getItem('seulban_brand');
-    if (saved) {
-      try {
-        const parsed = JSON.parse(saved);
-        return { ...BRAND_INFO, ...parsed };
-      } catch (e) {
-        return BRAND_INFO;
-      }
-    }
-    return BRAND_INFO;
-  });
-  const brandInfo = convexBrand || localBrandInfo;
-
-  // Convex DB의 브랜드 설정이 갱신되면 로컬 스토리지도 일치 갱신
-  useEffect(() => {
-    if (convexBrand && typeof convexBrand === 'object') {
-      try {
-        localStorage.setItem('seulban_brand', JSON.stringify(convexBrand));
-      } catch (e) {}
-    }
-  }, [convexBrand]);
+  const [localBrandInfo, setLocalBrandInfo] = useState(BRAND_INFO);
+  const brandInfo = (convexBrand && typeof convexBrand === 'object')
+    ? { ...BRAND_INFO, ...convexBrand }
+    : localBrandInfo;
 
   // Real-time SEO Meta and Favicon synchronization
   useEffect(() => {
@@ -343,34 +284,17 @@ export default function App() {
   }, [brandInfo]);
 
   // Popups State
-  const [localPopups, setLocalPopups] = useState(() => {
-    const saved = localStorage.getItem('seulban_popups');
-    return saved ? JSON.parse(saved) : INITIAL_POPUPS;
-  });
-  const popups = (convexPopups && convexPopups.length > 0) ? convexPopups : localPopups;
+  const [localPopups, setLocalPopups] = useState(INITIAL_POPUPS);
+  const popups = convexPopups !== undefined ? convexPopups : localPopups;
 
   // Consultations State (빠른상담 신청 내역)
-  const [localConsultations, setLocalConsultations] = useState(() => {
-    try {
-      const saved = localStorage.getItem('seulban_consultations');
-      return saved ? JSON.parse(saved) : [];
-    } catch {
-      return [];
-    }
-  });
+  const [localConsultations, setLocalConsultations] = useState([]);
   const consultations = (convexConsultations && Array.isArray(convexConsultations))
     ? convexConsultations
     : localConsultations;
 
   // Shop Orders State (제휴 쇼핑몰 주문 내역)
-  const [localShopOrders, setLocalShopOrders] = useState(() => {
-    try {
-      const saved = localStorage.getItem('seulban_shop_orders');
-      return saved ? JSON.parse(saved) : INITIAL_SHOP_ORDERS;
-    } catch {
-      return INITIAL_SHOP_ORDERS;
-    }
-  });
+  const [localShopOrders, setLocalShopOrders] = useState(INITIAL_SHOP_ORDERS);
   const shopOrders = (convexShopOrders && Array.isArray(convexShopOrders))
     ? convexShopOrders
     : localShopOrders;
@@ -378,9 +302,6 @@ export default function App() {
   const handleCreateShopOrder = async (newOrder) => {
     const updated = [newOrder, ...shopOrders];
     setLocalShopOrders(updated);
-    try {
-      localStorage.setItem('seulban_shop_orders', JSON.stringify(updated));
-    } catch (e) {}
     try {
       await setSettingMutation({ key: 'shop_orders', value: updated });
     } catch (e) {
@@ -411,9 +332,6 @@ export default function App() {
     });
     setLocalShopOrders(updated);
     try {
-      localStorage.setItem('seulban_shop_orders', JSON.stringify(updated));
-    } catch (e) {}
-    try {
       await setSettingMutation({ key: 'shop_orders', value: updated });
     } catch (e) {
       console.warn('Convex save shop_orders note:', e);
@@ -424,9 +342,6 @@ export default function App() {
   const handleDeleteShopOrder = async (orderId) => {
     const updated = shopOrders.filter(o => o.id !== orderId);
     setLocalShopOrders(updated);
-    try {
-      localStorage.setItem('seulban_shop_orders', JSON.stringify(updated));
-    } catch (e) {}
     try {
       await setSettingMutation({ key: 'shop_orders', value: updated });
     } catch (e) {
@@ -447,26 +362,13 @@ export default function App() {
   const [policyModal, setPolicyModal] = useState({ isOpen: false, type: 'privacy' });
 
   // Navigation Menu Visibility State (어드민에서 메뉴 숨김/노출 제어)
-  const [localMenuVisibility, setLocalMenuVisibility] = useState(() => {
-    try {
-      const saved = localStorage.getItem('seulban_menu_visibility');
-      if (saved) return { ...DEFAULT_MENU_VISIBILITY, ...JSON.parse(saved) };
-    } catch (e) {
-      console.error('Error loading menu visibility:', e);
-    }
-    return DEFAULT_MENU_VISIBILITY;
-  });
+  const [localMenuVisibility, setLocalMenuVisibility] = useState(DEFAULT_MENU_VISIBILITY);
   const menuVisibility = (convexMenuVisibility && typeof convexMenuVisibility === 'object')
     ? { ...DEFAULT_MENU_VISIBILITY, ...convexMenuVisibility }
     : localMenuVisibility;
 
   const handleUpdateMenuVisibility = async (newVisibility) => {
     setLocalMenuVisibility(newVisibility);
-    try {
-      localStorage.setItem('seulban_menu_visibility', JSON.stringify(newVisibility));
-    } catch (e) {
-      console.error('Error saving menu visibility:', e);
-    }
     try {
       await setSettingMutation({ key: 'menu_visibility', value: newVisibility });
     } catch (e) {
@@ -495,9 +397,6 @@ export default function App() {
     const updated = [item, ...consultations];
     setLocalConsultations(updated);
     try {
-      localStorage.setItem('seulban_consultations', JSON.stringify(updated));
-    } catch (e) {}
-    try {
       await setSettingMutation({ key: 'consultations', value: updated });
     } catch (e) {
       console.warn('Convex save consultations note:', e);
@@ -508,9 +407,6 @@ export default function App() {
   const handleDeleteConsultation = async (id) => {
     const updated = consultations.filter(c => (c.id !== id && c._id !== id));
     setLocalConsultations(updated);
-    try {
-      localStorage.setItem('seulban_consultations', JSON.stringify(updated));
-    } catch (e) {}
     try {
       await setSettingMutation({ key: 'consultations', value: updated });
     } catch (e) {
@@ -523,9 +419,6 @@ export default function App() {
     const updated = consultations.map(c => (c.id === id || c._id === id) ? { ...c, status: newStatus } : c);
     setLocalConsultations(updated);
     try {
-      localStorage.setItem('seulban_consultations', JSON.stringify(updated));
-    } catch (e) {}
-    try {
       await setSettingMutation({ key: 'consultations', value: updated });
     } catch (e) {
       console.warn('Convex save consultations note:', e);
@@ -533,36 +426,10 @@ export default function App() {
     showToast(`상담 처리 상태가 [${newStatus === 'COMPLETED' ? '상담 완료' : '상담 대기'}]로 변경되었습니다.`);
   };
 
-  // 관리자 메뉴 전환 및 수동 새로고침 시 최신 데이터 동기화
-  const handleRefreshAdminData = () => {
-    try {
-      const p = localStorage.getItem('seulban_partners');
-      if (p) setLocalPartners(JSON.parse(p));
-      const a = localStorage.getItem('seulban_applications');
-      if (a) setLocalApplications(JSON.parse(a));
-      const c = localStorage.getItem('seulban_consultations');
-      if (c) setLocalConsultations(JSON.parse(c));
-      const b = localStorage.getItem('seulban_brand');
-      if (b) {
-        const parsed = JSON.parse(b);
-        setLocalBrandInfo(parsed);
-      }
-      const pop = localStorage.getItem('seulban_popups');
-      if (pop) setLocalPopups(JSON.parse(pop));
-      const ad = localStorage.getItem('seulban_adoption');
-      if (ad) setLocalAdoptionList(JSON.parse(ad));
-      const tr = localStorage.getItem('seulban_travel');
-      if (tr) setLocalTravelList(JSON.parse(tr));
-      const ord = localStorage.getItem('seulban_shop_orders');
-      if (ord) setShopOrders(JSON.parse(ord));
-      const mv = localStorage.getItem('seulban_menu_visibility');
-      if (mv) setMenuVisibility(JSON.parse(mv));
-    } catch (e) {
-      console.error('Error refreshing admin data:', e);
-    }
-  };
+  // Convex는 실시간 WebSocket 구독으로 자동 갱신됨
+  const handleRefreshAdminData = () => {};
 
-  // 1. 동물등록 신청 접수 (Convex DB 연동 + 사용자별 스코프 영구 보존)
+  // 1. 동물등록 신청 접수 (Convex DB 실시간 저장)
   const handleApplySuccess = async (newApp, newPet) => {
     const ownerEmail = user?.email || newApp.ownerEmail || '';
     const appWithOwner = {
@@ -570,7 +437,6 @@ export default function App() {
       ownerEmail,
     };
 
-    // 사용자 정보에 연락처가 비어있다면 신청서 연락처로 자동 업데이트
     if (user && !user.phone && newApp.phone) {
       const updatedUser = { ...user, phone: newApp.phone };
       setUser(updatedUser);
@@ -579,14 +445,8 @@ export default function App() {
       } catch (e) {}
     }
 
-    // 1) 즉시 로컬 반영 (낙관적 업데이트)
-    const updatedApps = [appWithOwner, ...localApplications.filter(a => a.id !== newApp.id)];
+    const updatedApps = [appWithOwner, ...applications.filter(a => a.id !== newApp.id)];
     setLocalApplications(updatedApps);
-    try {
-      localStorage.setItem('seulban_applications', JSON.stringify(updatedApps));
-    } catch (e) {
-      console.warn('localStorage save applications note:', e);
-    }
 
     let updatedPet = null;
     if (newPet) {
@@ -598,16 +458,8 @@ export default function App() {
         ownerPhone: newApp.phone,
       };
       setLocalPet(updatedPet);
-      if (ownerEmail) {
-        try {
-          localStorage.setItem(`seulban_pet_${ownerEmail}`, JSON.stringify(updatedPet));
-        } catch (e) {
-          console.warn('localStorage save pet note:', e);
-        }
-      }
     }
 
-    // 2) Convex DB 서버 동기화
     try {
       await submitAppMutation({
         id: appWithOwner.id,
@@ -671,7 +523,7 @@ export default function App() {
     showToast(bookmarks.includes(id) ? '찜 목록에서 제거되었습니다.' : '제휴처를 찜 목록에 저장했습니다.');
   };
 
-  // 2. 동물등록 신청 상태 변경 (Convex DB 연동 + 로컬 백업)
+  // 2. 동물등록 신청 상태 변경 (Convex DB 연동)
   const handleUpdateAppStatus = async (appId, newStatusCode) => {
     const statusMap = {
       SUBMITTED: '접수 완료',
@@ -683,7 +535,6 @@ export default function App() {
     };
     const newStatusLabel = statusMap[newStatusCode] || newStatusCode;
 
-    // 1) 로컬 상태 업데이트
     const updated = applications.map(app => {
       if (app.id === appId) {
         return {
@@ -703,16 +554,13 @@ export default function App() {
       return app;
     });
     setLocalApplications(updated);
-    localStorage.setItem('seulban_applications', JSON.stringify(updated));
 
-    // 2) Convex DB 업데이트
     try {
       await updateAppStatusMutation({
         id: appId,
         statusCode: newStatusCode,
         statusLabel: newStatusLabel
       });
-      console.log('✅ Convex DB 접수 상태 업데이트 완료:', appId, newStatusCode);
     } catch (err) {
       console.warn('Convex DB status update error:', err);
     }
@@ -720,12 +568,11 @@ export default function App() {
     showToast(`접수건(${appId}) 상태가 [${newStatusLabel}]로 변경되었습니다.`);
   };
 
-  // 3. 동물등록 신청 내역 수정 (Convex DB 연동 + 로컬 백업)
+  // 3. 동물등록 신청 내역 수정 (Convex DB 연동)
   const handleUpdateApplication = async (updatedApp) => {
     const appId = updatedApp.id;
     const updated = applications.map(a => (a.id === appId ? { ...a, ...updatedApp } : a));
     setLocalApplications(updated);
-    localStorage.setItem('seulban_applications', JSON.stringify(updated));
 
     try {
       await updateAppMutation({
@@ -745,7 +592,6 @@ export default function App() {
         statusCode: updatedApp.statusCode,
         statusLabel: updatedApp.statusLabel,
       });
-      console.log('✅ Convex DB 접수 내역 수정 완료:', appId);
     } catch (err) {
       console.warn('Convex DB updateApp error:', err);
     }
@@ -753,15 +599,13 @@ export default function App() {
     showToast(`신청서(${appId}) 정보가 성공적으로 수정되었습니다.`);
   };
 
-  // 4. 동물등록 신청 내역 삭제 (Convex DB 연동 + 로컬 백업)
+  // 4. 동물등록 신청 내역 삭제 (Convex DB 연동)
   const handleDeleteApplication = async (appId) => {
     const updated = applications.filter(app => app.id !== appId);
     setLocalApplications(updated);
-    localStorage.setItem('seulban_applications', JSON.stringify(updated));
 
     try {
       await removeAppMutation({ id: appId });
-      console.log('✅ Convex DB 접수 내역 삭제 완료:', appId);
     } catch (err) {
       console.warn('Convex DB removeApp error:', err);
     }
@@ -806,14 +650,10 @@ export default function App() {
     };
     const updated = [partnerToSave, ...partners];
     setLocalPartners(updated);
-    try {
-      localStorage.setItem('seulban_partners', JSON.stringify(updated));
-    } catch (e) {}
 
     try {
       const safePartner = preparePartnersForConvex([partnerToSave])[0];
       await addPartnerMutation(safePartner);
-      console.log('✅ Convex DB addPartner 완료:', partnerToSave.name);
     } catch (e) {
       console.warn('Convex addPartner note:', e);
     }
@@ -823,9 +663,6 @@ export default function App() {
     const pId = updatedPartner._id || updatedPartner.id;
     const updated = partners.map(p => (p._id === pId || p.id === pId) ? { ...p, ...updatedPartner } : p);
     setLocalPartners(updated);
-    try {
-      localStorage.setItem('seulban_partners', JSON.stringify(updated));
-    } catch (e) {}
 
     try {
       const safePartner = preparePartnersForConvex([updatedPartner])[0];
@@ -833,7 +670,6 @@ export default function App() {
         id: updatedPartner.id || (typeof updatedPartner._id === 'string' ? updatedPartner._id : undefined),
         ...safePartner,
       });
-      console.log('✅ Convex DB updatePartner 완료:', updatedPartner.name);
     } catch (e) {
       console.warn('Convex updatePartner note:', e);
     }
@@ -843,13 +679,9 @@ export default function App() {
   const handleDeletePartner = async (id) => {
     const updated = partners.filter(p => p.id !== id && p._id !== id);
     setLocalPartners(updated);
-    try {
-      localStorage.setItem('seulban_partners', JSON.stringify(updated));
-    } catch (e) {}
 
     try {
       await removePartnerMutation({ id: String(id) });
-      console.log('✅ Convex DB removePartner 완료:', id);
     } catch (e) {
       console.warn('Convex removePartner note:', e);
     }
@@ -858,29 +690,17 @@ export default function App() {
 
   const PROD_CONVEX_URL = 'https://uncommon-opossum-624.convex.cloud';
 
-  // 전체 데이터 운영/개발 Convex 서버 실시간 원클릭 동기화
+  // 전체 데이터 운영 Convex 서버 실시간 원클릭 동기화
   const handleSyncAllToServer = async () => {
     try {
       showToast('Convex 운영 서버 실시간 동기화 진행 중...');
-      // 1. Sync Partners (sanitized & large product catalog protected)
-      let partnersToSync = partners;
-      if (!partnersToSync || partnersToSync.length === 0) {
-        try {
-          const stored = localStorage.getItem('seulban_partners');
-          if (stored) {
-            const parsed = JSON.parse(stored);
-            if (Array.isArray(parsed) && parsed.length > 0) {
-              partnersToSync = parsed;
-            }
-          }
-        } catch (e) {}
-      }
-
-      const safePartners = (partnersToSync && partnersToSync.length > 0)
-        ? preparePartnersForConvex(partnersToSync)
+      const safePartners = (partners && partners.length > 0)
+        ? preparePartnersForConvex(partners)
         : [];
+      const safeTravels = (travelList || []).map(({ _id, _creationTime, ...rest }) => sanitizeForConvex(rest));
+      const safeAdoptions = (adoptionList || []).map(({ _id, _creationTime, ...rest }) => sanitizeForConvex(rest));
+      const safePopups = (popups || []).map(({ _id, _creationTime, ...rest }) => sanitizeForConvex(rest));
 
-      // 2. Sync Settings (brand_info, menu_visibility, shop_orders, consultations)
       const safeSettings = sanitizeForConvex({
         brand_info: brandInfo,
         menu_visibility: menuVisibility,
@@ -888,34 +708,13 @@ export default function App() {
         consultations: consultations,
       });
 
-      // A) 현재 연결된 클라이언트로 동기화 (개발 또는 운영)
       if (safePartners.length > 0) {
         await syncPartnersMutation({ partners: safePartners });
       }
+      await syncTravelsMutation({ travels: safeTravels });
+      await syncAdoptionsMutation({ adoptions: safeAdoptions });
+      await syncPopupsMutation({ popups: safePopups });
       await syncSettingsMutation({ settings: safeSettings });
-
-      // B) 현재 클라이언트가 개발 서버인 경우, 운영 서버(Prod)에도 무조건 직접 동기화 전송
-      const currentConvexUrl = import.meta.env.VITE_CONVEX_URL;
-      if (currentConvexUrl !== PROD_CONVEX_URL) {
-        console.log('🚀 개발 환경에서 운영 서버(Prod)로 직접 이중 동기화 전송...');
-        const prodClient = new ConvexHttpClient(PROD_CONVEX_URL);
-        if (safePartners.length > 0) {
-          await prodClient.mutation(api.partners.syncAll, { partners: safePartners });
-        }
-        await prodClient.mutation(api.settings.syncAllSettings, { settings: safeSettings });
-      }
-
-      // 동기화 완료 후 브라우저 localStorage도 확실히 최신으로 확정 저장
-      if (safePartners.length > 0) {
-        try {
-          localStorage.setItem('seulban_partners', JSON.stringify(safePartners));
-        } catch (e) {}
-      }
-      if (safeSettings.brand_info) {
-        try {
-          localStorage.setItem('seulban_brand', JSON.stringify(safeSettings.brand_info));
-        } catch (e) {}
-      }
 
       showToast('운영 서버에 모든 데이터가 성공적으로 실시간 동기화되었습니다!');
       return true;
@@ -928,41 +727,33 @@ export default function App() {
     }
   };
 
-  // 최초 1회: 로컬 브라우저에 등록된 데이터가 있고 Convex 서버가 비어있는 경우 자동 동기화
-  const hasAutoSyncedRef = React.useRef(false);
-  useEffect(() => {
-    if (hasAutoSyncedRef.current) return;
-    if (convexPartners && convexPartners.length === 0 && localPartners && localPartners.length > 0) {
-      const hasCustomData = localPartners.some(p => 
-        p.name?.includes('설악') || 
-        p.name?.includes('오블라디') || 
-        (p.id === 'p_redpuppy' && localPartners.length < 5)
-      );
-      if (hasCustomData) {
-        hasAutoSyncedRef.current = true;
-        console.log('🔄 로컬 브라우저의 제휴처/설정을 Convex 서버로 자동 동기화합니다...');
-        handleSyncAllToServer();
-      }
-    }
-  }, [convexPartners, localPartners]);
-
   const handleAddAdoption = async (newAnimal) => {
-    const updated = [newAnimal, ...adoptionList];
+    const itemToSave = {
+      ...newAnimal,
+      id: newAnimal.id || `a_${Date.now()}`,
+      weight: newAnimal.weight || '5kg',
+      center: newAnimal.center || '한국 동물사랑나눔 보호센터',
+      story: newAnimal.story || '',
+      tags: Array.isArray(newAnimal.tags) ? newAnimal.tags : [newAnimal.tags].filter(Boolean),
+      status: newAnimal.status || '입양 상담 가능',
+      photoUrl: newAnimal.photoUrl || '',
+    };
+    const updated = [itemToSave, ...adoptionList];
     setLocalAdoptionList(updated);
-    localStorage.setItem('seulban_adoption', JSON.stringify(updated));
 
     try {
       await addAdoptionMutation({
-        name: newAnimal.name,
-        breed: newAnimal.breed,
-        gender: newAnimal.gender,
-        age: newAnimal.age,
-        weight: newAnimal.weight || '5kg',
-        center: newAnimal.center || '한국 동물사랑나눔 보호센터',
-        story: newAnimal.story || '',
-        tags: Array.isArray(newAnimal.tags) ? newAnimal.tags : [newAnimal.tags].filter(Boolean),
-        status: newAnimal.status || '입양 상담 가능',
-        photoUrl: newAnimal.photoUrl || '',
+        id: itemToSave.id,
+        name: itemToSave.name,
+        breed: itemToSave.breed,
+        gender: itemToSave.gender,
+        age: itemToSave.age,
+        weight: itemToSave.weight,
+        center: itemToSave.center,
+        story: itemToSave.story,
+        tags: itemToSave.tags,
+        status: itemToSave.status,
+        photoUrl: itemToSave.photoUrl,
       });
     } catch (e) {
       console.warn('Convex addAdoption note:', e);
@@ -974,24 +765,21 @@ export default function App() {
     const aId = updatedAnimal._id || updatedAnimal.id;
     const updated = adoptionList.map(a => (a._id === aId || a.id === aId ? { ...a, ...updatedAnimal } : a));
     setLocalAdoptionList(updated);
-    localStorage.setItem('seulban_adoption', JSON.stringify(updated));
 
     try {
-      if (updatedAnimal._id) {
-        await updateAdoptionMutation({
-          id: updatedAnimal._id,
-          name: updatedAnimal.name,
-          breed: updatedAnimal.breed,
-          gender: updatedAnimal.gender,
-          age: updatedAnimal.age,
-          weight: updatedAnimal.weight,
-          center: updatedAnimal.center,
-          story: updatedAnimal.story,
-          tags: Array.isArray(updatedAnimal.tags) ? updatedAnimal.tags : [updatedAnimal.tags].filter(Boolean),
-          status: updatedAnimal.status,
-          photoUrl: updatedAnimal.photoUrl || '',
-        });
-      }
+      await updateAdoptionMutation({
+        id: String(updatedAnimal.id || updatedAnimal._id),
+        name: updatedAnimal.name,
+        breed: updatedAnimal.breed,
+        gender: updatedAnimal.gender,
+        age: updatedAnimal.age,
+        weight: updatedAnimal.weight,
+        center: updatedAnimal.center,
+        story: updatedAnimal.story,
+        tags: Array.isArray(updatedAnimal.tags) ? updatedAnimal.tags : [updatedAnimal.tags].filter(Boolean),
+        status: updatedAnimal.status,
+        photoUrl: updatedAnimal.photoUrl || '',
+      });
     } catch (e) {
       console.warn('Convex updateAdoption note:', e);
     }
@@ -1001,12 +789,9 @@ export default function App() {
   const handleDeleteAdoption = async (id) => {
     const updated = adoptionList.filter(a => a.id !== id && a._id !== id);
     setLocalAdoptionList(updated);
-    localStorage.setItem('seulban_adoption', JSON.stringify(updated));
 
     try {
-      if (typeof id === 'string' && id.startsWith('adopt_') === false) {
-        await removeAdoptionMutation({ id });
-      }
+      await removeAdoptionMutation({ id: String(id) });
     } catch (e) {
       console.warn('Convex removeAdoption note:', e);
     }
@@ -1014,21 +799,27 @@ export default function App() {
   };
 
   const handleAddTravel = async (newTravel) => {
-    const updated = [newTravel, ...travelList];
+    const itemToSave = {
+      ...newTravel,
+      id: newTravel.id || `t_${Date.now()}`,
+      features: Array.isArray(newTravel.features) ? newTravel.features : [newTravel.features].filter(Boolean),
+      imageUrl: newTravel.imageUrl || '',
+    };
+    const updated = [itemToSave, ...travelList];
     setLocalTravelList(updated);
-    localStorage.setItem('seulban_travel', JSON.stringify(updated));
 
     try {
       await addTravelMutation({
-        type: newTravel.type,
-        name: newTravel.name,
-        location: newTravel.location,
-        weightLimit: newTravel.weightLimit,
-        price: newTravel.price,
-        features: Array.isArray(newTravel.features) ? newTravel.features : [newTravel.features],
-        memberBenefit: newTravel.memberBenefit,
-        phone: newTravel.phone,
-        imageUrl: newTravel.imageUrl || '',
+        id: itemToSave.id,
+        type: itemToSave.type,
+        name: itemToSave.name,
+        location: itemToSave.location,
+        weightLimit: itemToSave.weightLimit,
+        price: itemToSave.price,
+        features: itemToSave.features,
+        memberBenefit: itemToSave.memberBenefit,
+        phone: itemToSave.phone,
+        imageUrl: itemToSave.imageUrl,
       });
     } catch (e) {
       console.warn('Convex addTravel note:', e);
@@ -1040,23 +831,20 @@ export default function App() {
     const tId = updatedTravel._id || updatedTravel.id;
     const updated = travelList.map(t => (t._id === tId || t.id === tId ? { ...t, ...updatedTravel } : t));
     setLocalTravelList(updated);
-    localStorage.setItem('seulban_travel', JSON.stringify(updated));
 
     try {
-      if (updatedTravel._id) {
-        await updateTravelMutation({
-          id: updatedTravel._id,
-          type: updatedTravel.type,
-          name: updatedTravel.name,
-          location: updatedTravel.location,
-          weightLimit: updatedTravel.weightLimit,
-          price: updatedTravel.price,
-          features: Array.isArray(updatedTravel.features) ? updatedTravel.features : [updatedTravel.features],
-          memberBenefit: updatedTravel.memberBenefit,
-          phone: updatedTravel.phone,
-          imageUrl: updatedTravel.imageUrl || '',
-        });
-      }
+      await updateTravelMutation({
+        id: String(updatedTravel.id || updatedTravel._id),
+        type: updatedTravel.type,
+        name: updatedTravel.name,
+        location: updatedTravel.location,
+        weightLimit: updatedTravel.weightLimit,
+        price: updatedTravel.price,
+        features: Array.isArray(updatedTravel.features) ? updatedTravel.features : [updatedTravel.features].filter(Boolean),
+        memberBenefit: updatedTravel.memberBenefit,
+        phone: updatedTravel.phone,
+        imageUrl: updatedTravel.imageUrl || '',
+      });
     } catch (e) {
       console.warn('Convex updateTravel note:', e);
     }
@@ -1066,12 +854,9 @@ export default function App() {
   const handleDeleteTravel = async (id) => {
     const updated = travelList.filter(t => t.id !== id && t._id !== id);
     setLocalTravelList(updated);
-    localStorage.setItem('seulban_travel', JSON.stringify(updated));
 
     try {
-      if (typeof id === 'string' && id.startsWith('t_') === false) {
-        await removeTravelMutation({ id });
-      }
+      await removeTravelMutation({ id: String(id) });
     } catch (e) {
       console.warn('Convex removeTravel note:', e);
     }
@@ -1087,7 +872,6 @@ export default function App() {
     localStorage.setItem('seulban_user', JSON.stringify(userData));
     showToast(`${userData.name}님 환영합니다!`);
 
-    // Convex DB 비동기 계정 동기화
     try {
       if (userData.isNewUser || userData.provider === 'google') {
         await registerUserMutation({
@@ -1118,7 +902,6 @@ export default function App() {
 
   const handleUpdateBrandInfo = async (newBrand) => {
     setLocalBrandInfo(newBrand);
-    localStorage.setItem('seulban_brand', JSON.stringify(newBrand));
 
     try {
       await setSettingMutation({ key: 'brand_info', value: newBrand });
@@ -1128,18 +911,26 @@ export default function App() {
   };
 
   const handleAddPopup = async (newPopup) => {
-    const updated = [newPopup, ...popups];
+    const itemToSave = {
+      ...newPopup,
+      id: newPopup.id || `pop_${Date.now()}`,
+      linkType: newPopup.linkType || 'none',
+      linkUrl: newPopup.linkUrl || '',
+      internalTab: newPopup.internalTab || 'registration',
+      active: newPopup.active !== false,
+    };
+    const updated = [itemToSave, ...popups];
     setLocalPopups(updated);
-    localStorage.setItem('seulban_popups', JSON.stringify(updated));
 
     try {
       await addPopupMutation({
-        title: newPopup.title,
-        imageUrl: newPopup.imageUrl,
-        linkType: newPopup.linkType || 'none',
-        linkUrl: newPopup.linkUrl || '',
-        internalTab: newPopup.internalTab || 'registration',
-        active: newPopup.active !== false,
+        id: itemToSave.id,
+        title: itemToSave.title,
+        imageUrl: itemToSave.imageUrl,
+        linkType: itemToSave.linkType,
+        linkUrl: itemToSave.linkUrl,
+        internalTab: itemToSave.internalTab,
+        active: itemToSave.active,
       });
     } catch (e) {
       console.warn('Convex addPopup note:', e);
@@ -1150,12 +941,9 @@ export default function App() {
   const handleDeletePopup = async (id) => {
     const updated = popups.filter(p => p.id !== id && p._id !== id);
     setLocalPopups(updated);
-    localStorage.setItem('seulban_popups', JSON.stringify(updated));
 
     try {
-      if (typeof id === 'string' && id.startsWith('pop_') === false) {
-        await removePopupMutation({ id });
-      }
+      await removePopupMutation({ id: String(id) });
     } catch (e) {
       console.warn('Convex removePopup note:', e);
     }
@@ -1165,12 +953,9 @@ export default function App() {
   const handleTogglePopup = async (id) => {
     const updated = popups.map(p => (p.id === id || p._id === id) ? { ...p, active: !p.active } : p);
     setLocalPopups(updated);
-    localStorage.setItem('seulban_popups', JSON.stringify(updated));
 
     try {
-      if (typeof id === 'string' && id.startsWith('pop_') === false) {
-        await togglePopupMutation({ id });
-      }
+      await togglePopupMutation({ id: String(id) });
     } catch (e) {
       console.warn('Convex togglePopup note:', e);
     }
@@ -1252,8 +1037,8 @@ export default function App() {
           serverStatus={{
             isConnected: !!convexApps,
             convexPartnersCount: convexPartners ? convexPartners.length : 0,
-            env: import.meta.env.VITE_ENV_NAME || (import.meta.env.PROD ? 'production' : 'development'),
-            convexUrl: import.meta.env.VITE_CONVEX_URL || '',
+            env: 'production',
+            convexUrl: PROD_CONVEX_URL,
           }}
           showToast={showToast}
         />

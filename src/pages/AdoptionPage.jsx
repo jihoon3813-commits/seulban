@@ -57,7 +57,7 @@ export default function AdoptionPage({ adoptionList = ADOPTION_LIST }) {
         {/* Adoption Animals Grid */}
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 sm:gap-8 mb-8 sm:mb-16">
           {adoptionList.map((pet) => (
-            <div key={pet.id} className="bg-white overflow-hidden border border-[#ECE5D8] shadow-xs hover:shadow-xl transition-all duration-300 flex flex-col justify-between">
+            <div key={pet._id || pet.id} className="bg-white overflow-hidden border border-[#ECE5D8] shadow-xs hover:shadow-xl transition-all duration-300 flex flex-col justify-between">
               <div>
                 {/* Pet Photo */}
                 <div className="relative aspect-[16/10] sm:aspect-[4/3] bg-gray-100 overflow-hidden">
