@@ -5,7 +5,7 @@ import {
   CheckIcon, XIcon, SearchIcon, PhoneIcon, MapPinIcon, 
   ArrowRight, ClockIcon, UserIcon, ExternalLinkIcon,
   KakaoIcon, HeadphoneIcon, MessageSquare, FileTextIcon,
-  RefreshCwIcon, ShoppingBagIcon, TruckIcon, MenuIcon
+  RefreshCwIcon, ShoppingBagIcon, TruckIcon, MenuIcon, CameraIcon
 } from '../components/Icons';
 import { compressImage } from '../utils/imageCompressor';
 import { BRAND_INFO, REDPUPPY_PRODUCTS, DEFAULT_MENU_VISIBILITY, NAV_MENU_CONFIG } from '../data/mockData';
@@ -2154,15 +2154,28 @@ export default function AdminPage({
 
             {/* Modal: 신규 제휴처 등록 */}
             {isAddPartnerOpen && (
-              <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 sm:p-6 bg-black/80 backdrop-blur-sm animate-fade-in overflow-y-auto">
-                <div className="bg-white w-full max-w-lg shadow-2xl p-6 border border-[#ECE5D8] max-h-[85vh] my-auto overflow-y-auto">
-                  <div className="flex justify-between items-center mb-5 pb-3 border-b border-gray-100">
-                    <h3 className="font-bold text-base text-[#144A42]">신규 제휴처 추가 등록</h3>
-                    <button onClick={() => setIsAddPartnerOpen(false)} className="p-1 text-gray-400 hover:text-gray-700">
+              <div className="fixed inset-0 z-[100] flex items-center justify-center p-3 sm:p-6 bg-black/80 backdrop-blur-sm animate-fade-in overflow-y-auto">
+                <div className="bg-white w-full max-w-4xl shadow-2xl border border-[#ECE5D8] max-h-[90vh] my-auto flex flex-col rounded-lg overflow-hidden">
+                  {/* Modal Header */}
+                  <div className="px-6 py-4 border-b border-[#ECE5D8] bg-[#FAF8F5] flex justify-between items-center shrink-0">
+                    <div>
+                      <div className="flex items-center gap-2">
+                        <span className="w-2.5 h-2.5 rounded-full bg-[#144A42]"></span>
+                        <h3 className="font-bold text-base sm:text-lg text-[#144A42]">신규 제휴처 추가 등록</h3>
+                        <span className="text-[11px] px-2 py-0.5 bg-[#144A42]/10 text-[#144A42] font-semibold rounded">제휴처</span>
+                      </div>
+                      <p className="text-xs text-gray-500 mt-1">슬기로운 반려생활 회원 전용 혜택을 제공할 공식 제휴처를 등록합니다.</p>
+                    </div>
+                    <button 
+                      onClick={() => setIsAddPartnerOpen(false)} 
+                      className="p-1.5 text-gray-400 hover:text-gray-700 hover:bg-gray-100 rounded-lg transition"
+                      aria-label="닫기"
+                    >
                       <XIcon className="w-5 h-5" />
                     </button>
                   </div>
 
+                  {/* Modal Form */}
                   <form onSubmit={(e) => {
                     e.preventDefault();
                     onAddPartner({
@@ -2171,191 +2184,246 @@ export default function AdminPage({
                     });
                     setIsAddPartnerOpen(false);
                     showToast('새로운 제휴처가 성공적으로 등록되었습니다.');
-                  }} className="space-y-3.5 text-xs">
-                    <div>
-                      <label className="block font-bold mb-1">제휴처 이름</label>
-                      <input
-                        type="text"
-                        value={newPartner.name}
-                        onChange={(e) => setNewPartner({...newPartner, name: e.target.value})}
-                        placeholder="예: 강남 스마일 동물병원"
-                        className="w-full px-3 py-2 border border-gray-300 focus:border-[#144A42] focus:outline-none"
-                        required
-                      />
+                  }} className="flex flex-col flex-1 overflow-hidden">
+                    <div className="p-6 overflow-y-auto flex-1 text-xs">
+                      <div className="grid grid-cols-1 md:grid-cols-12 gap-6">
+                        {/* Left Column: 제휴처 기본 정보 (7 cols) */}
+                        <div className="md:col-span-7 space-y-4">
+                          <div className="border-b border-gray-100 pb-2">
+                            <h4 className="font-bold text-xs text-[#144A42] uppercase tracking-wider flex items-center gap-1.5">
+                              <span className="w-1.5 h-1.5 rounded-full bg-[#144A42]"></span>
+                              제휴처 기본 정보
+                            </h4>
+                          </div>
+
+                          <div>
+                            <label className="block font-bold mb-1.5 text-gray-700">
+                              제휴처 이름 <span className="text-red-500">*</span>
+                            </label>
+                            <input
+                              type="text"
+                              value={newPartner.name}
+                              onChange={(e) => setNewPartner({...newPartner, name: e.target.value})}
+                              placeholder="예: 강남 스마일 동물병원"
+                              className="w-full px-3.5 py-2.5 bg-gray-50/50 border border-gray-300 focus:bg-white focus:border-[#144A42] focus:ring-1 focus:ring-[#144A42] focus:outline-none transition rounded-xs"
+                              required
+                            />
+                          </div>
+
+                          <div className="grid grid-cols-2 gap-3">
+                            <div>
+                              <label className="block font-bold mb-1.5 text-gray-700">
+                                업종 분류 <span className="text-red-500">*</span>
+                              </label>
+                              <select
+                                value={newPartner.category}
+                                onChange={(e) => {
+                                  const catNames = {
+                                    hospital: '동물병원',
+                                    grooming: '미용/스파',
+                                    kindergarten: '유치원/호텔',
+                                    funeral: '장례케어'
+                                  };
+                                  const catColors = {
+                                    hospital: 'bg-[#EBF3FB] text-[#2563EB]',
+                                    grooming: 'bg-[#FDF2F4] text-[#E11D48]',
+                                    kindergarten: 'bg-[#FEF9EE] text-[#D97706]',
+                                    funeral: 'bg-[#F3F4F6] text-[#4B5563]'
+                                  };
+                                  setNewPartner({
+                                    ...newPartner, 
+                                    category: e.target.value,
+                                    categoryName: catNames[e.target.value] || '기타',
+                                    color: catColors[e.target.value] || newPartner.color
+                                  });
+                                }}
+                                className="w-full px-3.5 py-2.5 bg-gray-50/50 border border-gray-300 focus:bg-white focus:border-[#144A42] focus:outline-none transition rounded-xs"
+                              >
+                                <option value="hospital">동물병원</option>
+                                <option value="grooming">미용/스파</option>
+                                <option value="kindergarten">유치원/호텔</option>
+                                <option value="funeral">장례케어</option>
+                              </select>
+                            </div>
+
+                            <div>
+                              <label className="block font-bold mb-1.5 text-gray-700">
+                                특징 태그 <span className="text-red-500">*</span>
+                              </label>
+                              <input
+                                type="text"
+                                value={newPartner.tag}
+                                onChange={(e) => setNewPartner({...newPartner, tag: e.target.value})}
+                                placeholder="예: 24시 응급진료"
+                                className="w-full px-3.5 py-2.5 bg-gray-50/50 border border-gray-300 focus:bg-white focus:border-[#144A42] focus:outline-none transition rounded-xs"
+                                required
+                              />
+                            </div>
+                          </div>
+
+                          <div className="grid grid-cols-2 gap-3">
+                            <div>
+                              <label className="block font-bold mb-1.5 text-gray-700">
+                                위치 (지역) <span className="text-red-500">*</span>
+                              </label>
+                              <input
+                                type="text"
+                                value={newPartner.location}
+                                onChange={(e) => setNewPartner({...newPartner, location: e.target.value})}
+                                placeholder="예: 서울 강남구 역삼동"
+                                className="w-full px-3.5 py-2.5 bg-gray-50/50 border border-gray-300 focus:bg-white focus:border-[#144A42] focus:outline-none transition rounded-xs"
+                                required
+                              />
+                            </div>
+                            <div>
+                              <label className="block font-bold mb-1.5 text-gray-700">
+                                연락처 <span className="text-red-500">*</span>
+                              </label>
+                              <input
+                                type="text"
+                                value={newPartner.phone}
+                                onChange={(e) => setNewPartner({...newPartner, phone: e.target.value})}
+                                placeholder="예: 02-1234-5678"
+                                className="w-full px-3.5 py-2.5 bg-gray-50/50 border border-gray-300 focus:bg-white focus:border-[#144A42] focus:outline-none transition rounded-xs"
+                                required
+                              />
+                            </div>
+                          </div>
+
+                          <div>
+                            <label className="block font-bold mb-1.5 text-gray-700">
+                              상세 소개 문구 <span className="text-red-500">*</span>
+                            </label>
+                            <textarea
+                              value={newPartner.desc}
+                              onChange={(e) => setNewPartner({...newPartner, desc: e.target.value})}
+                              rows="3"
+                              placeholder="제휴처에 대한 친절한 소개글을 입력해주세요."
+                              className="w-full px-3.5 py-2.5 bg-gray-50/50 border border-gray-300 focus:bg-white focus:border-[#144A42] focus:outline-none transition rounded-xs"
+                              required
+                            />
+                          </div>
+                        </div>
+
+                        {/* Right Column: 대표 사진 & 혜택 안내 (5 cols) */}
+                        <div className="md:col-span-5 space-y-4">
+                          <div className="border-b border-gray-100 pb-2">
+                            <h4 className="font-bold text-xs text-[#144A42] uppercase tracking-wider flex items-center gap-1.5">
+                              <span className="w-1.5 h-1.5 rounded-full bg-[#144A42]"></span>
+                              대표 사진 & 회원 혜택
+                            </h4>
+                          </div>
+
+                          <div>
+                            <label className="block font-bold mb-1.5 text-gray-700">
+                              슬반생 회원 단독 혜택 <span className="text-red-500">*</span>
+                            </label>
+                            <input
+                              type="text"
+                              value={newPartner.benefit}
+                              onChange={(e) => setNewPartner({...newPartner, benefit: e.target.value})}
+                              placeholder="예: 진료비 15% 현장 즉시할인"
+                              className="w-full px-3.5 py-2.5 bg-amber-50/30 border border-amber-300 focus:bg-white focus:border-[#144A42] focus:outline-none transition rounded-xs font-semibold text-[#144A42]"
+                              required
+                            />
+                          </div>
+
+                          <div className="p-4 bg-[#FAF8F5] border border-[#EAE3D6] rounded-md space-y-3">
+                            <div className="flex items-center justify-between">
+                              <span className="font-bold text-[#144A42] text-xs">사진 등록 방식</span>
+                              <div className="flex gap-1 text-[11px]">
+                                <button
+                                  type="button"
+                                  onClick={() => setPartnerImageMode('upload')}
+                                  className={`px-2.5 py-1 font-bold transition rounded-xs ${partnerImageMode === 'upload' ? 'bg-[#144A42] text-white shadow-xs' : 'bg-gray-200 text-gray-600 hover:bg-gray-300'}`}
+                                >
+                                  직접 업로드
+                                </button>
+                                <button
+                                  type="button"
+                                  onClick={() => setPartnerImageMode('url')}
+                                  className={`px-2.5 py-1 font-bold transition rounded-xs ${partnerImageMode === 'url' ? 'bg-[#144A42] text-white shadow-xs' : 'bg-gray-200 text-gray-600 hover:bg-gray-300'}`}
+                                >
+                                  이미지 URL
+                                </button>
+                              </div>
+                            </div>
+
+                            {partnerImageMode === 'upload' ? (
+                              <div className="space-y-1.5">
+                                <input
+                                  type="file"
+                                  accept="image/*"
+                                  onChange={handlePartnerImageUpload}
+                                  className="w-full text-xs text-gray-500 file:mr-3 file:py-2 file:px-3 file:border-0 file:text-xs file:font-semibold file:bg-[#144A42] file:text-white hover:file:bg-[#0D3832] cursor-pointer rounded-xs"
+                                />
+                                <p className="text-[11px] text-gray-400">권장 비율: 16:9 또는 4:3 (최대 5MB, JPG/PNG/WebP)</p>
+                              </div>
+                            ) : (
+                              <div className="space-y-1.5">
+                                <input
+                                  type="url"
+                                  value={newPartner.imageUrl}
+                                  onChange={(e) => setNewPartner({ ...newPartner, imageUrl: e.target.value })}
+                                  placeholder="https://... 이미지 웹 주소 입력"
+                                  className="w-full px-3 py-2 bg-white border border-gray-300 focus:border-[#144A42] focus:outline-none text-xs rounded-xs"
+                                />
+                              </div>
+                            )}
+
+                            {/* Image Preview Box */}
+                            <div className="mt-2">
+                              <span className="block text-[11px] font-bold text-gray-600 mb-1.5">미리보기</span>
+                              {newPartner.imageUrl ? (
+                                <div className="relative w-full aspect-video bg-gray-100 rounded overflow-hidden border border-gray-300 group shadow-inner">
+                                  <img
+                                    src={newPartner.imageUrl}
+                                    alt="제휴처 미리보기"
+                                    className="w-full h-full object-cover"
+                                  />
+                                  <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
+                                    <button
+                                      type="button"
+                                      onClick={() => setNewPartner({ ...newPartner, imageUrl: '' })}
+                                      className="bg-red-600 text-white text-xs px-2.5 py-1 rounded shadow hover:bg-red-700 transition"
+                                    >
+                                      사진 삭제
+                                    </button>
+                                  </div>
+                                </div>
+                              ) : (
+                                <div className="w-full aspect-video bg-white rounded border-2 border-dashed border-gray-300 flex flex-col items-center justify-center text-gray-400 p-4 text-center">
+                                  <CameraIcon className="w-8 h-8 mb-1.5 text-gray-300" />
+                                  <span className="text-xs font-medium">등록된 대표 사진이 없습니다</span>
+                                  <span className="text-[10px] text-gray-400 mt-0.5">파일을 업로드하거나 URL을 입력하세요</span>
+                                </div>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+                      </div>
                     </div>
 
-                    <div className="grid grid-cols-2 gap-3">
-                      <div>
-                        <label className="block font-bold mb-1">업종 분류</label>
-                        <select
-                          value={newPartner.category}
-                          onChange={(e) => {
-                            const catNames = {
-                              hospital: '동물병원',
-                              grooming: '미용/스파',
-                              kindergarten: '유치원/호텔',
-                              funeral: '장례케어'
-                            };
-                            const catColors = {
-                              hospital: 'bg-[#EBF3FB] text-[#2563EB]',
-                              grooming: 'bg-[#FDF2F4] text-[#E11D48]',
-                              kindergarten: 'bg-[#FEF9EE] text-[#D97706]',
-                              funeral: 'bg-[#F3F4F6] text-[#4B5563]'
-                            };
-                            setNewPartner({
-                              ...newPartner, 
-                              category: e.target.value,
-                              categoryName: catNames[e.target.value] || '기타',
-                              color: catColors[e.target.value] || newPartner.color
-                            });
-                          }}
-                          className="w-full px-3 py-2 border border-gray-300 focus:border-[#144A42] focus:outline-none"
+                    {/* Modal Fixed Footer */}
+                    <div className="px-6 py-3.5 bg-gray-50 border-t border-[#ECE5D8] flex items-center justify-between shrink-0">
+                      <span className="text-[11px] text-gray-400 hidden sm:inline">
+                        * 표시는 필수 입력 항목입니다.
+                      </span>
+                      <div className="flex gap-2 w-full sm:w-auto justify-end">
+                        <button
+                          type="button"
+                          onClick={() => setIsAddPartnerOpen(false)}
+                          className="px-4 py-2 border border-gray-300 bg-white text-gray-700 hover:bg-gray-50 text-xs font-semibold rounded-xs transition"
                         >
-                          <option value="hospital">동물병원</option>
-                          <option value="grooming">미용/스파</option>
-                          <option value="kindergarten">유치원/호텔</option>
-                          <option value="funeral">장례케어</option>
-                        </select>
+                          취소
+                        </button>
+                        <button
+                          type="submit"
+                          className="px-5 py-2 bg-[#144A42] text-white text-xs font-bold hover:bg-[#0D3832] rounded-xs shadow-xs transition"
+                        >
+                          제휴처 등록 완료
+                        </button>
                       </div>
-
-                      <div>
-                        <label className="block font-bold mb-1">특징 태그</label>
-                        <input
-                          type="text"
-                          value={newPartner.tag}
-                          onChange={(e) => setNewPartner({...newPartner, tag: e.target.value})}
-                          placeholder="예: 24시 응급진료"
-                          className="w-full px-3 py-2 border border-gray-300 focus:border-[#144A42] focus:outline-none"
-                          required
-                        />
-                      </div>
-                    </div>
-
-                    {/* Image Upload / URL Mode */}
-                    <div className="p-3 bg-[#FAF8F5] border border-[#EAE3D6] space-y-2">
-                      <div className="flex items-center justify-between">
-                        <label className="block font-bold text-[#144A42]">
-                          제휴처 대표 이미지 등록 <span className="text-[11px] font-normal text-gray-500">(선택)</span>
-                        </label>
-                        <div className="flex gap-1 text-[11px]">
-                          <button
-                            type="button"
-                            onClick={() => setPartnerImageMode('upload')}
-                            className={`px-2 py-0.5 font-bold transition ${partnerImageMode === 'upload' ? 'bg-[#144A42] text-white' : 'bg-gray-200 text-gray-600'}`}
-                          >
-                            직접 업로드
-                          </button>
-                          <button
-                            type="button"
-                            onClick={() => setPartnerImageMode('url')}
-                            className={`px-2 py-0.5 font-bold transition ${partnerImageMode === 'url' ? 'bg-[#144A42] text-white' : 'bg-gray-200 text-gray-600'}`}
-                          >
-                            이미지 URL 입력
-                          </button>
-                        </div>
-                      </div>
-
-                      {partnerImageMode === 'upload' ? (
-                        <div>
-                          <input
-                            type="file"
-                            accept="image/*"
-                            onChange={handlePartnerImageUpload}
-                            className="w-full text-xs text-gray-500 file:mr-3 file:py-1.5 file:px-3 file:border-0 file:text-xs file:font-semibold file:bg-[#144A42] file:text-white hover:file:bg-[#0D3832] cursor-pointer"
-                          />
-                          <p className="text-[10px] text-gray-400 mt-1">권장 비율: 16:9 또는 4:3 (최대 5MB, JPG/PNG/WebP)</p>
-                        </div>
-                      ) : (
-                        <div>
-                          <input
-                            type="url"
-                            value={newPartner.imageUrl}
-                            onChange={(e) => setNewPartner({ ...newPartner, imageUrl: e.target.value })}
-                            placeholder="https://images.unsplash.com/... 또는 웹 이미지 URL"
-                            className="w-full px-3 py-2 border border-gray-300 focus:border-[#144A42] focus:outline-none text-xs"
-                          />
-                        </div>
-                      )}
-
-                      {newPartner.imageUrl && (
-                        <div className="mt-2 relative w-full h-32 bg-gray-100 overflow-hidden border border-gray-200">
-                          <img
-                            src={newPartner.imageUrl}
-                            alt="제휴처 미리보기"
-                            className="w-full h-full object-cover"
-                          />
-                          <button
-                            type="button"
-                            onClick={() => setNewPartner({ ...newPartner, imageUrl: '' })}
-                            className="absolute top-1.5 right-1.5 bg-black/70 text-white text-[10px] px-1.5 py-0.5 hover:bg-black"
-                          >
-                            제거
-                          </button>
-                        </div>
-                      )}
-                    </div>
-
-                    <div>
-                      <label className="block font-bold mb-1">위치 (지역)</label>
-                      <input
-                        type="text"
-                        value={newPartner.location}
-                        onChange={(e) => setNewPartner({...newPartner, location: e.target.value})}
-                        placeholder="예: 서울 강남구 역삼동"
-                        className="w-full px-3 py-2 border border-gray-300 focus:border-[#144A42] focus:outline-none"
-                        required
-                      />
-                    </div>
-
-                    <div>
-                      <label className="block font-bold mb-1">슬반생 회원 단독 혜택</label>
-                      <input
-                        type="text"
-                        value={newPartner.benefit}
-                        onChange={(e) => setNewPartner({...newPartner, benefit: e.target.value})}
-                        placeholder="예: 진료비 15% 현장 즉시할인"
-                        className="w-full px-3 py-2 border border-gray-300 focus:border-[#144A42] focus:outline-none"
-                        required
-                      />
-                    </div>
-
-                    <div>
-                      <label className="block font-bold mb-1">상세 소개 문구</label>
-                      <textarea
-                        value={newPartner.desc}
-                        onChange={(e) => setNewPartner({...newPartner, desc: e.target.value})}
-                        rows="2"
-                        className="w-full px-3 py-2 border border-gray-300 focus:border-[#144A42] focus:outline-none"
-                        required
-                      />
-                    </div>
-
-                    <div>
-                      <label className="block font-bold mb-1">연락처</label>
-                      <input
-                        type="text"
-                        value={newPartner.phone}
-                        onChange={(e) => setNewPartner({...newPartner, phone: e.target.value})}
-                        placeholder="02-1234-5678"
-                        className="w-full px-3 py-2 border border-gray-300 focus:border-[#144A42] focus:outline-none"
-                        required
-                      />
-                    </div>
-
-                    <div className="pt-3 flex justify-end gap-2">
-                      <button
-                        type="button"
-                        onClick={() => setIsAddPartnerOpen(false)}
-                        className="px-4 py-2 border border-gray-300 text-gray-600 hover:bg-gray-50"
-                      >
-                        취소
-                      </button>
-                      <button
-                        type="submit"
-                        className="px-5 py-2 bg-[#144A42] text-white font-bold hover:bg-[#0D3832]"
-                      >
-                        제휴처 등록 완료
-                      </button>
                     </div>
                   </form>
                 </div>
@@ -2364,18 +2432,28 @@ export default function AdminPage({
 
             {/* Modal: 제휴처 정보 수정 */}
             {isEditPartnerOpen && editingPartner && (
-              <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 sm:p-6 bg-black/80 backdrop-blur-sm animate-fade-in overflow-y-auto">
-                <div className="bg-white w-full max-w-lg shadow-2xl p-6 border border-[#ECE5D8] max-h-[85vh] my-auto overflow-y-auto">
-                  <div className="flex justify-between items-center mb-5 pb-3 border-b border-gray-100">
+              <div className="fixed inset-0 z-[100] flex items-center justify-center p-3 sm:p-6 bg-black/80 backdrop-blur-sm animate-fade-in overflow-y-auto">
+                <div className="bg-white w-full max-w-4xl shadow-2xl border border-[#ECE5D8] max-h-[90vh] my-auto flex flex-col rounded-lg overflow-hidden">
+                  {/* Modal Header */}
+                  <div className="px-6 py-4 border-b border-[#ECE5D8] bg-[#FAF8F5] flex justify-between items-center shrink-0">
                     <div>
-                      <h3 className="font-bold text-base text-[#144A42]">제휴처 정보 수정</h3>
-                      <p className="text-[11px] text-gray-500 mt-0.5">제휴처의 상세 내용 및 대표 이미지를 수정합니다.</p>
+                      <div className="flex items-center gap-2">
+                        <span className="w-2.5 h-2.5 rounded-full bg-[#144A42]"></span>
+                        <h3 className="font-bold text-base sm:text-lg text-[#144A42]">제휴처 정보 수정</h3>
+                        <span className="text-[11px] px-2 py-0.5 bg-[#144A42]/10 text-[#144A42] font-semibold rounded">수정 모드</span>
+                      </div>
+                      <p className="text-xs text-gray-500 mt-1">제휴처의 상세 내용 및 대표 이미지를 수정합니다.</p>
                     </div>
-                    <button onClick={() => { setIsEditPartnerOpen(false); setEditingPartner(null); }} className="p-1 text-gray-400 hover:text-gray-700">
+                    <button 
+                      onClick={() => { setIsEditPartnerOpen(false); setEditingPartner(null); }} 
+                      className="p-1.5 text-gray-400 hover:text-gray-700 hover:bg-gray-100 rounded-lg transition"
+                      aria-label="닫기"
+                    >
                       <XIcon className="w-5 h-5" />
                     </button>
                   </div>
 
+                  {/* Modal Form */}
                   <form onSubmit={(e) => {
                     e.preventDefault();
                     if (onUpdatePartner) {
@@ -2383,206 +2461,258 @@ export default function AdminPage({
                     }
                     setIsEditPartnerOpen(false);
                     setEditingPartner(null);
-                  }} className="space-y-3.5 text-xs">
-                    <div>
-                      <label className="block font-bold mb-1">제휴처 이름</label>
-                      <input
-                        type="text"
-                        value={editingPartner.name || ''}
-                        onChange={(e) => setEditingPartner({ ...editingPartner, name: e.target.value })}
-                        placeholder="예: 강남 스마일 동물병원"
-                        className="w-full px-3 py-2 border border-gray-300 focus:border-[#144A42] focus:outline-none"
-                        required
-                      />
+                  }} className="flex flex-col flex-1 overflow-hidden">
+                    <div className="p-6 overflow-y-auto flex-1 text-xs">
+                      <div className="grid grid-cols-1 md:grid-cols-12 gap-6">
+                        {/* Left Column: 제휴처 기본 정보 (7 cols) */}
+                        <div className="md:col-span-7 space-y-4">
+                          <div className="border-b border-gray-100 pb-2">
+                            <h4 className="font-bold text-xs text-[#144A42] uppercase tracking-wider flex items-center gap-1.5">
+                              <span className="w-1.5 h-1.5 rounded-full bg-[#144A42]"></span>
+                              제휴처 기본 정보
+                            </h4>
+                          </div>
+
+                          <div>
+                            <label className="block font-bold mb-1.5 text-gray-700">
+                              제휴처 이름 <span className="text-red-500">*</span>
+                            </label>
+                            <input
+                              type="text"
+                              value={editingPartner.name || ''}
+                              onChange={(e) => setEditingPartner({ ...editingPartner, name: e.target.value })}
+                              className="w-full px-3.5 py-2.5 bg-gray-50/50 border border-gray-300 focus:bg-white focus:border-[#144A42] focus:ring-1 focus:ring-[#144A42] focus:outline-none transition rounded-xs"
+                              required
+                            />
+                          </div>
+
+                          <div className="grid grid-cols-2 gap-3">
+                            <div>
+                              <label className="block font-bold mb-1.5 text-gray-700">
+                                업종 분류 <span className="text-red-500">*</span>
+                              </label>
+                              <select
+                                value={editingPartner.category || 'hospital'}
+                                onChange={(e) => {
+                                  const catNames = {
+                                    hospital: '동물병원',
+                                    grooming: '미용/스파',
+                                    kindergarten: '유치원/호텔',
+                                    funeral: '장례케어'
+                                  };
+                                  const catColors = {
+                                    hospital: 'bg-[#EBF3FB] text-[#2563EB]',
+                                    grooming: 'bg-[#FDF2F4] text-[#E11D48]',
+                                    kindergarten: 'bg-[#FEF9EE] text-[#D97706]',
+                                    funeral: 'bg-[#F3F4F6] text-[#4B5563]'
+                                  };
+                                  setEditingPartner({
+                                    ...editingPartner,
+                                    category: e.target.value,
+                                    categoryName: catNames[e.target.value] || '기타',
+                                    color: catColors[e.target.value] || editingPartner.color
+                                  });
+                                }}
+                                className="w-full px-3.5 py-2.5 bg-gray-50/50 border border-gray-300 focus:bg-white focus:border-[#144A42] focus:outline-none transition rounded-xs"
+                              >
+                                <option value="hospital">동물병원</option>
+                                <option value="grooming">미용/스파</option>
+                                <option value="kindergarten">유치원/호텔</option>
+                                <option value="funeral">장례케어</option>
+                              </select>
+                            </div>
+
+                            <div>
+                              <label className="block font-bold mb-1.5 text-gray-700">
+                                특징 태그 <span className="text-red-500">*</span>
+                              </label>
+                              <input
+                                type="text"
+                                value={editingPartner.tag || ''}
+                                onChange={(e) => setEditingPartner({ ...editingPartner, tag: e.target.value })}
+                                className="w-full px-3.5 py-2.5 bg-gray-50/50 border border-gray-300 focus:bg-white focus:border-[#144A42] focus:outline-none transition rounded-xs"
+                                required
+                              />
+                            </div>
+                          </div>
+
+                          <div className="grid grid-cols-2 gap-3">
+                            <div>
+                              <label className="block font-bold mb-1.5 text-gray-700">
+                                위치 (지역) <span className="text-red-500">*</span>
+                              </label>
+                              <input
+                                type="text"
+                                value={editingPartner.location || ''}
+                                onChange={(e) => setEditingPartner({ ...editingPartner, location: e.target.value })}
+                                placeholder="예: 서울 강남구 역삼동"
+                                className="w-full px-3.5 py-2.5 bg-gray-50/50 border border-gray-300 focus:bg-white focus:border-[#144A42] focus:outline-none transition rounded-xs"
+                                required
+                              />
+                            </div>
+                            <div>
+                              <label className="block font-bold mb-1.5 text-gray-700">
+                                연락처 <span className="text-red-500">*</span>
+                              </label>
+                              <input
+                                type="text"
+                                value={editingPartner.phone || ''}
+                                onChange={(e) => setEditingPartner({ ...editingPartner, phone: e.target.value })}
+                                placeholder="02-1234-5678"
+                                className="w-full px-3.5 py-2.5 bg-gray-50/50 border border-gray-300 focus:bg-white focus:border-[#144A42] focus:outline-none transition rounded-xs"
+                                required
+                              />
+                            </div>
+                          </div>
+
+                          <div>
+                            <label className="block font-bold mb-1.5 text-gray-700">
+                              상세 소개 문구 <span className="text-red-500">*</span>
+                            </label>
+                            <textarea
+                              value={editingPartner.desc || ''}
+                              onChange={(e) => setEditingPartner({ ...editingPartner, desc: e.target.value })}
+                              rows="3"
+                              className="w-full px-3.5 py-2.5 bg-gray-50/50 border border-gray-300 focus:bg-white focus:border-[#144A42] focus:outline-none transition rounded-xs"
+                              required
+                            />
+                          </div>
+                        </div>
+
+                        {/* Right Column: 대표 사진 & 혜택 & 평점 (5 cols) */}
+                        <div className="md:col-span-5 space-y-4">
+                          <div className="border-b border-gray-100 pb-2">
+                            <h4 className="font-bold text-xs text-[#144A42] uppercase tracking-wider flex items-center gap-1.5">
+                              <span className="w-1.5 h-1.5 rounded-full bg-[#144A42]"></span>
+                              대표 사진 & 회원 혜택
+                            </h4>
+                          </div>
+
+                          <div className="grid grid-cols-3 gap-3">
+                            <div className="col-span-2">
+                              <label className="block font-bold mb-1.5 text-gray-700">
+                                슬반생 회원 단독 혜택 <span className="text-red-500">*</span>
+                              </label>
+                              <input
+                                type="text"
+                                value={editingPartner.benefit || ''}
+                                onChange={(e) => setEditingPartner({ ...editingPartner, benefit: e.target.value })}
+                                placeholder="예: 진료비 15% 현장 즉시할인"
+                                className="w-full px-3.5 py-2.5 bg-amber-50/30 border border-amber-300 focus:bg-white focus:border-[#144A42] focus:outline-none transition rounded-xs font-semibold text-[#144A42]"
+                                required
+                              />
+                            </div>
+                            <div>
+                              <label className="block font-bold mb-1.5 text-gray-700">평점 (별점)</label>
+                              <input
+                                type="number"
+                                step="0.1"
+                                min="1"
+                                max="5"
+                                value={editingPartner.rating || 4.9}
+                                onChange={(e) => setEditingPartner({ ...editingPartner, rating: parseFloat(e.target.value) || 4.9 })}
+                                className="w-full px-3.5 py-2.5 bg-gray-50/50 border border-gray-300 focus:bg-white focus:border-[#144A42] focus:outline-none transition rounded-xs"
+                                required
+                              />
+                            </div>
+                          </div>
+
+                          <div className="p-4 bg-[#FAF8F5] border border-[#EAE3D6] rounded-md space-y-3">
+                            <div className="flex items-center justify-between">
+                              <span className="font-bold text-[#144A42] text-xs">사진 등록 방식</span>
+                              <div className="flex gap-1 text-[11px]">
+                                <button
+                                  type="button"
+                                  onClick={() => setEditPartnerImageMode('upload')}
+                                  className={`px-2.5 py-1 font-bold transition rounded-xs ${editPartnerImageMode === 'upload' ? 'bg-[#144A42] text-white shadow-xs' : 'bg-gray-200 text-gray-600 hover:bg-gray-300'}`}
+                                >
+                                  직접 업로드
+                                </button>
+                                <button
+                                  type="button"
+                                  onClick={() => setEditPartnerImageMode('url')}
+                                  className={`px-2.5 py-1 font-bold transition rounded-xs ${editPartnerImageMode === 'url' ? 'bg-[#144A42] text-white shadow-xs' : 'bg-gray-200 text-gray-600 hover:bg-gray-300'}`}
+                                >
+                                  이미지 URL
+                                </button>
+                              </div>
+                            </div>
+
+                            {editPartnerImageMode === 'upload' ? (
+                              <div className="space-y-1.5">
+                                <input
+                                  type="file"
+                                  accept="image/*"
+                                  onChange={handleEditPartnerImageUpload}
+                                  className="w-full text-xs text-gray-500 file:mr-3 file:py-2 file:px-3 file:border-0 file:text-xs file:font-semibold file:bg-[#144A42] file:text-white hover:file:bg-[#0D3832] cursor-pointer rounded-xs"
+                                />
+                                <p className="text-[11px] text-gray-400">권장 비율: 16:9 또는 4:3 (최대 5MB, JPG/PNG/WebP)</p>
+                              </div>
+                            ) : (
+                              <div className="space-y-1.5">
+                                <input
+                                  type="url"
+                                  value={editingPartner.imageUrl || ''}
+                                  onChange={(e) => setEditingPartner({ ...editingPartner, imageUrl: e.target.value })}
+                                  placeholder="https://... 이미지 웹 주소 입력"
+                                  className="w-full px-3 py-2 bg-white border border-gray-300 focus:border-[#144A42] focus:outline-none text-xs rounded-xs"
+                                />
+                              </div>
+                            )}
+
+                            {/* Image Preview Box */}
+                            <div className="mt-2">
+                              <span className="block text-[11px] font-bold text-gray-600 mb-1.5">미리보기</span>
+                              {editingPartner.imageUrl ? (
+                                <div className="relative w-full aspect-video bg-gray-100 rounded overflow-hidden border border-gray-300 group shadow-inner">
+                                  <img
+                                    src={editingPartner.imageUrl}
+                                    alt="제휴처 미리보기"
+                                    className="w-full h-full object-cover"
+                                  />
+                                  <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
+                                    <button
+                                      type="button"
+                                      onClick={() => setEditingPartner({ ...editingPartner, imageUrl: '' })}
+                                      className="bg-red-600 text-white text-xs px-2.5 py-1 rounded shadow hover:bg-red-700 transition"
+                                    >
+                                      사진 삭제
+                                    </button>
+                                  </div>
+                                </div>
+                              ) : (
+                                <div className="w-full aspect-video bg-white rounded border-2 border-dashed border-gray-300 flex flex-col items-center justify-center text-gray-400 p-4 text-center">
+                                  <CameraIcon className="w-8 h-8 mb-1.5 text-gray-300" />
+                                  <span className="text-xs font-medium">등록된 대표 사진이 없습니다</span>
+                                  <span className="text-[10px] text-gray-400 mt-0.5">파일을 업로드하거나 URL을 입력하세요</span>
+                                </div>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+                      </div>
                     </div>
 
-                    <div className="grid grid-cols-2 gap-3">
-                      <div>
-                        <label className="block font-bold mb-1">업종 분류</label>
-                        <select
-                          value={editingPartner.category || 'hospital'}
-                          onChange={(e) => {
-                            const catNames = {
-                              hospital: '동물병원',
-                              grooming: '미용/스파',
-                              kindergarten: '유치원/호텔',
-                              funeral: '장례케어'
-                            };
-                            const catColors = {
-                              hospital: 'bg-[#EBF3FB] text-[#2563EB]',
-                              grooming: 'bg-[#FDF2F4] text-[#E11D48]',
-                              kindergarten: 'bg-[#FEF9EE] text-[#D97706]',
-                              funeral: 'bg-[#F3F4F6] text-[#4B5563]'
-                            };
-                            setEditingPartner({
-                              ...editingPartner,
-                              category: e.target.value,
-                              categoryName: catNames[e.target.value] || '기타',
-                              color: catColors[e.target.value] || editingPartner.color
-                            });
-                          }}
-                          className="w-full px-3 py-2 border border-gray-300 focus:border-[#144A42] focus:outline-none"
+                    {/* Modal Fixed Footer */}
+                    <div className="px-6 py-3.5 bg-gray-50 border-t border-[#ECE5D8] flex items-center justify-between shrink-0">
+                      <span className="text-[11px] text-gray-400 hidden sm:inline">
+                        * 표시는 필수 입력 항목입니다.
+                      </span>
+                      <div className="flex gap-2 w-full sm:w-auto justify-end">
+                        <button
+                          type="button"
+                          onClick={() => { setIsEditPartnerOpen(false); setEditingPartner(null); }}
+                          className="px-4 py-2 border border-gray-300 bg-white text-gray-700 hover:bg-gray-50 text-xs font-semibold rounded-xs transition"
                         >
-                          <option value="hospital">동물병원</option>
-                          <option value="grooming">미용/스파</option>
-                          <option value="kindergarten">유치원/호텔</option>
-                          <option value="funeral">장례케어</option>
-                        </select>
+                          취소
+                        </button>
+                        <button
+                          type="submit"
+                          className="px-5 py-2 bg-[#144A42] text-white text-xs font-bold hover:bg-[#0D3832] rounded-xs shadow-xs transition"
+                        >
+                          수정사항 저장
+                        </button>
                       </div>
-
-                      <div>
-                        <label className="block font-bold mb-1">특징 태그</label>
-                        <input
-                          type="text"
-                          value={editingPartner.tag || ''}
-                          onChange={(e) => setEditingPartner({ ...editingPartner, tag: e.target.value })}
-                          placeholder="예: 24시 응급진료"
-                          className="w-full px-3 py-2 border border-gray-300 focus:border-[#144A42] focus:outline-none"
-                          required
-                        />
-                      </div>
-                    </div>
-
-                    {/* Image Upload / URL Mode */}
-                    <div className="p-3 bg-[#FAF8F5] border border-[#EAE3D6] space-y-2">
-                      <div className="flex items-center justify-between">
-                        <label className="block font-bold text-[#144A42]">
-                          제휴처 대표 이미지 <span className="text-[11px] font-normal text-gray-500">(선택)</span>
-                        </label>
-                        <div className="flex gap-1 text-[11px]">
-                          <button
-                            type="button"
-                            onClick={() => setEditPartnerImageMode('upload')}
-                            className={`px-2 py-0.5 font-bold transition ${editPartnerImageMode === 'upload' ? 'bg-[#144A42] text-white' : 'bg-gray-200 text-gray-600'}`}
-                          >
-                            직접 업로드
-                          </button>
-                          <button
-                            type="button"
-                            onClick={() => setEditPartnerImageMode('url')}
-                            className={`px-2 py-0.5 font-bold transition ${editPartnerImageMode === 'url' ? 'bg-[#144A42] text-white' : 'bg-gray-200 text-gray-600'}`}
-                          >
-                            이미지 URL 입력
-                          </button>
-                        </div>
-                      </div>
-
-                      {editPartnerImageMode === 'upload' ? (
-                        <div>
-                          <input
-                            type="file"
-                            accept="image/*"
-                            onChange={handleEditPartnerImageUpload}
-                            className="w-full text-xs text-gray-500 file:mr-3 file:py-1.5 file:px-3 file:border-0 file:text-xs file:font-semibold file:bg-[#144A42] file:text-white hover:file:bg-[#0D3832] cursor-pointer"
-                          />
-                          <p className="text-[10px] text-gray-400 mt-1">권장 비율: 16:9 또는 4:3 (최대 5MB, JPG/PNG/WebP)</p>
-                        </div>
-                      ) : (
-                        <div>
-                          <input
-                            type="url"
-                            value={editingPartner.imageUrl || ''}
-                            onChange={(e) => setEditingPartner({ ...editingPartner, imageUrl: e.target.value })}
-                            placeholder="https://images.unsplash.com/... 또는 웹 이미지 URL"
-                            className="w-full px-3 py-2 border border-gray-300 focus:border-[#144A42] focus:outline-none text-xs"
-                          />
-                        </div>
-                      )}
-
-                      {editingPartner.imageUrl && (
-                        <div className="mt-2 relative w-full h-32 bg-gray-100 overflow-hidden border border-gray-200">
-                          <img
-                            src={editingPartner.imageUrl}
-                            alt="제휴처 미리보기"
-                            className="w-full h-full object-cover"
-                          />
-                          <button
-                            type="button"
-                            onClick={() => setEditingPartner({ ...editingPartner, imageUrl: '' })}
-                            className="absolute top-1.5 right-1.5 bg-black/70 text-white text-[10px] px-1.5 py-0.5 hover:bg-black"
-                          >
-                            제거
-                          </button>
-                        </div>
-                      )}
-                    </div>
-
-                    <div>
-                      <label className="block font-bold mb-1">위치 (지역)</label>
-                      <input
-                        type="text"
-                        value={editingPartner.location || ''}
-                        onChange={(e) => setEditingPartner({ ...editingPartner, location: e.target.value })}
-                        placeholder="예: 서울 강남구 역삼동"
-                        className="w-full px-3 py-2 border border-gray-300 focus:border-[#144A42] focus:outline-none"
-                        required
-                      />
-                    </div>
-
-                    <div>
-                      <label className="block font-bold mb-1">슬반생 회원 단독 혜택</label>
-                      <input
-                        type="text"
-                        value={editingPartner.benefit || ''}
-                        onChange={(e) => setEditingPartner({ ...editingPartner, benefit: e.target.value })}
-                        placeholder="예: 진료비 15% 현장 즉시할인"
-                        className="w-full px-3 py-2 border border-gray-300 focus:border-[#144A42] focus:outline-none"
-                        required
-                      />
-                    </div>
-
-                    <div>
-                      <label className="block font-bold mb-1">상세 소개 문구</label>
-                      <textarea
-                        value={editingPartner.desc || ''}
-                        onChange={(e) => setEditingPartner({ ...editingPartner, desc: e.target.value })}
-                        rows="2"
-                        className="w-full px-3 py-2 border border-gray-300 focus:border-[#144A42] focus:outline-none"
-                        required
-                      />
-                    </div>
-
-                    <div className="grid grid-cols-2 gap-3">
-                      <div>
-                        <label className="block font-bold mb-1">연락처</label>
-                        <input
-                          type="text"
-                          value={editingPartner.phone || ''}
-                          onChange={(e) => setEditingPartner({ ...editingPartner, phone: e.target.value })}
-                          placeholder="02-1234-5678"
-                          className="w-full px-3 py-2 border border-gray-300 focus:border-[#144A42] focus:outline-none"
-                          required
-                        />
-                      </div>
-                      <div>
-                        <label className="block font-bold mb-1">평점 (별점)</label>
-                        <input
-                          type="number"
-                          step="0.1"
-                          min="1"
-                          max="5"
-                          value={editingPartner.rating || 4.9}
-                          onChange={(e) => setEditingPartner({ ...editingPartner, rating: parseFloat(e.target.value) || 4.9 })}
-                          className="w-full px-3 py-2 border border-gray-300 focus:border-[#144A42] focus:outline-none"
-                          required
-                        />
-                      </div>
-                    </div>
-
-                    <div className="pt-3 flex justify-end gap-2 border-t border-gray-100">
-                      <button
-                        type="button"
-                        onClick={() => { setIsEditPartnerOpen(false); setEditingPartner(null); }}
-                        className="px-4 py-2 border border-gray-300 text-gray-600 hover:bg-gray-50"
-                      >
-                        취소
-                      </button>
-                      <button
-                        type="submit"
-                        className="px-5 py-2 bg-[#144A42] text-white font-bold hover:bg-[#0D3832]"
-                      >
-                        수정사항 저장
-                      </button>
                     </div>
                   </form>
                 </div>
@@ -3713,15 +3843,28 @@ export default function AdminPage({
 
             {/* Modal: 입양 동물 추가 */}
             {isAddAdoptionOpen && (
-              <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 sm:p-6 bg-black/80 backdrop-blur-sm animate-fade-in overflow-y-auto">
-                <div className="bg-white w-full max-w-lg shadow-2xl p-6 border border-[#ECE5D8] max-h-[85vh] my-auto overflow-y-auto">
-                  <div className="flex justify-between items-center mb-5 pb-3 border-b border-gray-100">
-                    <h3 className="font-bold text-base text-[#144A42]">신규 입양 동물 등록</h3>
-                    <button onClick={() => setIsAddAdoptionOpen(false)} className="p-1 text-gray-400 hover:text-gray-700">
+              <div className="fixed inset-0 z-[100] flex items-center justify-center p-3 sm:p-6 bg-black/80 backdrop-blur-sm animate-fade-in overflow-y-auto">
+                <div className="bg-white w-full max-w-4xl shadow-2xl border border-[#ECE5D8] max-h-[90vh] my-auto flex flex-col rounded-lg overflow-hidden">
+                  {/* Modal Header */}
+                  <div className="px-6 py-4 border-b border-[#ECE5D8] bg-[#FAF8F5] flex justify-between items-center shrink-0">
+                    <div>
+                      <div className="flex items-center gap-2">
+                        <span className="w-2.5 h-2.5 rounded-full bg-[#144A42]"></span>
+                        <h3 className="font-bold text-base sm:text-lg text-[#144A42]">신규 입양 동물 등록</h3>
+                        <span className="text-[11px] px-2 py-0.5 bg-[#144A42]/10 text-[#144A42] font-semibold rounded">입양 케어</span>
+                      </div>
+                      <p className="text-xs text-gray-500 mt-1">새로운 가족을 기다리는 입양 동물의 프로필을 등록합니다.</p>
+                    </div>
+                    <button 
+                      onClick={() => setIsAddAdoptionOpen(false)} 
+                      className="p-1.5 text-gray-400 hover:text-gray-700 hover:bg-gray-100 rounded-lg transition"
+                      aria-label="닫기"
+                    >
                       <XIcon className="w-5 h-5" />
                     </button>
                   </div>
 
+                  {/* Modal Form */}
                   <form onSubmit={(e) => {
                     e.preventDefault();
                     onAddAdoption({
@@ -3731,177 +3874,234 @@ export default function AdminPage({
                     });
                     setIsAddAdoptionOpen(false);
                     showToast('새로운 입양 동물이 등록되었습니다.');
-                  }} className="space-y-3 text-xs">
-                    <div className="grid grid-cols-2 gap-3">
-                      <div>
-                        <label className="block font-bold mb-1">이름</label>
-                        <input
-                          type="text"
-                          value={newAdoption.name}
-                          onChange={(e) => setNewAdoption({...newAdoption, name: e.target.value})}
-                          placeholder="예: 초코"
-                          className="w-full px-3 py-2 border border-gray-300 focus:border-[#144A42] focus:outline-none"
-                          required
-                        />
-                      </div>
-                      <div>
-                        <label className="block font-bold mb-1">품종</label>
-                        <input
-                          type="text"
-                          value={newAdoption.breed}
-                          onChange={(e) => setNewAdoption({...newAdoption, breed: e.target.value})}
-                          placeholder="예: 포메라니안 믹스"
-                          className="w-full px-3 py-2 border border-gray-300 focus:border-[#144A42] focus:outline-none"
-                          required
-                        />
-                      </div>
-                    </div>
+                  }} className="flex flex-col flex-1 overflow-hidden">
+                    <div className="p-6 overflow-y-auto flex-1 text-xs">
+                      <div className="grid grid-cols-1 md:grid-cols-12 gap-6">
+                        {/* Left Column: 아이 기본 프로필 (7 cols) */}
+                        <div className="md:col-span-7 space-y-4">
+                          <div className="border-b border-gray-100 pb-2">
+                            <h4 className="font-bold text-xs text-[#144A42] uppercase tracking-wider flex items-center gap-1.5">
+                              <span className="w-1.5 h-1.5 rounded-full bg-[#144A42]"></span>
+                              아이 기본 정보
+                            </h4>
+                          </div>
 
-                    <div className="grid grid-cols-3 gap-3">
-                      <div>
-                        <label className="block font-bold mb-1">성별</label>
-                        <input
-                          type="text"
-                          value={newAdoption.gender}
-                          onChange={(e) => setNewAdoption({...newAdoption, gender: e.target.value})}
-                          placeholder="여아 (중성화 완료)"
-                          className="w-full px-3 py-2 border border-gray-300 focus:border-[#144A42] focus:outline-none"
-                        />
-                      </div>
-                      <div>
-                        <label className="block font-bold mb-1">나이</label>
-                        <input
-                          type="text"
-                          value={newAdoption.age}
-                          onChange={(e) => setNewAdoption({...newAdoption, age: e.target.value})}
-                          placeholder="2살 추정"
-                          className="w-full px-3 py-2 border border-gray-300 focus:border-[#144A42] focus:outline-none"
-                        />
-                      </div>
-                      <div>
-                        <label className="block font-bold mb-1">체중</label>
-                        <input
-                          type="text"
-                          value={newAdoption.weight}
-                          onChange={(e) => setNewAdoption({...newAdoption, weight: e.target.value})}
-                          placeholder="5.2kg"
-                          className="w-full px-3 py-2 border border-gray-300 focus:border-[#144A42] focus:outline-none"
-                        />
-                      </div>
-                    </div>
+                          <div className="grid grid-cols-2 gap-3">
+                            <div>
+                              <label className="block font-bold mb-1.5 text-gray-700">
+                                이름 <span className="text-red-500">*</span>
+                              </label>
+                              <input
+                                type="text"
+                                value={newAdoption.name}
+                                onChange={(e) => setNewAdoption({...newAdoption, name: e.target.value})}
+                                placeholder="예: 초코"
+                                className="w-full px-3.5 py-2.5 bg-gray-50/50 border border-gray-300 focus:bg-white focus:border-[#144A42] focus:ring-1 focus:ring-[#144A42] focus:outline-none transition rounded-xs"
+                                required
+                              />
+                            </div>
+                            <div>
+                              <label className="block font-bold mb-1.5 text-gray-700">
+                                품종 <span className="text-red-500">*</span>
+                              </label>
+                              <input
+                                type="text"
+                                value={newAdoption.breed}
+                                onChange={(e) => setNewAdoption({...newAdoption, breed: e.target.value})}
+                                placeholder="예: 포메라니안 믹스"
+                                className="w-full px-3.5 py-2.5 bg-gray-50/50 border border-gray-300 focus:bg-white focus:border-[#144A42] focus:outline-none transition rounded-xs"
+                                required
+                              />
+                            </div>
+                          </div>
 
-                    <div>
-                      <label className="block font-bold mb-1">보호 센터명</label>
-                      <input
-                        type="text"
-                        value={newAdoption.center}
-                        onChange={(e) => setNewAdoption({...newAdoption, center: e.target.value})}
-                        placeholder="한국 동물사랑나눔 보호센터"
-                        className="w-full px-3 py-2 border border-gray-300 focus:border-[#144A42] focus:outline-none"
-                        required
-                      />
-                    </div>
+                          <div className="grid grid-cols-3 gap-3">
+                            <div>
+                              <label className="block font-bold mb-1.5 text-gray-700">성별</label>
+                              <input
+                                type="text"
+                                value={newAdoption.gender}
+                                onChange={(e) => setNewAdoption({...newAdoption, gender: e.target.value})}
+                                placeholder="여아 (중성화 완료)"
+                                className="w-full px-3.5 py-2.5 bg-gray-50/50 border border-gray-300 focus:bg-white focus:border-[#144A42] focus:outline-none transition rounded-xs"
+                              />
+                            </div>
+                            <div>
+                              <label className="block font-bold mb-1.5 text-gray-700">나이</label>
+                              <input
+                                type="text"
+                                value={newAdoption.age}
+                                onChange={(e) => setNewAdoption({...newAdoption, age: e.target.value})}
+                                placeholder="2살 추정"
+                                className="w-full px-3.5 py-2.5 bg-gray-50/50 border border-gray-300 focus:bg-white focus:border-[#144A42] focus:outline-none transition rounded-xs"
+                              />
+                            </div>
+                            <div>
+                              <label className="block font-bold mb-1.5 text-gray-700">체중</label>
+                              <input
+                                type="text"
+                                value={newAdoption.weight}
+                                onChange={(e) => setNewAdoption({...newAdoption, weight: e.target.value})}
+                                placeholder="5.2kg"
+                                className="w-full px-3.5 py-2.5 bg-gray-50/50 border border-gray-300 focus:bg-white focus:border-[#144A42] focus:outline-none transition rounded-xs"
+                              />
+                            </div>
+                          </div>
 
-                    <div>
-                      <label className="block font-bold mb-1">아이 소개 및 스토리</label>
-                      <textarea
-                        value={newAdoption.story}
-                        onChange={(e) => setNewAdoption({...newAdoption, story: e.target.value})}
-                        rows="2"
-                        className="w-full px-3 py-2 border border-gray-300 focus:border-[#144A42] focus:outline-none"
-                        required
-                      />
-                    </div>
+                          <div>
+                            <label className="block font-bold mb-1.5 text-gray-700">
+                              보호 센터명 <span className="text-red-500">*</span>
+                            </label>
+                            <input
+                              type="text"
+                              value={newAdoption.center}
+                              onChange={(e) => setNewAdoption({...newAdoption, center: e.target.value})}
+                              placeholder="한국 동물사랑나눔 보호센터"
+                              className="w-full px-3.5 py-2.5 bg-gray-50/50 border border-gray-300 focus:bg-white focus:border-[#144A42] focus:outline-none transition rounded-xs"
+                              required
+                            />
+                          </div>
 
-                    <div>
-                      <label className="block font-bold mb-1">태그 (쉼표로 구분)</label>
-                      <input
-                        type="text"
-                        value={newAdoption.tags}
-                        onChange={(e) => setNewAdoption({...newAdoption, tags: e.target.value})}
-                        placeholder="예: 애교만점, 사람좋아함, 배변완료"
-                        className="w-full px-3 py-2 border border-gray-300 focus:border-[#144A42] focus:outline-none"
-                      />
-                    </div>
+                          <div>
+                            <label className="block font-bold mb-1.5 text-gray-700">
+                              아이 소개 및 사연 스토리 <span className="text-red-500">*</span>
+                            </label>
+                            <textarea
+                              value={newAdoption.story}
+                              onChange={(e) => setNewAdoption({...newAdoption, story: e.target.value})}
+                              rows="3"
+                              placeholder="아이의 성격, 보호소에 오게 된 계기, 좋아하는 것 등을 따뜻하게 적어주세요."
+                              className="w-full px-3.5 py-2.5 bg-gray-50/50 border border-gray-300 focus:bg-white focus:border-[#144A42] focus:outline-none transition rounded-xs"
+                              required
+                            />
+                          </div>
 
-                    {/* Adoption Photo Upload / URL Mode */}
-                    <div className="p-3 bg-[#FAF8F5] border border-[#EAE3D6] space-y-2">
-                      <div className="flex items-center justify-between">
-                        <label className="block font-bold text-[#144A42]">
-                          입양 동물 대표 사진 <span className="text-[11px] font-normal text-gray-500">(선택)</span>
-                        </label>
-                        <div className="flex gap-1 text-[11px]">
-                          <button
-                            type="button"
-                            onClick={() => setAdoptionImageMode('upload')}
-                            className={`px-2 py-0.5 font-bold transition ${adoptionImageMode === 'upload' ? 'bg-[#144A42] text-white' : 'bg-gray-200 text-gray-600'}`}
-                          >
-                            직접 업로드
-                          </button>
-                          <button
-                            type="button"
-                            onClick={() => setAdoptionImageMode('url')}
-                            className={`px-2 py-0.5 font-bold transition ${adoptionImageMode === 'url' ? 'bg-[#144A42] text-white' : 'bg-gray-200 text-gray-600'}`}
-                          >
-                            이미지 URL
-                          </button>
+                          <div>
+                            <label className="block font-bold mb-1.5 text-gray-700">성격 태그 (쉼표로 구분)</label>
+                            <input
+                              type="text"
+                              value={newAdoption.tags}
+                              onChange={(e) => setNewAdoption({...newAdoption, tags: e.target.value})}
+                              placeholder="예: 애교만점, 사람좋아함, 배변완료, 온순함"
+                              className="w-full px-3.5 py-2.5 bg-gray-50/50 border border-gray-300 focus:bg-white focus:border-[#144A42] focus:outline-none transition rounded-xs"
+                            />
+                          </div>
+                        </div>
+
+                        {/* Right Column: 대표 사진 & 미리보기 (5 cols) */}
+                        <div className="md:col-span-5 space-y-4">
+                          <div className="border-b border-gray-100 pb-2">
+                            <h4 className="font-bold text-xs text-[#144A42] uppercase tracking-wider flex items-center gap-1.5">
+                              <span className="w-1.5 h-1.5 rounded-full bg-[#144A42]"></span>
+                              입양 동물 대표 사진
+                            </h4>
+                          </div>
+
+                          <div className="p-4 bg-[#FAF8F5] border border-[#EAE3D6] rounded-md space-y-3">
+                            <div className="flex items-center justify-between">
+                              <span className="font-bold text-[#144A42] text-xs">사진 등록 방식</span>
+                              <div className="flex gap-1 text-[11px]">
+                                <button
+                                  type="button"
+                                  onClick={() => setAdoptionImageMode('upload')}
+                                  className={`px-2.5 py-1 font-bold transition rounded-xs ${adoptionImageMode === 'upload' ? 'bg-[#144A42] text-white shadow-xs' : 'bg-gray-200 text-gray-600 hover:bg-gray-300'}`}
+                                >
+                                  직접 업로드
+                                </button>
+                                <button
+                                  type="button"
+                                  onClick={() => setAdoptionImageMode('url')}
+                                  className={`px-2.5 py-1 font-bold transition rounded-xs ${adoptionImageMode === 'url' ? 'bg-[#144A42] text-white shadow-xs' : 'bg-gray-200 text-gray-600 hover:bg-gray-300'}`}
+                                >
+                                  이미지 URL
+                                </button>
+                              </div>
+                            </div>
+
+                            {adoptionImageMode === 'upload' ? (
+                              <div className="space-y-1.5">
+                                <input
+                                  type="file"
+                                  accept="image/*"
+                                  onChange={handleAdoptionImageUpload}
+                                  className="w-full text-xs text-gray-500 file:mr-3 file:py-2 file:px-3 file:border-0 file:text-xs file:font-semibold file:bg-[#144A42] file:text-white hover:file:bg-[#0D3832] cursor-pointer rounded-xs"
+                                />
+                                <p className="text-[11px] text-gray-400">권장 비율: 4:3 또는 16:9 (최대 5MB, JPG/PNG/WebP)</p>
+                              </div>
+                            ) : (
+                              <div className="space-y-1.5">
+                                <input
+                                  type="url"
+                                  value={newAdoption.photoUrl}
+                                  onChange={(e) => setNewAdoption({ ...newAdoption, photoUrl: e.target.value })}
+                                  placeholder="https://... 이미지 웹 주소 입력"
+                                  className="w-full px-3 py-2 bg-white border border-gray-300 focus:border-[#144A42] focus:outline-none text-xs rounded-xs"
+                                />
+                              </div>
+                            )}
+
+                            {/* Image Preview Box */}
+                            <div className="mt-2">
+                              <span className="block text-[11px] font-bold text-gray-600 mb-1.5">미리보기</span>
+                              {newAdoption.photoUrl ? (
+                                <div className="relative w-full aspect-video bg-gray-100 rounded overflow-hidden border border-gray-300 group shadow-inner">
+                                  <img
+                                    src={newAdoption.photoUrl}
+                                    alt="입양 동물 미리보기"
+                                    className="w-full h-full object-cover"
+                                  />
+                                  <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
+                                    <button
+                                      type="button"
+                                      onClick={() => setNewAdoption({ ...newAdoption, photoUrl: '' })}
+                                      className="bg-red-600 text-white text-xs px-2.5 py-1 rounded shadow hover:bg-red-700 transition"
+                                    >
+                                      사진 삭제
+                                    </button>
+                                  </div>
+                                </div>
+                              ) : (
+                                <div className="w-full aspect-video bg-white rounded border-2 border-dashed border-gray-300 flex flex-col items-center justify-center text-gray-400 p-4 text-center">
+                                  <CameraIcon className="w-8 h-8 mb-1.5 text-gray-300" />
+                                  <span className="text-xs font-medium">등록된 대표 사진이 없습니다</span>
+                                  <span className="text-[10px] text-gray-400 mt-0.5">파일을 업로드하거나 URL을 입력하세요</span>
+                                </div>
+                              )}
+                            </div>
+                          </div>
+
+                          <div className="p-3 bg-emerald-50/70 border border-emerald-200/70 rounded text-[11px] text-emerald-800 space-y-1">
+                            <p className="font-bold flex items-center gap-1">
+                              <span>🐶</span> 따뜻한 입양 팁
+                            </p>
+                            <p className="leading-relaxed">
+                              선명하고 밝은 표정의 사진과 상세한 성격 태그를 등록하면 예비 반려가족과의 만남 매칭률이 높아집니다.
+                            </p>
+                          </div>
                         </div>
                       </div>
-
-                      {adoptionImageMode === 'upload' ? (
-                        <div>
-                          <input
-                            type="file"
-                            accept="image/*"
-                            onChange={handleAdoptionImageUpload}
-                            className="w-full text-xs text-gray-500 file:mr-3 file:py-1.5 file:px-3 file:border-0 file:text-xs file:font-semibold file:bg-[#144A42] file:text-white hover:file:bg-[#0D3832] cursor-pointer"
-                          />
-                          <p className="text-[10px] text-gray-400 mt-1">권장 비율: 4:3 또는 16:9 (최대 5MB, JPG/PNG/WebP)</p>
-                        </div>
-                      ) : (
-                        <div>
-                          <input
-                            type="url"
-                            value={newAdoption.photoUrl}
-                            onChange={(e) => setNewAdoption({ ...newAdoption, photoUrl: e.target.value })}
-                            placeholder="https://images.unsplash.com/... 또는 웹 이미지 URL"
-                            className="w-full px-3 py-2 border border-gray-300 focus:border-[#144A42] focus:outline-none text-xs"
-                          />
-                        </div>
-                      )}
-
-                      {newAdoption.photoUrl && (
-                        <div className="mt-2 relative w-full h-32 bg-gray-100 overflow-hidden border border-gray-200">
-                          <img
-                            src={newAdoption.photoUrl}
-                            alt="미리보기"
-                            className="w-full h-full object-cover"
-                          />
-                          <button
-                            type="button"
-                            onClick={() => setNewAdoption({ ...newAdoption, photoUrl: '' })}
-                            className="absolute top-1.5 right-1.5 bg-black/70 text-white text-[10px] px-1.5 py-0.5 hover:bg-black"
-                          >
-                            제거
-                          </button>
-                        </div>
-                      )}
                     </div>
 
-                    <div className="pt-3 flex justify-end gap-2">
-                      <button
-                        type="button"
-                        onClick={() => setIsAddAdoptionOpen(false)}
-                        className="px-4 py-2 border border-gray-300 text-gray-600 hover:bg-gray-50"
-                      >
-                        취소
-                      </button>
-                      <button
-                        type="submit"
-                        className="px-5 py-2 bg-[#144A42] text-white font-bold hover:bg-[#0D3832]"
-                      >
-                        등록 완료
-                      </button>
+                    {/* Modal Fixed Footer */}
+                    <div className="px-6 py-3.5 bg-gray-50 border-t border-[#ECE5D8] flex items-center justify-between shrink-0">
+                      <span className="text-[11px] text-gray-400 hidden sm:inline">
+                        * 표시는 필수 입력 항목입니다.
+                      </span>
+                      <div className="flex gap-2 w-full sm:w-auto justify-end">
+                        <button
+                          type="button"
+                          onClick={() => setIsAddAdoptionOpen(false)}
+                          className="px-4 py-2 border border-gray-300 bg-white text-gray-700 hover:bg-gray-50 text-xs font-semibold rounded-xs transition"
+                        >
+                          취소
+                        </button>
+                        <button
+                          type="submit"
+                          className="px-5 py-2 bg-[#144A42] text-white text-xs font-bold hover:bg-[#0D3832] rounded-xs shadow-xs transition"
+                        >
+                          등록 완료
+                        </button>
+                      </div>
                     </div>
                   </form>
                 </div>
@@ -3910,18 +4110,28 @@ export default function AdminPage({
 
             {/* Modal: 입양 동물 정보 수정 */}
             {isEditAdoptionOpen && editingAdoption && (
-              <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 sm:p-6 bg-black/80 backdrop-blur-sm animate-fade-in overflow-y-auto">
-                <div className="bg-white w-full max-w-lg shadow-2xl p-6 border border-[#ECE5D8] max-h-[85vh] my-auto overflow-y-auto">
-                  <div className="flex justify-between items-center mb-5 pb-3 border-b border-gray-100">
+              <div className="fixed inset-0 z-[100] flex items-center justify-center p-3 sm:p-6 bg-black/80 backdrop-blur-sm animate-fade-in overflow-y-auto">
+                <div className="bg-white w-full max-w-4xl shadow-2xl border border-[#ECE5D8] max-h-[90vh] my-auto flex flex-col rounded-lg overflow-hidden">
+                  {/* Modal Header */}
+                  <div className="px-6 py-4 border-b border-[#ECE5D8] bg-[#FAF8F5] flex justify-between items-center shrink-0">
                     <div>
-                      <h3 className="font-bold text-base text-[#144A42]">입양 동물 정보 수정</h3>
-                      <p className="text-[11px] text-gray-500 mt-0.5">아이의 프로필 및 대표 사진을 수정합니다.</p>
+                      <div className="flex items-center gap-2">
+                        <span className="w-2.5 h-2.5 rounded-full bg-[#144A42]"></span>
+                        <h3 className="font-bold text-base sm:text-lg text-[#144A42]">입양 동물 정보 수정</h3>
+                        <span className="text-[11px] px-2 py-0.5 bg-[#144A42]/10 text-[#144A42] font-semibold rounded">수정 모드</span>
+                      </div>
+                      <p className="text-xs text-gray-500 mt-1">아이의 프로필 및 대표 사진을 수정합니다.</p>
                     </div>
-                    <button onClick={() => { setIsEditAdoptionOpen(false); setEditingAdoption(null); }} className="p-1 text-gray-400 hover:text-gray-700">
+                    <button 
+                      onClick={() => { setIsEditAdoptionOpen(false); setEditingAdoption(null); }} 
+                      className="p-1.5 text-gray-400 hover:text-gray-700 hover:bg-gray-100 rounded-lg transition"
+                      aria-label="닫기"
+                    >
                       <XIcon className="w-5 h-5" />
                     </button>
                   </div>
 
+                  {/* Modal Form */}
                   <form onSubmit={(e) => {
                     e.preventDefault();
                     if (onUpdateAdoption) {
@@ -3934,183 +4144,231 @@ export default function AdminPage({
                     }
                     setIsEditAdoptionOpen(false);
                     setEditingAdoption(null);
-                  }} className="space-y-3 text-xs">
-                    <div className="grid grid-cols-2 gap-3">
-                      <div>
-                        <label className="block font-bold mb-1">이름</label>
-                        <input
-                          type="text"
-                          value={editingAdoption.name || ''}
-                          onChange={(e) => setEditingAdoption({ ...editingAdoption, name: e.target.value })}
-                          className="w-full px-3 py-2 border border-gray-300 focus:border-[#144A42] focus:outline-none"
-                          required
-                        />
-                      </div>
-                      <div>
-                        <label className="block font-bold mb-1">품종</label>
-                        <input
-                          type="text"
-                          value={editingAdoption.breed || ''}
-                          onChange={(e) => setEditingAdoption({ ...editingAdoption, breed: e.target.value })}
-                          className="w-full px-3 py-2 border border-gray-300 focus:border-[#144A42] focus:outline-none"
-                          required
-                        />
+                  }} className="flex flex-col flex-1 overflow-hidden">
+                    <div className="p-6 overflow-y-auto flex-1 text-xs">
+                      <div className="grid grid-cols-1 md:grid-cols-12 gap-6">
+                        {/* Left Column: 아이 기본 프로필 (7 cols) */}
+                        <div className="md:col-span-7 space-y-4">
+                          <div className="border-b border-gray-100 pb-2">
+                            <h4 className="font-bold text-xs text-[#144A42] uppercase tracking-wider flex items-center gap-1.5">
+                              <span className="w-1.5 h-1.5 rounded-full bg-[#144A42]"></span>
+                              아이 기본 정보
+                            </h4>
+                          </div>
+
+                          <div className="grid grid-cols-2 gap-3">
+                            <div>
+                              <label className="block font-bold mb-1.5 text-gray-700">
+                                이름 <span className="text-red-500">*</span>
+                              </label
+                              ><input
+                                type="text"
+                                value={editingAdoption.name || ''}
+                                onChange={(e) => setEditingAdoption({ ...editingAdoption, name: e.target.value })}
+                                className="w-full px-3.5 py-2.5 bg-gray-50/50 border border-gray-300 focus:bg-white focus:border-[#144A42] focus:ring-1 focus:ring-[#144A42] focus:outline-none transition rounded-xs"
+                                required
+                              />
+                            </div>
+                            <div>
+                              <label className="block font-bold mb-1.5 text-gray-700">
+                                품종 <span className="text-red-500">*</span>
+                              </label>
+                              <input
+                                type="text"
+                                value={editingAdoption.breed || ''}
+                                onChange={(e) => setEditingAdoption({ ...editingAdoption, breed: e.target.value })}
+                                className="w-full px-3.5 py-2.5 bg-gray-50/50 border border-gray-300 focus:bg-white focus:border-[#144A42] focus:outline-none transition rounded-xs"
+                                required
+                              />
+                            </div>
+                          </div>
+
+                          <div className="grid grid-cols-3 gap-3">
+                            <div>
+                              <label className="block font-bold mb-1.5 text-gray-700">성별</label>
+                              <input
+                                type="text"
+                                value={editingAdoption.gender || ''}
+                                onChange={(e) => setEditingAdoption({ ...editingAdoption, gender: e.target.value })}
+                                className="w-full px-3.5 py-2.5 bg-gray-50/50 border border-gray-300 focus:bg-white focus:border-[#144A42] focus:outline-none transition rounded-xs"
+                              />
+                            </div>
+                            <div>
+                              <label className="block font-bold mb-1.5 text-gray-700">나이</label>
+                              <input
+                                type="text"
+                                value={editingAdoption.age || ''}
+                                onChange={(e) => setEditingAdoption({ ...editingAdoption, age: e.target.value })}
+                                className="w-full px-3.5 py-2.5 bg-gray-50/50 border border-gray-300 focus:bg-white focus:border-[#144A42] focus:outline-none transition rounded-xs"
+                              />
+                            </div>
+                            <div>
+                              <label className="block font-bold mb-1.5 text-gray-700">체중</label>
+                              <input
+                                type="text"
+                                value={editingAdoption.weight || ''}
+                                onChange={(e) => setEditingAdoption({ ...editingAdoption, weight: e.target.value })}
+                                className="w-full px-3.5 py-2.5 bg-gray-50/50 border border-gray-300 focus:bg-white focus:border-[#144A42] focus:outline-none transition rounded-xs"
+                              />
+                            </div>
+                          </div>
+
+                          <div className="grid grid-cols-2 gap-3">
+                            <div>
+                              <label className="block font-bold mb-1.5 text-gray-700">
+                                보호 센터명 <span className="text-red-500">*</span>
+                              </label>
+                              <input
+                                type="text"
+                                value={editingAdoption.center || ''}
+                                onChange={(e) => setEditingAdoption({ ...editingAdoption, center: e.target.value })}
+                                className="w-full px-3.5 py-2.5 bg-gray-50/50 border border-gray-300 focus:bg-white focus:border-[#144A42] focus:outline-none transition rounded-xs"
+                                required
+                              />
+                            </div>
+                            <div>
+                              <label className="block font-bold mb-1.5 text-gray-700">상태 (입양 단계)</label>
+                              <select
+                                value={editingAdoption.status || '입양 상담 가능'}
+                                onChange={(e) => setEditingAdoption({ ...editingAdoption, status: e.target.value })}
+                                className="w-full px-3.5 py-2.5 bg-gray-50/50 border border-gray-300 focus:bg-white focus:border-[#144A42] focus:outline-none font-bold transition rounded-xs"
+                              >
+                                <option value="입양 상담 가능">입양 상담 가능</option>
+                                <option value="상담 진행 중">상담 진행 중</option>
+                                <option value="입양 완료">입양 완료</option>
+                              </select>
+                            </div>
+                          </div>
+
+                          <div>
+                            <label className="block font-bold mb-1.5 text-gray-700">
+                              아이 소개 및 사연 스토리 <span className="text-red-500">*</span>
+                            </label>
+                            <textarea
+                              value={editingAdoption.story || ''}
+                              onChange={(e) => setEditingAdoption({ ...editingAdoption, story: e.target.value })}
+                              rows="3"
+                              className="w-full px-3.5 py-2.5 bg-gray-50/50 border border-gray-300 focus:bg-white focus:border-[#144A42] focus:outline-none transition rounded-xs"
+                              required
+                            />
+                          </div>
+
+                          <div>
+                            <label className="block font-bold mb-1.5 text-gray-700">성격 태그 (쉼표로 구분)</label>
+                            <input
+                              type="text"
+                              value={editingAdoption.tags || ''}
+                              onChange={(e) => setEditingAdoption({ ...editingAdoption, tags: e.target.value })}
+                              className="w-full px-3.5 py-2.5 bg-gray-50/50 border border-gray-300 focus:bg-white focus:border-[#144A42] focus:outline-none transition rounded-xs"
+                            />
+                          </div>
+                        </div>
+
+                        {/* Right Column: 대표 사진 & 미리보기 (5 cols) */}
+                        <div className="md:col-span-5 space-y-4">
+                          <div className="border-b border-gray-100 pb-2">
+                            <h4 className="font-bold text-xs text-[#144A42] uppercase tracking-wider flex items-center gap-1.5">
+                              <span className="w-1.5 h-1.5 rounded-full bg-[#144A42]"></span>
+                              대표 사진 수정
+                            </h4>
+                          </div>
+
+                          <div className="p-4 bg-[#FAF8F5] border border-[#EAE3D6] rounded-md space-y-3">
+                            <div className="flex items-center justify-between">
+                              <span className="font-bold text-[#144A42] text-xs">사진 등록 방식</span>
+                              <div className="flex gap-1 text-[11px]">
+                                <button
+                                  type="button"
+                                  onClick={() => setEditAdoptionImageMode('upload')}
+                                  className={`px-2.5 py-1 font-bold transition rounded-xs ${editAdoptionImageMode === 'upload' ? 'bg-[#144A42] text-white shadow-xs' : 'bg-gray-200 text-gray-600 hover:bg-gray-300'}`}
+                                >
+                                  직접 업로드
+                                </button>
+                                <button
+                                  type="button"
+                                  onClick={() => setEditAdoptionImageMode('url')}
+                                  className={`px-2.5 py-1 font-bold transition rounded-xs ${editAdoptionImageMode === 'url' ? 'bg-[#144A42] text-white shadow-xs' : 'bg-gray-200 text-gray-600 hover:bg-gray-300'}`}
+                                >
+                                  이미지 URL
+                                </button>
+                              </div>
+                            </div>
+
+                            {editAdoptionImageMode === 'upload' ? (
+                              <div className="space-y-1.5">
+                                <input
+                                  type="file"
+                                  accept="image/*"
+                                  onChange={handleEditAdoptionImageUpload}
+                                  className="w-full text-xs text-gray-500 file:mr-3 file:py-2 file:px-3 file:border-0 file:text-xs file:font-semibold file:bg-[#144A42] file:text-white hover:file:bg-[#0D3832] cursor-pointer rounded-xs"
+                                />
+                                <p className="text-[11px] text-gray-400">권장 비율: 4:3 또는 16:9 (최대 5MB, JPG/PNG/WebP)</p>
+                              </div>
+                            ) : (
+                              <div className="space-y-1.5">
+                                <input
+                                  type="url"
+                                  value={editingAdoption.photoUrl || ''}
+                                  onChange={(e) => setEditingAdoption({ ...editingAdoption, photoUrl: e.target.value })}
+                                  placeholder="https://... 이미지 웹 주소 입력"
+                                  className="w-full px-3 py-2 bg-white border border-gray-300 focus:border-[#144A42] focus:outline-none text-xs rounded-xs"
+                                />
+                              </div>
+                            )}
+
+                            {/* Image Preview Box */}
+                            <div className="mt-2">
+                              <span className="block text-[11px] font-bold text-gray-600 mb-1.5">미리보기</span>
+                              {editingAdoption.photoUrl ? (
+                                <div className="relative w-full aspect-video bg-gray-100 rounded overflow-hidden border border-gray-300 group shadow-inner">
+                                  <img
+                                    src={editingAdoption.photoUrl}
+                                    alt="입양 동물 미리보기"
+                                    className="w-full h-full object-cover"
+                                  />
+                                  <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
+                                    <button
+                                      type="button"
+                                      onClick={() => setEditingAdoption({ ...editingAdoption, photoUrl: '' })}
+                                      className="bg-red-600 text-white text-xs px-2.5 py-1 rounded shadow hover:bg-red-700 transition"
+                                    >
+                                      사진 삭제
+                                    </button>
+                                  </div>
+                                </div>
+                              ) : (
+                                <div className="w-full aspect-video bg-white rounded border-2 border-dashed border-gray-300 flex flex-col items-center justify-center text-gray-400 p-4 text-center">
+                                  <CameraIcon className="w-8 h-8 mb-1.5 text-gray-300" />
+                                  <span className="text-xs font-medium">등록된 대표 사진이 없습니다</span>
+                                  <span className="text-[10px] text-gray-400 mt-0.5">파일을 업로드하거나 URL을 입력하세요</span>
+                                </div>
+                              )}
+                            </div>
+                          </div>
+                        </div>
                       </div>
                     </div>
 
-                    <div className="grid grid-cols-3 gap-3">
-                      <div>
-                        <label className="block font-bold mb-1">성별</label>
-                        <input
-                          type="text"
-                          value={editingAdoption.gender || ''}
-                          onChange={(e) => setEditingAdoption({ ...editingAdoption, gender: e.target.value })}
-                          className="w-full px-3 py-2 border border-gray-300 focus:border-[#144A42] focus:outline-none"
-                        />
-                      </div>
-                      <div>
-                        <label className="block font-bold mb-1">나이</label>
-                        <input
-                          type="text"
-                          value={editingAdoption.age || ''}
-                          onChange={(e) => setEditingAdoption({ ...editingAdoption, age: e.target.value })}
-                          className="w-full px-3 py-2 border border-gray-300 focus:border-[#144A42] focus:outline-none"
-                        />
-                      </div>
-                      <div>
-                        <label className="block font-bold mb-1">체중</label>
-                        <input
-                          type="text"
-                          value={editingAdoption.weight || ''}
-                          onChange={(e) => setEditingAdoption({ ...editingAdoption, weight: e.target.value })}
-                          className="w-full px-3 py-2 border border-gray-300 focus:border-[#144A42] focus:outline-none"
-                        />
-                      </div>
-                    </div>
-
-                    {/* Edit Photo Upload / URL Mode */}
-                    <div className="p-3 bg-[#FAF8F5] border border-[#EAE3D6] space-y-2">
-                      <div className="flex items-center justify-between">
-                        <label className="block font-bold text-[#144A42]">
-                          대표 사진 수정 <span className="text-[11px] font-normal text-gray-500">(선택)</span>
-                        </label>
-                        <div className="flex gap-1 text-[11px]">
-                          <button
-                            type="button"
-                            onClick={() => setEditAdoptionImageMode('upload')}
-                            className={`px-2 py-0.5 font-bold transition ${editAdoptionImageMode === 'upload' ? 'bg-[#144A42] text-white' : 'bg-gray-200 text-gray-600'}`}
-                          >
-                            직접 업로드
-                          </button>
-                          <button
-                            type="button"
-                            onClick={() => setEditAdoptionImageMode('url')}
-                            className={`px-2 py-0.5 font-bold transition ${editAdoptionImageMode === 'url' ? 'bg-[#144A42] text-white' : 'bg-gray-200 text-gray-600'}`}
-                          >
-                            이미지 URL
-                          </button>
-                        </div>
-                      </div>
-
-                      {editAdoptionImageMode === 'upload' ? (
-                        <div>
-                          <input
-                            type="file"
-                            accept="image/*"
-                            onChange={handleEditAdoptionImageUpload}
-                            className="w-full text-xs text-gray-500 file:mr-3 file:py-1.5 file:px-3 file:border-0 file:text-xs file:font-semibold file:bg-[#144A42] file:text-white hover:file:bg-[#0D3832] cursor-pointer"
-                          />
-                        </div>
-                      ) : (
-                        <div>
-                          <input
-                            type="url"
-                            value={editingAdoption.photoUrl || ''}
-                            onChange={(e) => setEditingAdoption({ ...editingAdoption, photoUrl: e.target.value })}
-                            placeholder="https://images.unsplash.com/... 또는 웹 이미지 URL"
-                            className="w-full px-3 py-2 border border-gray-300 focus:border-[#144A42] focus:outline-none text-xs"
-                          />
-                        </div>
-                      )}
-
-                      {editingAdoption.photoUrl && (
-                        <div className="mt-2 relative w-full h-32 bg-gray-100 overflow-hidden border border-gray-200">
-                          <img
-                            src={editingAdoption.photoUrl}
-                            alt="미리보기"
-                            className="w-full h-full object-cover"
-                          />
-                          <button
-                            type="button"
-                            onClick={() => setEditingAdoption({ ...editingAdoption, photoUrl: '' })}
-                            className="absolute top-1.5 right-1.5 bg-black/70 text-white text-[10px] px-1.5 py-0.5 hover:bg-black"
-                          >
-                            제거
-                          </button>
-                        </div>
-                      )}
-                    </div>
-
-                    <div className="grid grid-cols-2 gap-3">
-                      <div>
-                        <label className="block font-bold mb-1">보호 센터명</label>
-                        <input
-                          type="text"
-                          value={editingAdoption.center || ''}
-                          onChange={(e) => setEditingAdoption({ ...editingAdoption, center: e.target.value })}
-                          className="w-full px-3 py-2 border border-gray-300 focus:border-[#144A42] focus:outline-none"
-                          required
-                        />
-                      </div>
-                      <div>
-                        <label className="block font-bold mb-1">상태 (입양 단계)</label>
-                        <select
-                          value={editingAdoption.status || '입양 상담 가능'}
-                          onChange={(e) => setEditingAdoption({ ...editingAdoption, status: e.target.value })}
-                          className="w-full px-3 py-2 border border-gray-300 focus:border-[#144A42] focus:outline-none font-bold"
+                    {/* Modal Fixed Footer */}
+                    <div className="px-6 py-3.5 bg-gray-50 border-t border-[#ECE5D8] flex items-center justify-between shrink-0">
+                      <span className="text-[11px] text-gray-400 hidden sm:inline">
+                        * 표시는 필수 입력 항목입니다.
+                      </span>
+                      <div className="flex gap-2 w-full sm:w-auto justify-end">
+                        <button
+                          type="button"
+                          onClick={() => { setIsEditAdoptionOpen(false); setEditingAdoption(null); }}
+                          className="px-4 py-2 border border-gray-300 bg-white text-gray-700 hover:bg-gray-50 text-xs font-semibold rounded-xs transition"
                         >
-                          <option value="입양 상담 가능">입양 상담 가능</option>
-                          <option value="상담 진행 중">상담 진행 중</option>
-                          <option value="입양 완료">입양 완료</option>
-                        </select>
+                          취소
+                        </button>
+                        <button
+                          type="submit"
+                          className="px-5 py-2 bg-[#144A42] text-white text-xs font-bold hover:bg-[#0D3832] rounded-xs shadow-xs transition"
+                        >
+                          수정사항 저장
+                        </button>
                       </div>
-                    </div>
-
-                    <div>
-                      <label className="block font-bold mb-1">아이 소개 및 스토리</label>
-                      <textarea
-                        value={editingAdoption.story || ''}
-                        onChange={(e) => setEditingAdoption({ ...editingAdoption, story: e.target.value })}
-                        rows="2"
-                        className="w-full px-3 py-2 border border-gray-300 focus:border-[#144A42] focus:outline-none"
-                        required
-                      />
-                    </div>
-
-                    <div>
-                      <label className="block font-bold mb-1">태그 (쉼표로 구분)</label>
-                      <input
-                        type="text"
-                        value={editingAdoption.tags || ''}
-                        onChange={(e) => setEditingAdoption({ ...editingAdoption, tags: e.target.value })}
-                        className="w-full px-3 py-2 border border-gray-300 focus:border-[#144A42] focus:outline-none"
-                      />
-                    </div>
-
-                    <div className="pt-3 flex justify-end gap-2 border-t border-gray-100">
-                      <button
-                        type="button"
-                        onClick={() => { setIsEditAdoptionOpen(false); setEditingAdoption(null); }}
-                        className="px-4 py-2 border border-gray-300 text-gray-600 hover:bg-gray-50"
-                      >
-                        취소
-                      </button>
-                      <button
-                        type="submit"
-                        className="px-5 py-2 bg-[#144A42] text-white font-bold hover:bg-[#0D3832]"
-                      >
-                        수정사항 저장
-                      </button>
                     </div>
                   </form>
                 </div>
@@ -4226,15 +4484,28 @@ export default function AdminPage({
 
             {/* Modal: 숙소 추가 */}
             {isAddTravelOpen && (
-              <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 sm:p-6 bg-black/80 backdrop-blur-sm animate-fade-in overflow-y-auto">
-                <div className="bg-white w-full max-w-lg shadow-2xl p-6 border border-[#ECE5D8] max-h-[85vh] my-auto overflow-y-auto">
-                  <div className="flex justify-between items-center mb-5 pb-3 border-b border-gray-100">
-                    <h3 className="font-bold text-base text-[#144A42]">신규 동반 숙소 등록</h3>
-                    <button onClick={() => setIsAddTravelOpen(false)} className="p-1 text-gray-400 hover:text-gray-700">
+              <div className="fixed inset-0 z-[100] flex items-center justify-center p-3 sm:p-6 bg-black/80 backdrop-blur-sm animate-fade-in overflow-y-auto">
+                <div className="bg-white w-full max-w-4xl shadow-2xl border border-[#ECE5D8] max-h-[90vh] my-auto flex flex-col rounded-lg overflow-hidden">
+                  {/* Modal Header */}
+                  <div className="px-6 py-4 border-b border-[#ECE5D8] bg-[#FAF8F5] flex justify-between items-center shrink-0">
+                    <div>
+                      <div className="flex items-center gap-2">
+                        <span className="w-2.5 h-2.5 rounded-full bg-[#144A42]"></span>
+                        <h3 className="font-bold text-base sm:text-lg text-[#144A42]">신규 동반 숙소 등록</h3>
+                        <span className="text-[11px] px-2 py-0.5 bg-[#144A42]/10 text-[#144A42] font-semibold rounded">반려여행</span>
+                      </div>
+                      <p className="text-xs text-gray-500 mt-1">반려동물과 함께 머물 수 있는 추천 여행지 및 숙소를 등록합니다.</p>
+                    </div>
+                    <button 
+                      onClick={() => setIsAddTravelOpen(false)} 
+                      className="p-1.5 text-gray-400 hover:text-gray-700 hover:bg-gray-100 rounded-lg transition"
+                      aria-label="닫기"
+                    >
                       <XIcon className="w-5 h-5" />
                     </button>
                   </div>
 
+                  {/* Modal Form */}
                   <form onSubmit={(e) => {
                     e.preventDefault();
                     onAddTravel({
@@ -4244,181 +4515,240 @@ export default function AdminPage({
                     });
                     setIsAddTravelOpen(false);
                     showToast('새로운 동반 여행 숙소가 등록되었습니다.');
-                  }} className="space-y-3 text-xs">
-                    <div>
-                      <label className="block font-bold mb-1">숙소명</label>
-                      <input
-                        type="text"
-                        value={newTravel.name}
-                        onChange={(e) => setNewTravel({...newTravel, name: e.target.value})}
-                        placeholder="예: 가평 힐링 펫 글램핑"
-                        className="w-full px-3 py-2 border border-gray-300 focus:border-[#144A42] focus:outline-none"
-                        required
-                      />
+                  }} className="flex flex-col flex-1 overflow-hidden">
+                    <div className="p-6 overflow-y-auto flex-1 text-xs">
+                      <div className="grid grid-cols-1 md:grid-cols-12 gap-6">
+                        {/* Left Column: 숙소 기본 정보 (7 cols) */}
+                        <div className="md:col-span-7 space-y-4">
+                          <div className="border-b border-gray-100 pb-2">
+                            <h4 className="font-bold text-xs text-[#144A42] uppercase tracking-wider flex items-center gap-1.5">
+                              <span className="w-1.5 h-1.5 rounded-full bg-[#144A42]"></span>
+                              기본 정보 입력
+                            </h4>
+                          </div>
+
+                          <div>
+                            <label className="block font-bold mb-1.5 text-gray-700">
+                              숙소명 <span className="text-red-500">*</span>
+                            </label>
+                            <input
+                              type="text"
+                              value={newTravel.name}
+                              onChange={(e) => setNewTravel({...newTravel, name: e.target.value})}
+                              placeholder="예: 가평 힐링 펫 글램핑"
+                              className="w-full px-3.5 py-2.5 bg-gray-50/50 border border-gray-300 focus:bg-white focus:border-[#144A42] focus:ring-1 focus:ring-[#144A42] focus:outline-none transition rounded-xs"
+                              required
+                            />
+                          </div>
+
+                          <div className="grid grid-cols-2 gap-3">
+                            <div>
+                              <label className="block font-bold mb-1.5 text-gray-700">
+                                유형 <span className="text-red-500">*</span>
+                              </label>
+                              <select
+                                value={newTravel.type}
+                                onChange={(e) => setNewTravel({...newTravel, type: e.target.value})}
+                                className="w-full px-3.5 py-2.5 bg-gray-50/50 border border-gray-300 focus:bg-white focus:border-[#144A42] focus:outline-none transition rounded-xs"
+                              >
+                                <option value="리조트">리조트</option>
+                                <option value="독채펜션">독채펜션</option>
+                                <option value="글램핑">글램핑</option>
+                                <option value="호텔">호텔</option>
+                              </select>
+                            </div>
+                            <div>
+                              <label className="block font-bold mb-1.5 text-gray-700">
+                                위치 (지역) <span className="text-red-500">*</span>
+                              </label>
+                              <input
+                                type="text"
+                                value={newTravel.location}
+                                onChange={(e) => setNewTravel({...newTravel, location: e.target.value})}
+                                placeholder="예: 경기도 가평군"
+                                className="w-full px-3.5 py-2.5 bg-gray-50/50 border border-gray-300 focus:bg-white focus:border-[#144A42] focus:outline-none transition rounded-xs"
+                                required
+                              />
+                            </div>
+                          </div>
+
+                          <div className="grid grid-cols-2 gap-3">
+                            <div>
+                              <label className="block font-bold mb-1.5 text-gray-700">동반 가능 견종/체중</label>
+                              <input
+                                type="text"
+                                value={newTravel.weightLimit}
+                                onChange={(e) => setNewTravel({...newTravel, weightLimit: e.target.value})}
+                                placeholder="예: 전 견종 가능 (체중 무관)"
+                                className="w-full px-3.5 py-2.5 bg-gray-50/50 border border-gray-300 focus:bg-white focus:border-[#144A42] focus:outline-none transition rounded-xs"
+                              />
+                            </div>
+                            <div>
+                              <label className="block font-bold mb-1.5 text-gray-700">기본 가격</label>
+                              <input
+                                type="text"
+                                value={newTravel.price}
+                                onChange={(e) => setNewTravel({...newTravel, price: e.target.value})}
+                                placeholder="예: 180,000원~"
+                                className="w-full px-3.5 py-2.5 bg-gray-50/50 border border-gray-300 focus:bg-white focus:border-[#144A42] focus:outline-none transition rounded-xs"
+                              />
+                            </div>
+                          </div>
+
+                          <div>
+                            <label className="block font-bold mb-1.5 text-gray-700">
+                              예약 및 문의 전화번호 <span className="text-red-500">*</span>
+                            </label>
+                            <input
+                              type="text"
+                              value={newTravel.phone}
+                              onChange={(e) => setNewTravel({...newTravel, phone: e.target.value})}
+                              placeholder="예: 031-123-4567"
+                              className="w-full px-3.5 py-2.5 bg-gray-50/50 border border-gray-300 focus:bg-white focus:border-[#144A42] focus:outline-none transition rounded-xs"
+                              required
+                            />
+                          </div>
+
+                          <div>
+                            <label className="block font-bold mb-1.5 text-gray-700">
+                              슬반생 회원 특별 혜택 <span className="text-red-500">*</span>
+                            </label>
+                            <input
+                              type="text"
+                              value={newTravel.memberBenefit}
+                              onChange={(e) => setNewTravel({...newTravel, memberBenefit: e.target.value})}
+                              placeholder="예: 슬반생 회원 주중 20% 추가 할인 + 바베큐 세트 무료"
+                              className="w-full px-3.5 py-2.5 bg-gray-50/50 border border-gray-300 focus:bg-white focus:border-[#144A42] focus:outline-none transition rounded-xs"
+                              required
+                            />
+                          </div>
+
+                          <div>
+                            <label className="block font-bold mb-1.5 text-gray-700">주요 시설 (쉼표로 구분)</label>
+                            <input
+                              type="text"
+                              value={newTravel.features}
+                              onChange={(e) => setNewTravel({...newTravel, features: e.target.value})}
+                              placeholder="천연잔디, 온수풀, 독채 마당, 펫드라이룸, 바베큐장"
+                              className="w-full px-3.5 py-2.5 bg-gray-50/50 border border-gray-300 focus:bg-white focus:border-[#144A42] focus:outline-none transition rounded-xs"
+                            />
+                          </div>
+                        </div>
+
+                        {/* Right Column: 대표 사진 & 미리보기 (5 cols) */}
+                        <div className="md:col-span-5 space-y-4">
+                          <div className="border-b border-gray-100 pb-2">
+                            <h4 className="font-bold text-xs text-[#144A42] uppercase tracking-wider flex items-center gap-1.5">
+                              <span className="w-1.5 h-1.5 rounded-full bg-[#144A42]"></span>
+                              대표 사진 등록
+                            </h4>
+                          </div>
+
+                          <div className="p-4 bg-[#FAF8F5] border border-[#EAE3D6] rounded-md space-y-3">
+                            <div className="flex items-center justify-between">
+                              <span className="font-bold text-[#144A42] text-xs">등록 방식</span>
+                              <div className="flex gap-1 text-[11px]">
+                                <button
+                                  type="button"
+                                  onClick={() => setTravelImageMode('upload')}
+                                  className={`px-2.5 py-1 font-bold transition rounded-xs ${travelImageMode === 'upload' ? 'bg-[#144A42] text-white shadow-xs' : 'bg-gray-200 text-gray-600 hover:bg-gray-300'}`}
+                                >
+                                  직접 업로드
+                                </button>
+                                <button
+                                  type="button"
+                                  onClick={() => setTravelImageMode('url')}
+                                  className={`px-2.5 py-1 font-bold transition rounded-xs ${travelImageMode === 'url' ? 'bg-[#144A42] text-white shadow-xs' : 'bg-gray-200 text-gray-600 hover:bg-gray-300'}`}
+                                >
+                                  이미지 URL
+                                </button>
+                              </div>
+                            </div>
+
+                            {travelImageMode === 'upload' ? (
+                              <div className="space-y-1.5">
+                                <input
+                                  type="file"
+                                  accept="image/*"
+                                  onChange={handleTravelImageUpload}
+                                  className="w-full text-xs text-gray-500 file:mr-3 file:py-2 file:px-3 file:border-0 file:text-xs file:font-semibold file:bg-[#144A42] file:text-white hover:file:bg-[#0D3832] cursor-pointer rounded-xs"
+                                />
+                                <p className="text-[11px] text-gray-400">권장 비율: 16:9 또는 16:10 (최대 5MB, JPG/PNG/WebP)</p>
+                              </div>
+                            ) : (
+                              <div className="space-y-1.5">
+                                <input
+                                  type="url"
+                                  value={newTravel.imageUrl}
+                                  onChange={(e) => setNewTravel({ ...newTravel, imageUrl: e.target.value })}
+                                  placeholder="https://... 이미지 웹 주소 입력"
+                                  className="w-full px-3 py-2 bg-white border border-gray-300 focus:border-[#144A42] focus:outline-none text-xs rounded-xs"
+                                />
+                              </div>
+                            )}
+
+                            {/* Image Preview Box */}
+                            <div className="mt-2">
+                              <span className="block text-[11px] font-bold text-gray-600 mb-1.5">미리보기</span>
+                              {newTravel.imageUrl ? (
+                                <div className="relative w-full aspect-video bg-gray-100 rounded overflow-hidden border border-gray-300 group shadow-inner">
+                                  <img
+                                    src={newTravel.imageUrl}
+                                    alt="숙소 미리보기"
+                                    className="w-full h-full object-cover"
+                                  />
+                                  <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
+                                    <button
+                                      type="button"
+                                      onClick={() => setNewTravel({ ...newTravel, imageUrl: '' })}
+                                      className="bg-red-600 text-white text-xs px-2.5 py-1 rounded shadow hover:bg-red-700 transition"
+                                    >
+                                      사진 삭제
+                                    </button>
+                                  </div>
+                                </div>
+                              ) : (
+                                <div className="w-full aspect-video bg-white rounded border-2 border-dashed border-gray-300 flex flex-col items-center justify-center text-gray-400 p-4 text-center">
+                                  <CameraIcon className="w-8 h-8 mb-1.5 text-gray-300" />
+                                  <span className="text-xs font-medium">등록된 대표 사진이 없습니다</span>
+                                  <span className="text-[10px] text-gray-400 mt-0.5">파일을 업로드하거나 URL을 입력하세요</span>
+                                </div>
+                              )}
+                            </div>
+                          </div>
+
+                          <div className="p-3 bg-amber-50/70 border border-amber-200/70 rounded text-[11px] text-amber-800 space-y-1">
+                            <p className="font-bold flex items-center gap-1">
+                              <span>💡</span> 등록 안내 팁
+                            </p>
+                            <p className="leading-relaxed">
+                              가로형 고화질 사진을 등록하면 사용자 반려여행 페이지 상단 카드에 깔끔하고 선명하게 노출됩니다.
+                            </p>
+                          </div>
+                        </div>
+                      </div>
                     </div>
 
-                    <div className="grid grid-cols-2 gap-3">
-                      <div>
-                        <label className="block font-bold mb-1">유형</label>
-                        <select
-                          value={newTravel.type}
-                          onChange={(e) => setNewTravel({...newTravel, type: e.target.value})}
-                          className="w-full px-3 py-2 border border-gray-300 focus:border-[#144A42] focus:outline-none"
+                    {/* Modal Fixed Footer */}
+                    <div className="px-6 py-3.5 bg-gray-50 border-t border-[#ECE5D8] flex items-center justify-between shrink-0">
+                      <span className="text-[11px] text-gray-400 hidden sm:inline">
+                        * 표시는 필수 입력 항목입니다.
+                      </span>
+                      <div className="flex gap-2 w-full sm:w-auto justify-end">
+                        <button
+                          type="button"
+                          onClick={() => setIsAddTravelOpen(false)}
+                          className="px-4 py-2 border border-gray-300 bg-white text-gray-700 hover:bg-gray-50 text-xs font-semibold rounded-xs transition"
                         >
-                          <option value="리조트">리조트</option>
-                          <option value="독채펜션">독채펜션</option>
-                          <option value="글램핑">글램핑</option>
-                        </select>
+                          취소
+                        </button>
+                        <button
+                          type="submit"
+                          className="px-5 py-2 bg-[#144A42] text-white text-xs font-bold hover:bg-[#0D3832] rounded-xs shadow-xs transition"
+                        >
+                          숙소 등록 완료
+                        </button>
                       </div>
-                      <div>
-                        <label className="block font-bold mb-1">위치 (지역)</label>
-                        <input
-                          type="text"
-                          value={newTravel.location}
-                          onChange={(e) => setNewTravel({...newTravel, location: e.target.value})}
-                          placeholder="경기도 가평군"
-                          className="w-full px-3 py-2 border border-gray-300 focus:border-[#144A42] focus:outline-none"
-                          required
-                        />
-                      </div>
-                    </div>
-
-                    {/* Image Upload / URL Mode */}
-                    <div className="p-3 bg-[#FAF8F5] border border-[#EAE3D6] space-y-2">
-                      <div className="flex items-center justify-between">
-                        <label className="block font-bold text-[#144A42]">
-                          숙소 대표 이미지 등록 <span className="text-[11px] font-normal text-gray-500">(선택)</span>
-                        </label>
-                        <div className="flex gap-1 text-[11px]">
-                          <button
-                            type="button"
-                            onClick={() => setTravelImageMode('upload')}
-                            className={`px-2 py-0.5 font-bold transition ${travelImageMode === 'upload' ? 'bg-[#144A42] text-white' : 'bg-gray-200 text-gray-600'}`}
-                          >
-                            직접 업로드
-                          </button>
-                          <button
-                            type="button"
-                            onClick={() => setTravelImageMode('url')}
-                            className={`px-2 py-0.5 font-bold transition ${travelImageMode === 'url' ? 'bg-[#144A42] text-white' : 'bg-gray-200 text-gray-600'}`}
-                          >
-                            이미지 URL 입력
-                          </button>
-                        </div>
-                      </div>
-
-                      {travelImageMode === 'upload' ? (
-                        <div>
-                          <input
-                            type="file"
-                            accept="image/*"
-                            onChange={handleTravelImageUpload}
-                            className="w-full text-xs text-gray-500 file:mr-3 file:py-1.5 file:px-3 file:border-0 file:text-xs file:font-semibold file:bg-[#144A42] file:text-white hover:file:bg-[#0D3832] cursor-pointer"
-                          />
-                          <p className="text-[10px] text-gray-400 mt-1">권장 비율: 16:9 또는 16:10 (최대 5MB, JPG/PNG/WebP)</p>
-                        </div>
-                      ) : (
-                        <div>
-                          <input
-                            type="url"
-                            value={newTravel.imageUrl}
-                            onChange={(e) => setNewTravel({ ...newTravel, imageUrl: e.target.value })}
-                            placeholder="https://images.unsplash.com/... 또는 웹 이미지 URL"
-                            className="w-full px-3 py-2 border border-gray-300 focus:border-[#144A42] focus:outline-none text-xs"
-                          />
-                        </div>
-                      )}
-
-                      {newTravel.imageUrl && (
-                        <div className="mt-2 relative w-full h-32 bg-gray-100 overflow-hidden border border-gray-200">
-                          <img
-                            src={newTravel.imageUrl}
-                            alt="숙소 미리보기"
-                            className="w-full h-full object-cover"
-                          />
-                          <button
-                            type="button"
-                            onClick={() => setNewTravel({ ...newTravel, imageUrl: '' })}
-                            className="absolute top-1.5 right-1.5 bg-black/70 text-white text-[10px] px-1.5 py-0.5 hover:bg-black"
-                          >
-                            제거
-                          </button>
-                        </div>
-                      )}
-                    </div>
-
-                    <div className="grid grid-cols-2 gap-3">
-                      <div>
-                        <label className="block font-bold mb-1">동반 가능 견종/체중</label>
-                        <input
-                          type="text"
-                          value={newTravel.weightLimit}
-                          onChange={(e) => setNewTravel({...newTravel, weightLimit: e.target.value})}
-                          placeholder="전 견종 가능"
-                          className="w-full px-3 py-2 border border-gray-300 focus:border-[#144A42] focus:outline-none"
-                        />
-                      </div>
-                      <div>
-                        <label className="block font-bold mb-1">기본 가격</label>
-                        <input
-                          type="text"
-                          value={newTravel.price}
-                          onChange={(e) => setNewTravel({...newTravel, price: e.target.value})}
-                          placeholder="180,000원~"
-                          className="w-full px-3 py-2 border border-gray-300 focus:border-[#144A42] focus:outline-none"
-                        />
-                      </div>
-                    </div>
-
-                    <div>
-                      <label className="block font-bold mb-1">슬반생 회원 혜택</label>
-                      <input
-                        type="text"
-                        value={newTravel.memberBenefit}
-                        onChange={(e) => setNewTravel({...newTravel, memberBenefit: e.target.value})}
-                        placeholder="예: 슬반생 회원 주중 20% 추가 할인"
-                        className="w-full px-3 py-2 border border-gray-300 focus:border-[#144A42] focus:outline-none"
-                        required
-                      />
-                    </div>
-
-                    <div>
-                      <label className="block font-bold mb-1">주요 시설 (쉼표로 구분)</label>
-                      <input
-                        type="text"
-                        value={newTravel.features}
-                        onChange={(e) => setNewTravel({...newTravel, features: e.target.value})}
-                        placeholder="천연잔디, 온수풀, 바베큐장"
-                        className="w-full px-3 py-2 border border-gray-300 focus:border-[#144A42] focus:outline-none"
-                      />
-                    </div>
-
-                    <div>
-                      <label className="block font-bold mb-1">예약 전화번호</label>
-                      <input
-                        type="text"
-                        value={newTravel.phone}
-                        onChange={(e) => setNewTravel({...newTravel, phone: e.target.value})}
-                        placeholder="031-123-4567"
-                        className="w-full px-3 py-2 border border-gray-300 focus:border-[#144A42] focus:outline-none"
-                        required
-                      />
-                    </div>
-
-                    <div className="pt-3 flex justify-end gap-2">
-                      <button
-                        type="button"
-                        onClick={() => setIsAddTravelOpen(false)}
-                        className="px-4 py-2 border border-gray-300 text-gray-600 hover:bg-gray-50"
-                      >
-                        취소
-                      </button>
-                      <button
-                        type="submit"
-                        className="px-5 py-2 bg-[#144A42] text-white font-bold hover:bg-[#0D3832]"
-                      >
-                        숙소 등록 완료
-                      </button>
                     </div>
                   </form>
                 </div>
@@ -4427,18 +4757,28 @@ export default function AdminPage({
 
             {/* Modal: 반려여행 숙소 정보 수정 */}
             {isEditTravelOpen && editingTravel && (
-              <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 sm:p-6 bg-black/80 backdrop-blur-sm animate-fade-in overflow-y-auto">
-                <div className="bg-white w-full max-w-lg shadow-2xl p-6 border border-[#ECE5D8] max-h-[85vh] my-auto overflow-y-auto">
-                  <div className="flex justify-between items-center mb-5 pb-3 border-b border-gray-100">
+              <div className="fixed inset-0 z-[100] flex items-center justify-center p-3 sm:p-6 bg-black/80 backdrop-blur-sm animate-fade-in overflow-y-auto">
+                <div className="bg-white w-full max-w-4xl shadow-2xl border border-[#ECE5D8] max-h-[90vh] my-auto flex flex-col rounded-lg overflow-hidden">
+                  {/* Modal Header */}
+                  <div className="px-6 py-4 border-b border-[#ECE5D8] bg-[#FAF8F5] flex justify-between items-center shrink-0">
                     <div>
-                      <h3 className="font-bold text-base text-[#144A42]">동반 여행지 숙소 정보 수정</h3>
-                      <p className="text-[11px] text-gray-500 mt-0.5">숙소의 상세 정보 및 대표 사진을 수정합니다.</p>
+                      <div className="flex items-center gap-2">
+                        <span className="w-2.5 h-2.5 rounded-full bg-[#144A42]"></span>
+                        <h3 className="font-bold text-base sm:text-lg text-[#144A42]">동반 여행지 숙소 정보 수정</h3>
+                        <span className="text-[11px] px-2 py-0.5 bg-[#144A42]/10 text-[#144A42] font-semibold rounded">수정 모드</span>
+                      </div>
+                      <p className="text-xs text-gray-500 mt-1">숙소의 상세 정보 및 대표 사진을 수정합니다.</p>
                     </div>
-                    <button onClick={() => { setIsEditTravelOpen(false); setEditingTravel(null); }} className="p-1 text-gray-400 hover:text-gray-700">
+                    <button 
+                      onClick={() => { setIsEditTravelOpen(false); setEditingTravel(null); }} 
+                      className="p-1.5 text-gray-400 hover:text-gray-700 hover:bg-gray-100 rounded-lg transition"
+                      aria-label="닫기"
+                    >
                       <XIcon className="w-5 h-5" />
                     </button>
                   </div>
 
+                  {/* Modal Form */}
                   <form onSubmit={(e) => {
                     e.preventDefault();
                     if (onUpdateTravel) {
@@ -4451,174 +4791,233 @@ export default function AdminPage({
                     }
                     setIsEditTravelOpen(false);
                     setEditingTravel(null);
-                  }} className="space-y-3 text-xs">
-                    <div>
-                      <label className="block font-bold mb-1">숙소명</label>
-                      <input
-                        type="text"
-                        value={editingTravel.name || ''}
-                        onChange={(e) => setEditingTravel({...editingTravel, name: e.target.value})}
-                        className="w-full px-3 py-2 border border-gray-300 focus:border-[#144A42] focus:outline-none"
-                        required
-                      />
+                  }} className="flex flex-col flex-1 overflow-hidden">
+                    <div className="p-6 overflow-y-auto flex-1 text-xs">
+                      <div className="grid grid-cols-1 md:grid-cols-12 gap-6">
+                        {/* Left Column: 숙소 기본 정보 (7 cols) */}
+                        <div className="md:col-span-7 space-y-4">
+                          <div className="border-b border-gray-100 pb-2">
+                            <h4 className="font-bold text-xs text-[#144A42] uppercase tracking-wider flex items-center gap-1.5">
+                              <span className="w-1.5 h-1.5 rounded-full bg-[#144A42]"></span>
+                              기본 정보 수정
+                            </h4>
+                          </div>
+
+                          <div>
+                            <label className="block font-bold mb-1.5 text-gray-700">
+                              숙소명 <span className="text-red-500">*</span>
+                            </label>
+                            <input
+                              type="text"
+                              value={editingTravel.name || ''}
+                              onChange={(e) => setEditingTravel({...editingTravel, name: e.target.value})}
+                              className="w-full px-3.5 py-2.5 bg-gray-50/50 border border-gray-300 focus:bg-white focus:border-[#144A42] focus:ring-1 focus:ring-[#144A42] focus:outline-none transition rounded-xs"
+                              required
+                            />
+                          </div>
+
+                          <div className="grid grid-cols-2 gap-3">
+                            <div>
+                              <label className="block font-bold mb-1.5 text-gray-700">
+                                숙소 유형 <span className="text-red-500">*</span>
+                              </label>
+                              <select
+                                value={editingTravel.type || '리조트'}
+                                onChange={(e) => setEditingTravel({...editingTravel, type: e.target.value})}
+                                className="w-full px-3.5 py-2.5 bg-gray-50/50 border border-gray-300 focus:bg-white focus:border-[#144A42] focus:outline-none transition rounded-xs"
+                              >
+                                <option value="리조트">리조트</option>
+                                <option value="독채펜션">독채펜션</option>
+                                <option value="글램핑">글램핑</option>
+                                <option value="호텔">호텔</option>
+                              </select>
+                            </div>
+                            <div>
+                              <label className="block font-bold mb-1.5 text-gray-700">
+                                위치 (지역) <span className="text-red-500">*</span>
+                              </label>
+                              <input
+                                type="text"
+                                value={editingTravel.location || ''}
+                                onChange={(e) => setEditingTravel({...editingTravel, location: e.target.value})}
+                                className="w-full px-3.5 py-2.5 bg-gray-50/50 border border-gray-300 focus:bg-white focus:border-[#144A42] focus:outline-none transition rounded-xs"
+                                required
+                              />
+                            </div>
+                          </div>
+
+                          <div className="grid grid-cols-2 gap-3">
+                            <div>
+                              <label className="block font-bold mb-1.5 text-gray-700">동반 가능 견종/체중</label>
+                              <input
+                                type="text"
+                                value={editingTravel.weightLimit || ''}
+                                onChange={(e) => setEditingTravel({...editingTravel, weightLimit: e.target.value})}
+                                className="w-full px-3.5 py-2.5 bg-gray-50/50 border border-gray-300 focus:bg-white focus:border-[#144A42] focus:outline-none transition rounded-xs"
+                              />
+                            </div>
+                            <div>
+                              <label className="block font-bold mb-1.5 text-gray-700">기본 가격</label>
+                              <input
+                                type="text"
+                                value={editingTravel.price || ''}
+                                onChange={(e) => setEditingTravel({...editingTravel, price: e.target.value})}
+                                className="w-full px-3.5 py-2.5 bg-gray-50/50 border border-gray-300 focus:bg-white focus:border-[#144A42] focus:outline-none transition rounded-xs"
+                              />
+                            </div>
+                          </div>
+
+                          <div>
+                            <label className="block font-bold mb-1.5 text-gray-700">
+                              예약 및 문의 전화번호 <span className="text-red-500">*</span>
+                            </label>
+                            <input
+                              type="text"
+                              value={editingTravel.phone || ''}
+                              onChange={(e) => setEditingTravel({...editingTravel, phone: e.target.value})}
+                              className="w-full px-3.5 py-2.5 bg-gray-50/50 border border-gray-300 focus:bg-white focus:border-[#144A42] focus:outline-none transition rounded-xs"
+                              required
+                            />
+                          </div>
+
+                          <div>
+                            <label className="block font-bold mb-1.5 text-gray-700">
+                              슬반생 회원 혜택 <span className="text-red-500">*</span>
+                            </label>
+                            <input
+                              type="text"
+                              value={editingTravel.memberBenefit || ''}
+                              onChange={(e) => setEditingTravel({...editingTravel, memberBenefit: e.target.value})}
+                              className="w-full px-3.5 py-2.5 bg-gray-50/50 border border-gray-300 focus:bg-white focus:border-[#144A42] focus:outline-none transition rounded-xs"
+                              required
+                            />
+                          </div>
+
+                          <div>
+                            <label className="block font-bold mb-1.5 text-gray-700">주요 시설 (쉼표로 구분)</label>
+                            <input
+                              type="text"
+                              value={editingTravel.features || ''}
+                              onChange={(e) => setEditingTravel({...editingTravel, features: e.target.value})}
+                              className="w-full px-3.5 py-2.5 bg-gray-50/50 border border-gray-300 focus:bg-white focus:border-[#144A42] focus:outline-none transition rounded-xs"
+                            />
+                          </div>
+                        </div>
+
+                        {/* Right Column: 대표 사진 & 미리보기 (5 cols) */}
+                        <div className="md:col-span-5 space-y-4">
+                          <div className="border-b border-gray-100 pb-2">
+                            <h4 className="font-bold text-xs text-[#144A42] uppercase tracking-wider flex items-center gap-1.5">
+                              <span className="w-1.5 h-1.5 rounded-full bg-[#144A42]"></span>
+                              대표 사진 수정
+                            </h4>
+                          </div>
+
+                          <div className="p-4 bg-[#FAF8F5] border border-[#EAE3D6] rounded-md space-y-3">
+                            <div className="flex items-center justify-between">
+                              <span className="font-bold text-[#144A42] text-xs">사진 등록 방식</span>
+                              <div className="flex gap-1 text-[11px]">
+                                <button
+                                  type="button"
+                                  onClick={() => setEditTravelImageMode('upload')}
+                                  className={`px-2.5 py-1 font-bold transition rounded-xs ${editTravelImageMode === 'upload' ? 'bg-[#144A42] text-white shadow-xs' : 'bg-gray-200 text-gray-600 hover:bg-gray-300'}`}
+                                >
+                                  직접 업로드
+                                </button>
+                                <button
+                                  type="button"
+                                  onClick={() => setEditTravelImageMode('url')}
+                                  className={`px-2.5 py-1 font-bold transition rounded-xs ${editTravelImageMode === 'url' ? 'bg-[#144A42] text-white shadow-xs' : 'bg-gray-200 text-gray-600 hover:bg-gray-300'}`}
+                                >
+                                  이미지 URL
+                                </button>
+                              </div>
+                            </div>
+
+                            {editTravelImageMode === 'upload' ? (
+                              <div className="space-y-1.5">
+                                <input
+                                  type="file"
+                                  accept="image/*"
+                                  onChange={handleEditTravelImageUpload}
+                                  className="w-full text-xs text-gray-500 file:mr-3 file:py-2 file:px-3 file:border-0 file:text-xs file:font-semibold file:bg-[#144A42] file:text-white hover:file:bg-[#0D3832] cursor-pointer rounded-xs"
+                                />
+                                <p className="text-[11px] text-gray-400">권장 비율: 16:9 또는 16:10 (최대 5MB, JPG/PNG/WebP)</p>
+                              </div>
+                            ) : (
+                              <div className="space-y-1.5">
+                                <input
+                                  type="url"
+                                  value={editingTravel.imageUrl || ''}
+                                  onChange={(e) => setEditingTravel({ ...editingTravel, imageUrl: e.target.value })}
+                                  placeholder="https://... 이미지 웹 주소 입력"
+                                  className="w-full px-3 py-2 bg-white border border-gray-300 focus:border-[#144A42] focus:outline-none text-xs rounded-xs"
+                                />
+                              </div>
+                            )}
+
+                            {/* Image Preview Box */}
+                            <div className="mt-2">
+                              <span className="block text-[11px] font-bold text-gray-600 mb-1.5">미리보기</span>
+                              {editingTravel.imageUrl ? (
+                                <div className="relative w-full aspect-video bg-gray-100 rounded overflow-hidden border border-gray-300 group shadow-inner">
+                                  <img
+                                    src={editingTravel.imageUrl}
+                                    alt="숙소 미리보기"
+                                    className="w-full h-full object-cover"
+                                  />
+                                  <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
+                                    <button
+                                      type="button"
+                                      onClick={() => setEditingTravel({ ...editingTravel, imageUrl: '' })}
+                                      className="bg-red-600 text-white text-xs px-2.5 py-1 rounded shadow hover:bg-red-700 transition"
+                                    >
+                                      사진 삭제
+                                    </button>
+                                  </div>
+                                </div>
+                              ) : (
+                                <div className="w-full aspect-video bg-white rounded border-2 border-dashed border-gray-300 flex flex-col items-center justify-center text-gray-400 p-4 text-center">
+                                  <CameraIcon className="w-8 h-8 mb-1.5 text-gray-300" />
+                                  <span className="text-xs font-medium">등록된 대표 사진이 없습니다</span>
+                                  <span className="text-[10px] text-gray-400 mt-0.5">파일을 업로드하거나 URL을 입력하세요</span>
+                                </div>
+                              )}
+                            </div>
+                          </div>
+
+                          <div className="p-3 bg-gray-100 border border-gray-200 rounded text-[11px] text-gray-600 space-y-1">
+                            <p className="font-bold flex items-center gap-1">
+                              <span>ℹ️</span> 안내
+                            </p>
+                            <p className="leading-relaxed">
+                              수정된 숙소 정보는 실시간으로 반려여행 상세 페이지 및 카드에 반영됩니다.
+                            </p>
+                          </div>
+                        </div>
+                      </div>
                     </div>
 
-                    <div className="grid grid-cols-2 gap-3">
-                      <div>
-                        <label className="block font-bold mb-1">숙소 유형</label>
-                        <select
-                          value={editingTravel.type || '리조트'}
-                          onChange={(e) => setEditingTravel({...editingTravel, type: e.target.value})}
-                          className="w-full px-3 py-2 border border-gray-300 focus:border-[#144A42] focus:outline-none"
+                    {/* Modal Fixed Footer */}
+                    <div className="px-6 py-3.5 bg-gray-50 border-t border-[#ECE5D8] flex items-center justify-between shrink-0">
+                      <span className="text-[11px] text-gray-400 hidden sm:inline">
+                        * 표시는 필수 입력 항목입니다.
+                      </span>
+                      <div className="flex gap-2 w-full sm:w-auto justify-end">
+                        <button
+                          type="button"
+                          onClick={() => { setIsEditTravelOpen(false); setEditingTravel(null); }}
+                          className="px-4 py-2 border border-gray-300 bg-white text-gray-700 hover:bg-gray-50 text-xs font-semibold rounded-xs transition"
                         >
-                          <option value="리조트">리조트</option>
-                          <option value="독채펜션">독채펜션</option>
-                          <option value="글램핑">글램핑</option>
-                          <option value="호텔">호텔</option>
-                        </select>
+                          취소
+                        </button>
+                        <button
+                          type="submit"
+                          className="px-5 py-2 bg-[#144A42] text-white text-xs font-bold hover:bg-[#0D3832] rounded-xs shadow-xs transition"
+                        >
+                          수정사항 저장
+                        </button>
                       </div>
-                      <div>
-                        <label className="block font-bold mb-1">위치 (지역)</label>
-                        <input
-                          type="text"
-                          value={editingTravel.location || ''}
-                          onChange={(e) => setEditingTravel({...editingTravel, location: e.target.value})}
-                          className="w-full px-3 py-2 border border-gray-300 focus:border-[#144A42] focus:outline-none"
-                          required
-                        />
-                      </div>
-                    </div>
-
-                    {/* Travel Image Edit Mode */}
-                    <div className="p-3 bg-[#FAF8F5] border border-[#EAE3D6] space-y-2">
-                      <div className="flex items-center justify-between">
-                        <label className="block font-bold text-[#144A42]">
-                          숙소 대표 사진 <span className="text-[11px] font-normal text-gray-500">(선택)</span>
-                        </label>
-                        <div className="flex gap-1 text-[11px]">
-                          <button
-                            type="button"
-                            onClick={() => setEditTravelImageMode('upload')}
-                            className={`px-2 py-0.5 font-bold transition ${editTravelImageMode === 'upload' ? 'bg-[#144A42] text-white' : 'bg-gray-200 text-gray-600'}`}
-                          >
-                            직접 업로드
-                          </button>
-                          <button
-                            type="button"
-                            onClick={() => setEditTravelImageMode('url')}
-                            className={`px-2 py-0.5 font-bold transition ${editTravelImageMode === 'url' ? 'bg-[#144A42] text-white' : 'bg-gray-200 text-gray-600'}`}
-                          >
-                            이미지 URL 입력
-                          </button>
-                        </div>
-                      </div>
-
-                      {editTravelImageMode === 'upload' ? (
-                        <div>
-                          <input
-                            type="file"
-                            accept="image/*"
-                            onChange={handleEditTravelImageUpload}
-                            className="w-full text-xs text-gray-500 file:mr-3 file:py-1.5 file:px-3 file:border-0 file:text-xs file:font-semibold file:bg-[#144A42] file:text-white hover:file:bg-[#0D3832] cursor-pointer"
-                          />
-                        </div>
-                      ) : (
-                        <div>
-                          <input
-                            type="url"
-                            value={editingTravel.imageUrl || ''}
-                            onChange={(e) => setEditingTravel({ ...editingTravel, imageUrl: e.target.value })}
-                            placeholder="https://images.unsplash.com/... 또는 웹 이미지 URL"
-                            className="w-full px-3 py-2 border border-gray-300 focus:border-[#144A42] focus:outline-none text-xs"
-                          />
-                        </div>
-                      )}
-
-                      {editingTravel.imageUrl && (
-                        <div className="mt-2 relative w-full h-32 bg-gray-100 overflow-hidden border border-gray-200">
-                          <img
-                            src={editingTravel.imageUrl}
-                            alt="숙소 미리보기"
-                            className="w-full h-full object-cover"
-                          />
-                          <button
-                            type="button"
-                            onClick={() => setEditingTravel({ ...editingTravel, imageUrl: '' })}
-                            className="absolute top-1.5 right-1.5 bg-black/70 text-white text-[10px] px-1.5 py-0.5 hover:bg-black"
-                          >
-                            제거
-                          </button>
-                        </div>
-                      )}
-                    </div>
-
-                    <div className="grid grid-cols-2 gap-3">
-                      <div>
-                        <label className="block font-bold mb-1">동반 가능 견종/체중</label>
-                        <input
-                          type="text"
-                          value={editingTravel.weightLimit || ''}
-                          onChange={(e) => setEditingTravel({...editingTravel, weightLimit: e.target.value})}
-                          className="w-full px-3 py-2 border border-gray-300 focus:border-[#144A42] focus:outline-none"
-                        />
-                      </div>
-                      <div>
-                        <label className="block font-bold mb-1">기본 가격</label>
-                        <input
-                          type="text"
-                          value={editingTravel.price || ''}
-                          onChange={(e) => setEditingTravel({...editingTravel, price: e.target.value})}
-                          className="w-full px-3 py-2 border border-gray-300 focus:border-[#144A42] focus:outline-none"
-                        />
-                      </div>
-                    </div>
-
-                    <div>
-                      <label className="block font-bold mb-1">슬반생 회원 혜택</label>
-                      <input
-                        type="text"
-                        value={editingTravel.memberBenefit || ''}
-                        onChange={(e) => setEditingTravel({...editingTravel, memberBenefit: e.target.value})}
-                        className="w-full px-3 py-2 border border-gray-300 focus:border-[#144A42] focus:outline-none"
-                        required
-                      />
-                    </div>
-
-                    <div>
-                      <label className="block font-bold mb-1">주요 시설 (쉼표로 구분)</label>
-                      <input
-                        type="text"
-                        value={editingTravel.features || ''}
-                        onChange={(e) => setEditingTravel({...editingTravel, features: e.target.value})}
-                        className="w-full px-3 py-2 border border-gray-300 focus:border-[#144A42] focus:outline-none"
-                      />
-                    </div>
-
-                    <div>
-                      <label className="block font-bold mb-1">예약 전화번호</label>
-                      <input
-                        type="text"
-                        value={editingTravel.phone || ''}
-                        onChange={(e) => setEditingTravel({...editingTravel, phone: e.target.value})}
-                        className="w-full px-3 py-2 border border-gray-300 focus:border-[#144A42] focus:outline-none"
-                        required
-                      />
-                    </div>
-
-                    <div className="pt-3 flex justify-end gap-2 border-t border-gray-100">
-                      <button
-                        type="button"
-                        onClick={() => { setIsEditTravelOpen(false); setEditingTravel(null); }}
-                        className="px-4 py-2 border border-gray-300 text-gray-600 hover:bg-gray-50"
-                      >
-                        취소
-                      </button>
-                      <button
-                        type="submit"
-                        className="px-5 py-2 bg-[#144A42] text-white font-bold hover:bg-[#0D3832]"
-                      >
-                        수정사항 저장
-                      </button>
                     </div>
                   </form>
                 </div>
