@@ -90,11 +90,9 @@ export default function AdminPage({
   onRefreshData,
   menuVisibility = DEFAULT_MENU_VISIBILITY,
   onUpdateMenuVisibility,
-  onSyncAllToServer,
   serverStatus,
   showToast
 }) {
-  const [isSyncing, setIsSyncing] = useState(false);
 
   // Admin Authentication State
   const [adminAuth, setAdminAuth] = useState(() => {
@@ -805,39 +803,20 @@ export default function AdminPage({
           </div>
 
           <div className="flex items-center gap-2 sm:gap-3 text-xs">
-            {/* Server Environment Badge */}
+            {/* Live Cloud Connection Status (실시간 자동 저장 배지) */}
             {serverStatus && (
               <div 
-                className={`hidden md:flex items-center gap-1.5 px-2.5 py-1 border font-bold rounded-sm text-[11px] ${
-                  serverStatus.env === 'production'
-                    ? 'bg-emerald-50 text-emerald-800 border-emerald-300'
-                    : 'bg-amber-50 text-amber-800 border-amber-300'
-                }`}
-                title={`연결 서버: ${serverStatus.convexUrl || 'Convex Cloud'}`}
+                className="hidden md:flex items-center gap-2 px-3 py-1.5 bg-emerald-50/90 border border-emerald-300 text-emerald-900 rounded-sm font-bold text-xs shadow-xs"
+                title={`클라우드 DB 실시간 연결됨: ${serverStatus.convexUrl || 'Convex Cloud'}\n등록·수정·삭제 등 모든 변경사항이 서버에 실시간으로 자동 저장됩니다.`}
               >
-                <span className={`w-2 h-2 rounded-full ${serverStatus.env === 'production' ? 'bg-emerald-600' : 'bg-amber-500'}`}></span>
-                <span>{serverStatus.env === 'production' ? '운영 서버 (Prod)' : '개발 서버 (Dev)'}</span>
-                <span className="text-gray-400 font-normal">| 서버 제휴처 {serverStatus.convexPartnersCount || 0}건</span>
+                <span className="relative flex h-2 w-2">
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                  <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-600"></span>
+                </span>
+                <span>실시간 자동 저장 중</span>
+                <span className="text-emerald-700/60 font-medium text-[11px]">| 제휴처 {partners.length}개</span>
               </div>
             )}
-
-            {/* Realtime Server Sync Button */}
-            <button
-              onClick={async () => {
-                setIsSyncing(true);
-                try {
-                  if (onSyncAllToServer) await onSyncAllToServer();
-                } finally {
-                  setIsSyncing(false);
-                }
-              }}
-              disabled={isSyncing}
-              className="px-3.5 py-1.5 bg-[#144A42] hover:bg-[#0D3832] text-white font-bold flex items-center gap-1.5 transition shadow-xs cursor-pointer disabled:opacity-50"
-              title="현재 등록/수정된 제휴처 및 설정값을 Convex 서버로 즉시 업로드"
-            >
-              <RefreshCwIcon className={`w-3.5 h-3.5 text-[#D4AF7A] ${isSyncing ? 'animate-spin' : ''}`} />
-              <span>{isSyncing ? '동기화 중...' : '서버 실시간 동기화'}</span>
-            </button>
 
             <button
               onClick={() => {
@@ -870,32 +849,6 @@ export default function AdminPage({
             </button>
           </div>
         </header>
-
-        {/* Unsynced Server Warning Banner */}
-        {serverStatus && serverStatus.convexPartnersCount === 0 && (
-          <div className="bg-amber-50 border-b border-amber-200 px-4 sm:px-6 py-2.5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 text-xs text-amber-950">
-            <div className="flex items-center gap-2">
-              <span className="px-2 py-0.5 bg-amber-500 text-white font-extrabold text-[10px] rounded-xs">필독 안내</span>
-              <span className="font-semibold">
-                현재 브라우저에 등록된 제휴처({partners.length}개) 및 설정이 Convex 서버에 아직 올라가지 않았습니다. 다른 PC에서도 동일하게 표시되려면 서버 동기화를 실행해 주세요!
-              </span>
-            </div>
-            <button
-              onClick={async () => {
-                setIsSyncing(true);
-                try {
-                  if (onSyncAllToServer) await onSyncAllToServer();
-                } finally {
-                  setIsSyncing(false);
-                }
-              }}
-              disabled={isSyncing}
-              className="px-3.5 py-1 bg-amber-600 hover:bg-amber-700 text-white font-bold rounded-xs shrink-0 cursor-pointer shadow-xs disabled:opacity-50"
-            >
-              {isSyncing ? '서버 전송 중...' : '👉 지금 서버로 즉시 동기화하기'}
-            </button>
-          </div>
-        )}
 
         {/* Content Body */}
         <main className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 flex-1">
@@ -2157,7 +2110,7 @@ export default function AdminPage({
                           <button
                             onClick={() => {
                               if (confirm(`[${partner.name}] 제휴처를 정말 삭제하시겠습니까?`)) {
-                                onDeletePartner(partner._id || partner.id);
+                                onDeletePartner(partner);
                               }
                             }}
                             className="text-xs text-red-500 hover:text-red-700 underline"
@@ -2255,19 +2208,29 @@ export default function AdminPage({
                                     hospital: '동물병원',
                                     grooming: '미용/스파',
                                     kindergarten: '유치원/호텔',
-                                    funeral: '장례케어'
+                                    funeral: '장례케어',
+                                    cafe: '카페/음식점'
                                   };
                                   const catColors = {
                                     hospital: 'bg-[#EBF3FB] text-[#2563EB]',
                                     grooming: 'bg-[#FDF2F4] text-[#E11D48]',
                                     kindergarten: 'bg-[#FEF9EE] text-[#D97706]',
-                                    funeral: 'bg-[#F3F4F6] text-[#4B5563]'
+                                    funeral: 'bg-[#F3F4F6] text-[#4B5563]',
+                                    cafe: 'bg-[#FFF7ED] text-[#C2410C]'
+                                  };
+                                  const catIcons = {
+                                    hospital: 'stethoscope',
+                                    grooming: 'scissors',
+                                    kindergarten: 'hotel',
+                                    funeral: 'home',
+                                    cafe: 'cafe'
                                   };
                                   setNewPartner({
                                     ...newPartner, 
                                     category: e.target.value,
                                     categoryName: catNames[e.target.value] || '기타',
-                                    color: catColors[e.target.value] || newPartner.color
+                                    color: catColors[e.target.value] || newPartner.color,
+                                    icon: catIcons[e.target.value] || newPartner.icon || 'store'
                                   });
                                 }}
                                 className="w-full px-3.5 py-2.5 bg-gray-50/50 border border-gray-300 focus:bg-white focus:border-[#144A42] focus:outline-none transition rounded-xs"
@@ -2276,6 +2239,7 @@ export default function AdminPage({
                                 <option value="grooming">미용/스파</option>
                                 <option value="kindergarten">유치원/호텔</option>
                                 <option value="funeral">장례케어</option>
+                                <option value="cafe">카페/음식점</option>
                               </select>
                             </div>
 
@@ -2517,19 +2481,29 @@ export default function AdminPage({
                                     hospital: '동물병원',
                                     grooming: '미용/스파',
                                     kindergarten: '유치원/호텔',
-                                    funeral: '장례케어'
+                                    funeral: '장례케어',
+                                    cafe: '카페/음식점'
                                   };
                                   const catColors = {
                                     hospital: 'bg-[#EBF3FB] text-[#2563EB]',
                                     grooming: 'bg-[#FDF2F4] text-[#E11D48]',
                                     kindergarten: 'bg-[#FEF9EE] text-[#D97706]',
-                                    funeral: 'bg-[#F3F4F6] text-[#4B5563]'
+                                    funeral: 'bg-[#F3F4F6] text-[#4B5563]',
+                                    cafe: 'bg-[#FFF7ED] text-[#C2410C]'
+                                  };
+                                  const catIcons = {
+                                    hospital: 'stethoscope',
+                                    grooming: 'scissors',
+                                    kindergarten: 'hotel',
+                                    funeral: 'home',
+                                    cafe: 'cafe'
                                   };
                                   setEditingPartner({
                                     ...editingPartner,
                                     category: e.target.value,
                                     categoryName: catNames[e.target.value] || '기타',
-                                    color: catColors[e.target.value] || editingPartner.color
+                                    color: catColors[e.target.value] || editingPartner.color,
+                                    icon: catIcons[e.target.value] || editingPartner.icon || 'store'
                                   });
                                 }}
                                 className="w-full px-3.5 py-2.5 bg-gray-50/50 border border-gray-300 focus:bg-white focus:border-[#144A42] focus:outline-none transition rounded-xs"
@@ -2538,6 +2512,7 @@ export default function AdminPage({
                                 <option value="grooming">미용/스파</option>
                                 <option value="kindergarten">유치원/호텔</option>
                                 <option value="funeral">장례케어</option>
+                                <option value="cafe">카페/음식점</option>
                               </select>
                             </div>
 
@@ -5621,12 +5596,12 @@ export default function AdminPage({
                       </div>
 
                       <div>
-                        <label className="block font-bold mb-1 text-gray-800">24시 긴급 직통 라벨</label>
+                        <label className="block font-bold mb-1 text-gray-800">보조 직통 라벨 (선택)</label>
                         <input
                           type="text"
                           value={brandForm.phone2Label || ''}
                           onChange={(e) => setBrandForm({ ...brandForm, phone2Label: e.target.value })}
-                          placeholder="야간/응급 직통"
+                          placeholder="미입력 시 미노출 (선택사항)"
                           className="w-full px-3.5 py-2.5 border border-gray-300 focus:border-[#144A42] focus:outline-none"
                         />
                       </div>
@@ -5634,14 +5609,13 @@ export default function AdminPage({
 
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                       <div>
-                        <label className="block font-bold mb-1 text-gray-800">24시 긴급 응급/장례 직통번호 *</label>
+                        <label className="block font-bold mb-1 text-gray-800">보조 직통 전화번호 (선택)</label>
                         <input
                           type="text"
                           value={brandForm.phone2 || ''}
                           onChange={(e) => setBrandForm({ ...brandForm, phone2: e.target.value })}
-                          placeholder="010-8880-6982"
+                          placeholder="미입력 시 미노출 (선택사항)"
                           className="w-full px-3.5 py-2.5 border border-gray-300 focus:border-[#144A42] focus:outline-none font-semibold text-[#144A42]"
-                          required
                         />
                       </div>
 
@@ -5821,9 +5795,11 @@ export default function AdminPage({
                         <div className="text-sm font-bold text-[#E8DEC8]">
                           {brandForm.phone1 || '070-4186-1500'}
                         </div>
-                        <div className="text-[11px] text-[#A6B2AD]">
-                          {brandForm.phone2Label || '야간/응급'}: {brandForm.phone2 || '010-8880-6982'}
-                        </div>
+                        {brandForm.phone2 && brandForm.phone2.trim() && (
+                          <div className="text-[11px] text-[#A6B2AD]">
+                            {brandForm.phone2Label ? `${brandForm.phone2Label}: ` : ''}{brandForm.phone2}
+                          </div>
+                        )}
                         <p className="text-[10px] text-[#71807A] whitespace-pre-line pt-0.5 leading-tight">
                           {brandForm.csHours || '평일 09:00 - 18:00'}
                         </p>

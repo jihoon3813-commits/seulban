@@ -3,7 +3,7 @@ import {
   ArrowRight, CheckIcon, ShieldCheckIcon, PawIcon, PawOutlineIcon, HeartIcon, 
   HomeIcon, ScissorsIcon, StethoscopeIcon, FlowerIcon, SearchIcon, 
   MapPinIcon, SparklesIcon, ChevronRight, PhoneIcon, PlaneIcon, HandHeartIcon,
-  HospitalBuildingIcon, HotelBuildingIcon 
+  HospitalBuildingIcon, HotelBuildingIcon, CoffeeIcon 
 } from '../components/Icons';
 import { 
   CORE_SERVICES, MEMBERSHIP_PERKS, PARTNER_LIST, BRAND_INFO 
@@ -16,7 +16,7 @@ export default function Home({
   onNavigate,
   bookmarks,
   onToggleBookmark,
-  partners = PARTNER_LIST
+  partners = []
 }) {
   const [partnerCategory, setPartnerCategory] = useState('all');
   const [searchKeyword, setSearchKeyword] = useState('');
@@ -460,6 +460,7 @@ export default function Home({
                     {item.icon === 'scissors' && <ScissorsIcon className="w-6 h-6 sm:w-7 sm:h-7 stroke-[1.8]" />}
                     {item.icon === 'stethoscope' && <HospitalBuildingIcon className="w-6 h-6 sm:w-8 sm:h-8 stroke-[1.8]" />}
                     {item.icon === 'home' && <HotelBuildingIcon className="w-6 h-6 sm:w-8 sm:h-8 stroke-[1.8]" />}
+                    {(item.icon === 'cafe' || item.icon === 'coffee') && <CoffeeIcon className="w-6 h-6 sm:w-8 sm:h-8 stroke-[1.8]" />}
                   </div>
                   <span className="text-[11px] sm:text-xs font-semibold tracking-tight opacity-90">
                     {item.categoryName}

@@ -241,9 +241,10 @@ export default function App() {
     }
   }, [user]);
 
-  // Server-driven Content States (Convex Server Truth)
-  const [localPartners, setLocalPartners] = useState(PARTNER_LIST);
+  // Server-driven Content States (Convex Server is Single Source of Truth)
+  const [localPartners, setLocalPartners] = useState([]);
   const rawPartners = convexPartners !== undefined ? convexPartners : localPartners;
+
   const partners = React.useMemo(() => {
     return (rawPartners || []).map(p => {
       let b = p.benefit || '전 상품 20% 회원 단독 할인';
@@ -265,10 +266,10 @@ export default function App() {
     });
   }, [convexPartners, localPartners]);
 
-  const [localAdoptionList, setLocalAdoptionList] = useState(ADOPTION_LIST);
+  const [localAdoptionList, setLocalAdoptionList] = useState([]);
   const adoptionList = convexAdoptions !== undefined ? convexAdoptions : localAdoptionList;
 
-  const [localTravelList, setLocalTravelList] = useState(TRAVEL_LIST);
+  const [localTravelList, setLocalTravelList] = useState([]);
   const travelList = convexTravels !== undefined ? convexTravels : localTravelList;
 
   const [localBrandInfo, setLocalBrandInfo] = useState(BRAND_INFO);
@@ -284,7 +285,7 @@ export default function App() {
   }, [brandInfo]);
 
   // Popups State
-  const [localPopups, setLocalPopups] = useState(INITIAL_POPUPS);
+  const [localPopups, setLocalPopups] = useState([]);
   const popups = convexPopups !== undefined ? convexPopups : localPopups;
 
   // Consultations State (빠른상담 신청 내역)
@@ -629,10 +630,10 @@ export default function App() {
     return clean;
   };
 
-  // Convex 서버에는 쇼핑몰 제품 목록을 제외하고 제휴처 기본 정보 및 설정만 전송 (제품 목록은 프론트엔드 정적 번들에서 즉시 로드)
+  // Convex 서버 저장 전 유효성 정리 (undefined 제거)
   const preparePartnersForConvex = (partnersList) => {
     return (partnersList || []).map(p => {
-      const { _id, _creationTime, products, ...rest } = p;
+      const { _id, _creationTime, ...rest } = p;
       return sanitizeForConvex(rest);
     });
   };
@@ -648,21 +649,21 @@ export default function App() {
       imageUrl: newPartner.imageUrl || '',
       featured: !!newPartner.featured,
     };
-    const updated = [partnerToSave, ...partners];
-    setLocalPartners(updated);
+    setLocalPartners(prev => [partnerToSave, ...prev]);
 
     try {
       const safePartner = preparePartnersForConvex([partnerToSave])[0];
       await addPartnerMutation(safePartner);
+      showToast(`[${partnerToSave.name}] 제휴처가 서버에 성공적으로 등록되었습니다.`);
     } catch (e) {
-      console.warn('Convex addPartner note:', e);
+      console.error('Convex addPartner error:', e);
+      showToast('제휴처 서버 등록 오류: ' + (e?.message || e));
     }
   };
 
   const handleUpdatePartner = async (updatedPartner) => {
     const pId = updatedPartner._id || updatedPartner.id;
-    const updated = partners.map(p => (p._id === pId || p.id === pId) ? { ...p, ...updatedPartner } : p);
-    setLocalPartners(updated);
+    setLocalPartners(prev => prev.map(p => (p._id === pId || p.id === pId) ? { ...p, ...updatedPartner } : p));
 
     try {
       const safePartner = preparePartnersForConvex([updatedPartner])[0];
@@ -670,62 +671,51 @@ export default function App() {
         id: updatedPartner.id || (typeof updatedPartner._id === 'string' ? updatedPartner._id : undefined),
         ...safePartner,
       });
+      showToast('제휴처 정보가 운영서버에 수정 반영되었습니다.');
     } catch (e) {
-      console.warn('Convex updatePartner note:', e);
+      console.error('Convex updatePartner error:', e);
+      showToast('제휴처 수정 오류: ' + (e?.message || e));
     }
-    showToast('제휴처 정보가 성공적으로 수정되었습니다.');
   };
 
-  const handleDeletePartner = async (id) => {
-    const updated = partners.filter(p => p.id !== id && p._id !== id);
-    setLocalPartners(updated);
+  const handleDeletePartner = async (partnerOrId) => {
+    let idToDelete = partnerOrId;
+    let customId = null;
+    let convexId = null;
+
+    if (typeof partnerOrId === 'object' && partnerOrId !== null) {
+      customId = partnerOrId.id;
+      convexId = partnerOrId._id;
+      idToDelete = convexId || customId;
+    } else if (typeof partnerOrId === 'string') {
+      idToDelete = partnerOrId;
+      const found = partners.find(p => p._id === partnerOrId || p.id === partnerOrId);
+      if (found) {
+        customId = found.id;
+        convexId = found._id;
+      }
+    }
+
+    setLocalPartners(prev => prev.filter(p => p.id !== idToDelete && p._id !== idToDelete && p.id !== customId && p._id !== convexId));
 
     try {
-      await removePartnerMutation({ id: String(id) });
+      if (convexId) {
+        await removePartnerMutation({ id: String(convexId) });
+      }
+      if (customId && customId !== convexId) {
+        await removePartnerMutation({ id: String(customId) });
+      }
+      if (!convexId && !customId && idToDelete) {
+        await removePartnerMutation({ id: String(idToDelete) });
+      }
+      showToast('제휴처가 운영서버에서 즉시 삭제되었습니다.');
     } catch (e) {
-      console.warn('Convex removePartner note:', e);
+      console.error('Convex removePartner error:', e);
+      showToast('제휴처 삭제 오류: ' + (e?.message || e));
     }
-    showToast('제휴처가 삭제되었습니다.');
   };
 
   const PROD_CONVEX_URL = 'https://uncommon-opossum-624.convex.cloud';
-
-  // 전체 데이터 운영 Convex 서버 실시간 원클릭 동기화
-  const handleSyncAllToServer = async () => {
-    try {
-      showToast('Convex 운영 서버 실시간 동기화 진행 중...');
-      const safePartners = (partners && partners.length > 0)
-        ? preparePartnersForConvex(partners)
-        : [];
-      const safeTravels = (travelList || []).map(({ _id, _creationTime, ...rest }) => sanitizeForConvex(rest));
-      const safeAdoptions = (adoptionList || []).map(({ _id, _creationTime, ...rest }) => sanitizeForConvex(rest));
-      const safePopups = (popups || []).map(({ _id, _creationTime, ...rest }) => sanitizeForConvex(rest));
-
-      const safeSettings = sanitizeForConvex({
-        brand_info: brandInfo,
-        menu_visibility: menuVisibility,
-        shop_orders: shopOrders,
-        consultations: consultations,
-      });
-
-      if (safePartners.length > 0) {
-        await syncPartnersMutation({ partners: safePartners });
-      }
-      await syncTravelsMutation({ travels: safeTravels });
-      await syncAdoptionsMutation({ adoptions: safeAdoptions });
-      await syncPopupsMutation({ popups: safePopups });
-      await syncSettingsMutation({ settings: safeSettings });
-
-      showToast('운영 서버에 모든 데이터가 성공적으로 실시간 동기화되었습니다!');
-      return true;
-    } catch (err) {
-      console.error('Failed to sync to server:', err);
-      const errMsg = err?.message || String(err);
-      showToast('서버 동기화 오류: ' + errMsg);
-      alert('서버 동기화 오류 상세:\n' + errMsg);
-      return false;
-    }
-  };
 
   const handleAddAdoption = async (newAnimal) => {
     const itemToSave = {
@@ -1033,7 +1023,6 @@ export default function App() {
           onRefreshData={handleRefreshAdminData}
           menuVisibility={menuVisibility}
           onUpdateMenuVisibility={handleUpdateMenuVisibility}
-          onSyncAllToServer={handleSyncAllToServer}
           serverStatus={{
             isConnected: !!convexApps,
             convexPartnersCount: convexPartners ? convexPartners.length : 0,
@@ -1140,6 +1129,7 @@ export default function App() {
             pet={userPet}
             applications={userApplications}
             bookmarks={bookmarks}
+            partners={partners}
             onOpenApplyModal={() => setApplyModalOpen(true)}
             onOpenPartnerModal={(partner) => setSelectedPartner(partner)}
             onOpenLogin={() => { setAuthMode('login'); setLoginModalOpen(true); }}
@@ -1214,29 +1204,31 @@ export default function App() {
               <span className="text-[11px] font-bold">대화하기 →</span>
             </a>
             
-            {/* 3. 일반 유선 전화상담 */}
+            {/* 3. 대표 유선 전화상담 */}
             <a 
-              href={`tel:${brandInfo.phone1 || BRAND_INFO.phone1}`}
+              href={`tel:${brandInfo.phone1 || BRAND_INFO.phone1 || '070-4186-1500'}`}
               className="flex items-center gap-2 p-2.5 bg-[#FAF8F5] hover:bg-[#F3EFE6] transition text-[#2C3B35] font-semibold"
             >
               <PhoneIcon className="w-4 h-4 text-[#144A42]" />
               <div>
-                <span>일반 상담: {brandInfo.phone1 || BRAND_INFO.phone1}</span>
+                <span>대표 전화: {brandInfo.phone1 || BRAND_INFO.phone1 || '070-4186-1500'}</span>
                 <p className="text-[10px] text-gray-400 font-normal">평일 09:00 ~ 18:00</p>
               </div>
             </a>
 
-            {/* 4. 24시 긴급 응급/장례 직통 */}
-            <a 
-              href={`tel:${brandInfo.phone2 || BRAND_INFO.phone2}`}
-              className="flex items-center gap-2 p-2.5 bg-[#EAF5F2] hover:bg-[#DCEDE9] transition text-[#144A42] font-semibold"
-            >
-              <PhoneIcon className="w-4 h-4 text-[#144A42]" />
-              <div>
-                <span>24시 긴급 응급/장례 직통</span>
-                <p className="text-[10px] text-emerald-700 font-normal">{brandInfo.phone2 || BRAND_INFO.phone2}</p>
-              </div>
-            </a>
+            {/* 4. 보조/직통 번호 (설정된 경우에만 노출) */}
+            {brandInfo.phone2 && brandInfo.phone2.trim() && (
+              <a 
+                href={`tel:${brandInfo.phone2}`}
+                className="flex items-center gap-2 p-2.5 bg-[#EAF5F2] hover:bg-[#DCEDE9] transition text-[#144A42] font-semibold"
+              >
+                <PhoneIcon className="w-4 h-4 text-[#144A42]" />
+                <div>
+                  <span>{brandInfo.phone2Label || '직통 번호'}</span>
+                  <p className="text-[10px] text-emerald-700 font-normal">{brandInfo.phone2}</p>
+                </div>
+              </a>
+            )}
 
             <button
               onClick={() => { setFloatingMenuOpen(false); setApplyModalOpen(true); }}
@@ -1337,6 +1329,7 @@ export default function App() {
       {/* 메인 3:4 팝업 (관리자에서 설정한 활성 팝업, 7일간 숨김 및 다크 백드롭 지원) */}
       <MainPopupModal 
         popups={popups}
+        isLoading={convexPopups === undefined}
         onNavigate={handleNavigate}
       />
 

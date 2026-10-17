@@ -56,7 +56,7 @@ export default defineSchema({
     id: v.optional(v.string()), // 'p_redpuppy', 'p_01' 등 클라이언트 고유 식별자
     partnerType: v.optional(v.string()), // 'shop', 'normal' 등
     name: v.string(),
-    category: v.string(), // hospital, grooming, kindergarten, funeral, shopping, hotel 등
+    category: v.string(), // hospital, grooming, kindergarten, funeral, cafe, shopping, hotel 등
     categoryName: v.optional(v.string()),
     tag: v.optional(v.string()),
     location: v.optional(v.string()),

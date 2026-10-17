@@ -3,8 +3,8 @@ export const BRAND_INFO = {
   fullName: "슬기로운 반려생활",
   slogan: "우리 아이의 오늘부터 모든 내일까지",
   subSlogan: "등록부터 건강, 여행, 아름다운 이별까지 반려동물의 평생을 함께합니다.",
-  phone1: "010-3545-6982",
-  phone2: "010-8880-6982",
+  phone1: "070-4186-1500",
+  phone2: "",
   email: "contact@seulbanlife.com",
   address: "경기도 양주시 고원2가길 37, 102호(고암동)",
   bizNumber: "756-81-04016",
@@ -36,8 +36,8 @@ export const BRAND_INFO = {
   hostingProvider: "슬반생 클라우드",
   disclaimer: "슬반생은 통신판매중개자이며 통신판매의 당사자가 아닙니다. 제휴사가 제공하는 상품 및 서비스의 거래와 관련한 책임은 각 제공자에게 있습니다.",
   csTitle: "고객센터 및 제휴상담",
-  phone2Label: "야간/응급 직통",
-  csHours: "평일 09:00 - 18:00 (점심시간 12:00 - 13:00)\n동물등록 및 24시 긴급상담 연중무휴 지원",
+  phone2Label: "",
+  csHours: "평일 09:00 - 18:00 (점심시간 12:00 - 13:00)\n동물등록 온라인 접수 연중무휴 지원",
   copyright: "© 2026 Seulban Life Inc. All rights reserved.",
   privacyUrl: "#privacy",
   termsUrl: "#terms",
@@ -436,28 +436,7 @@ export const INITIAL_APPLICATION = {
 };
 
 // Initial Popups List (3:4 ratio promotional popups)
-export const INITIAL_POPUPS = [
-  {
-    id: "pop_01",
-    title: "동물등록 원스톱 프로모션",
-    imageUrl: "https://res.cloudinary.com/lyjyvy54/image/upload/v1789268626/ChatGPT_Image_2026%EB%85%84_9%EC%9B%94_13%EC%9D%BC_%EC%98%A4%ED%9B%84_12_03_30_1_dxjcu5.png",
-    linkUrl: "",
-    linkType: "internal", // or external
-    internalTab: "registration",
-    active: true,
-    createdAt: "2026-09-13",
-  },
-  {
-    id: "pop_02",
-    title: "슬반생 VIP 멤버십 사전신청",
-    imageUrl: "https://res.cloudinary.com/lyjyvy54/image/upload/v1789268626/ChatGPT_Image_2026%EB%85%84_9%EC%9B%94_13%EC%9D%BC_%EC%98%A4%ED%9B%84_12_03_30_6_e9hvro.png",
-    linkUrl: "",
-    linkType: "internal",
-    internalTab: "membership",
-    active: true,
-    createdAt: "2026-09-13",
-  },
-];
+export const INITIAL_POPUPS = [];
 
 // Initial Shop Orders (제휴몰 주문/배송 관리용)
 export const INITIAL_SHOP_ORDERS = [

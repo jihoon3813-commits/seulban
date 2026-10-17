@@ -58,13 +58,15 @@ export default function Footer({ onOpenAdmin, onNavigate, brandInfo, onOpenPolic
               {info.csTitle || '고객센터 및 제휴상담'}
             </p>
             <div className="text-base sm:text-lg font-bold text-[#E8DEC8] tracking-tight">
-              {info.phone1 || BRAND_INFO.phone1}
+              {info.phone1 || BRAND_INFO.phone1 || '070-4186-1500'}
             </div>
-            <div className="text-xs sm:text-sm font-semibold text-[#A6B2AD]">
-              {info.phone2Label || '야간/응급 안내'}: {info.phone2 || BRAND_INFO.phone2}
-            </div>
+            {info.phone2 && info.phone2.trim() && (
+              <div className="text-xs sm:text-sm font-semibold text-[#A6B2AD]">
+                {info.phone2Label ? `${info.phone2Label}: ` : ''}{info.phone2}
+              </div>
+            )}
             <p className="text-[10px] sm:text-[11px] text-[#71807A] whitespace-pre-line leading-relaxed">
-              {info.csHours || '평일 09:00 - 18:00 (점심시간 12:00 - 13:00)\n동물등록 및 24시 긴급상담 연중무휴 지원'}
+              {info.csHours || '평일 09:00 - 18:00 (점심시간 12:00 - 13:00)\n동물등록 온라인 접수 연중무휴 지원'}
             </p>
           </div>
         </div>

@@ -10,7 +10,7 @@ export default function PartnersPage({
   onOpenShopModal,
   bookmarks, 
   onToggleBookmark,
-  partners = PARTNER_LIST
+  partners = []
 }) {
   const [selectedCat, setSelectedCat] = useState('all');
   const [region, setRegion] = useState('all');
@@ -20,7 +20,11 @@ export default function PartnersPage({
     if (item.id === 'p_redpuppy' || item.partnerType === 'shop' || item.category === 'shopping' || item.name?.includes('레드퍼피')) {
       return false;
     }
-    const matchCat = selectedCat === 'all' || item.category === selectedCat;
+    const matchCat = 
+      selectedCat === 'all' || 
+      item.category === selectedCat ||
+      (selectedCat === 'hotel' && (item.category === 'kindergarten' || item.category === 'hotel')) ||
+      (selectedCat === 'kindergarten' && (item.category === 'hotel' || item.category === 'kindergarten'));
     const matchRegion = region === 'all' || item.location.includes(region);
     const matchKey = !keyword || item.name.includes(keyword) || item.location.includes(keyword) || item.desc.includes(keyword);
     return matchCat && matchRegion && matchKey;
@@ -50,7 +54,7 @@ export default function PartnersPage({
             검증된 우리 동네<br />반려생활 제휴처
           </h1>
           <p className="text-[11px] sm:text-sm text-[#61716A] leading-relaxed">
-            슬반생이 직접 시설과 진료 환경을 확인하고 엄선한 동물병원, 미용실, 유치원입니다. 회원 특별 할인과 무료 서비스를 누려보세요.
+            슬반생이 직접 시설과 환경을 확인하고 엄선한 동물병원, 미용실, 유치원, 카페/음식점입니다. 회원 특별 할인과 무료 서비스를 누려보세요.
           </p>
         </div>
 
@@ -95,6 +99,8 @@ export default function PartnersPage({
                 <option value="hospital">동물병원</option>
                 <option value="grooming">미용/스파</option>
                 <option value="hotel">호텔/유치원</option>
+                <option value="cafe">카페/음식점</option>
+                <option value="funeral">장례케어</option>
               </select>
             </div>
 

@@ -5,7 +5,7 @@ function sanitizeDoc(doc) {
   if (doc === undefined || doc === null) return null;
   const clean = {};
   for (const [key, value] of Object.entries(doc)) {
-    if (value !== undefined && key !== 'products') {
+    if (value !== undefined) {
       clean[key] = value;
     }
   }
@@ -96,19 +96,18 @@ export const update = mutation({
 
     let targetDoc = null;
     if (id) {
-      // 1. Try find by custom id
-      targetDoc = await ctx.db
-        .query("partners")
-        .withIndex("by_partner_id", (q) => q.eq("id", id))
-        .first();
+      // 1. Try find by Convex _id
+      const normalizedId = ctx.db.normalizeId("partners", id);
+      if (normalizedId) {
+        targetDoc = await ctx.db.get(normalizedId);
+      }
 
-      // 2. Try find by Convex _id
+      // 2. Try find by custom id
       if (!targetDoc) {
-        try {
-          targetDoc = await ctx.db.get(id);
-        } catch {
-          // not a valid Convex _id
-        }
+        targetDoc = await ctx.db
+          .query("partners")
+          .withIndex("by_partner_id", (q) => q.eq("id", id))
+          .first();
       }
     }
 
@@ -130,27 +129,40 @@ export const update = mutation({
 export const remove = mutation({
   args: { id: v.string() },
   handler: async (ctx, args) => {
-    // 1. Try by custom id
-    const byCustomId = await ctx.db
-      .query("partners")
-      .withIndex("by_partner_id", (q) => q.eq("id", args.id))
-      .first();
-    if (byCustomId) {
-      await ctx.db.delete(byCustomId._id);
-      return true;
-    }
+    let deleted = false;
 
-    // 2. Try by Convex _id
-    try {
-      const doc = await ctx.db.get(args.id);
+    // 1. Try by Convex _id
+    const normalizedId = ctx.db.normalizeId("partners", args.id);
+    if (normalizedId) {
+      const doc = await ctx.db.get(normalizedId);
       if (doc) {
         await ctx.db.delete(doc._id);
-        return true;
+        deleted = true;
       }
-    } catch {
-      // ignore
     }
-    return false;
+
+    // 2. Delete all matching custom id
+    const matches = await ctx.db
+      .query("partners")
+      .withIndex("by_partner_id", (q) => q.eq("id", args.id))
+      .collect();
+    for (const match of matches) {
+      await ctx.db.delete(match._id);
+      deleted = true;
+    }
+
+    // 3. Fallback scan if id might match doc.id or doc._id
+    if (!deleted) {
+      const all = await ctx.db.query("partners").collect();
+      for (const p of all) {
+        if (p.id === args.id || String(p._id) === args.id) {
+          await ctx.db.delete(p._id);
+          deleted = true;
+        }
+      }
+    }
+
+    return deleted;
   },
 });
 

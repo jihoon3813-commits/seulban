@@ -3386,15 +3386,17 @@ export function AdminModal({ isOpen, onClose, applications, onUpdateAppStatus })
 }
 
 // 6. 메인 3:4 이미지 팝업 모달 (복수 팝업 지원, 7일간 보지 않기, 다크 백드롭, 링크 연결 지원)
-export function MainPopupModal({ popups = [], onNavigate }) {
+export function MainPopupModal({ popups = [], onNavigate, isLoading = false }) {
   const [isOpen, setIsOpen] = useState(false);
   const [currentIndex, setCurrentIndex] = useState(0);
 
+  // 로딩 중이거나 데이터가 없으면 활성 팝업 없음 처리
+  const safePopups = Array.isArray(popups) ? popups : [];
   // 활성화된 팝업만 필터링
-  const activePopups = popups.filter(p => p.active !== false && p.imageUrl);
+  const activePopups = !isLoading ? safePopups.filter(p => p && p.active !== false && p.imageUrl) : [];
 
   useEffect(() => {
-    if (activePopups.length === 0) {
+    if (isLoading || activePopups.length === 0) {
       setIsOpen(false);
       return;
     }
@@ -3412,9 +3414,9 @@ export function MainPopupModal({ popups = [], onNavigate }) {
     }
 
     setIsOpen(true);
-  }, [popups.length]);
+  }, [isLoading, activePopups.length]);
 
-  if (!isOpen || activePopups.length === 0) return null;
+  if (isLoading || !isOpen || activePopups.length === 0) return null;
 
   const currentPopup = activePopups[currentIndex] || activePopups[0];
 
@@ -3855,16 +3857,17 @@ export function QuickConsultModal({ isOpen, onClose, onSubmitConsult, brandInfo,
           {!isDone ? (
             <form onSubmit={handleSubmit} className="space-y-4">
               
-              {/* 긴급/야간 유선 안내 박스 */}
+              {/* 유선 고객센터 안내 박스 */}
               <div className="bg-[#FAF8F5] p-3.5 border border-[#EAE2D5] flex items-center justify-between gap-2">
                 <div>
-                  <span className="text-[11px] font-bold text-[#8A6D3B] block">급한 문의나 야간 응급 안내는?</span>
+                  <span className="text-[11px] font-bold text-[#8A6D3B] block">빠른 유선 전화 상담</span>
                   <p className="text-xs font-semibold text-[#144A42]">
-                    직통 전화: {info.phone1 || BRAND_INFO.phone1} (24시 {info.phone2 || BRAND_INFO.phone2})
+                    대표 전화: {info.phone1 || BRAND_INFO.phone1 || '070-4186-1500'}
+                    {info.phone2 && info.phone2.trim() ? ` (${info.phone2Label || '직통'}: ${info.phone2})` : ''}
                   </p>
                 </div>
                 <a
-                  href={`tel:${info.phone1 || BRAND_INFO.phone1}`}
+                  href={`tel:${info.phone1 || BRAND_INFO.phone1 || '070-4186-1500'}`}
                   className="px-3 py-1.5 bg-[#144A42] text-white text-[11px] font-bold shrink-0 hover:bg-[#0E352F] transition flex items-center gap-1"
                 >
                   <PhoneIcon className="w-3 h-3 text-[#E6CAA4]" />

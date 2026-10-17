@@ -10,13 +10,14 @@ export default function MyPage({
   pet, 
   applications, 
   bookmarks, 
+  partners = [],
   onOpenApplyModal, 
   onOpenPartnerModal,
   onOpenLogin,
   onOpenSignUp,
   onLogout
 }) {
-  const bookmarkedItems = PARTNER_LIST.filter(p => bookmarks.includes(p.id) && p.id !== 'p_redpuppy' && p.partnerType !== 'shop');
+  const bookmarkedItems = (partners || []).filter(p => bookmarks.includes(p.id) && p.id !== 'p_redpuppy' && p.partnerType !== 'shop');
 
   // 비로그인 상태 가드: 로그인/회원가입 안내 카드 렌더링
   if (!user) {

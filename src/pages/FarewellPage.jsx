@@ -50,11 +50,11 @@ export default function FarewellPage() {
           {/* 24h Hotlines */}
           <div className="pt-2 sm:pt-4 flex flex-col sm:flex-row justify-center gap-2 sm:gap-3">
             <a
-              href={`tel:${BRAND_INFO.phone2}`}
+              href={`tel:${BRAND_INFO.phone1 || '070-4186-1500'}`}
               className="px-5 py-3 sm:px-6 sm:py-3.5 bg-[#144A42] text-white font-bold text-xs sm:text-sm hover:bg-[#0D3832] transition flex items-center justify-center gap-2 shadow-md"
             >
               <PhoneIcon className="w-4 h-4 text-[#C5A880]" />
-              <span>24시간 긴급 장례 직통: {BRAND_INFO.phone2}</span>
+              <span>장례 상담 직통: {BRAND_INFO.phone1 || '070-4186-1500'}</span>
             </a>
 
             <button
