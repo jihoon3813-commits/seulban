@@ -885,8 +885,19 @@ export default function App() {
     try {
       showToast('Convex 서버 실시간 동기화 진행 중...');
       // 1. Sync Partners (sanitized & large product catalog protected)
-      if (partners && partners.length > 0) {
-        const safePartners = preparePartnersForConvex(partners);
+      let partnersToSync = partners;
+      try {
+        const stored = localStorage.getItem('seulban_partners');
+        if (stored) {
+          const parsed = JSON.parse(stored);
+          if (Array.isArray(parsed) && parsed.length > 0) {
+            partnersToSync = parsed;
+          }
+        }
+      } catch (e) {}
+
+      if (partnersToSync && partnersToSync.length > 0) {
+        const safePartners = preparePartnersForConvex(partnersToSync);
         await syncPartnersMutation({ partners: safePartners });
       }
       // 2. Sync Settings (brand_info, menu_visibility, shop_orders, consultations)
