@@ -34,6 +34,9 @@ export default function Footer({ onOpenAdmin, onNavigate, brandInfo, onOpenPolic
             {(!menuVisibility || menuVisibility.travel !== false) && (
               <button onClick={() => onNavigate('travel')} className="hover:text-white transition">반려여행 안내</button>
             )}
+            {(!menuVisibility || menuVisibility.mall !== false) && (
+              <button onClick={() => onNavigate('mall')} className="hover:text-white transition">슬반생몰</button>
+            )}
           </div>
         </div>
 

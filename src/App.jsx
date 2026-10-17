@@ -9,6 +9,7 @@ import PartnersPage from './pages/PartnersPage';
 import TravelPage from './pages/TravelPage';
 import FarewellPage from './pages/FarewellPage';
 import MembershipPage from './pages/MembershipPage';
+import MallPage from './pages/MallPage';
 import MyPage from './pages/MyPage';
 import AdminPage from './pages/AdminPage';
 
@@ -304,18 +305,23 @@ export default function App() {
   const rawPartners = (convexPartners && convexPartners.length > 0) ? convexPartners : localPartners;
   const partners = React.useMemo(() => {
     return (rawPartners || []).map(p => {
-      if (p.id === 'p_redpuppy' || p.name?.includes('레드퍼피')) {
-        let b = p.benefit || '전 상품 20% 회원 단독 할인';
-        if (b.includes('25%')) {
-          b = b.replace('25%', '20%');
-        }
-        return {
-          ...p,
-          benefit: b,
-          discountRate: p.discountRate === 25 ? 20 : (p.discountRate || 20)
-        };
+      let b = p.benefit || '전 상품 20% 회원 단독 할인';
+      if (b.includes('25%')) {
+        b = b.replace('25%', '20%');
       }
-      return p;
+      // If products is missing (stripped for 1MB Convex storage limit) and it's a shop partner, hydrate from bundled file
+      let prods = p.products;
+      if (!prods || prods.length === 0) {
+        if (p.id === 'p_redpuppy' || p.partnerType === 'shop' || p.name?.includes('레드퍼피')) {
+          prods = REDPUPPY_PRODUCTS;
+        }
+      }
+      return {
+        ...p,
+        benefit: b,
+        discountRate: p.discountRate === 25 ? 20 : (p.discountRate || 20),
+        products: prods
+      };
     });
   }, [convexPartners, localPartners]);
 
@@ -787,6 +793,40 @@ export default function App() {
     showToast(`신청 내역(${appId})이 삭제되었습니다.`);
   };
 
+  // Helper to remove any undefined or invalid Convex serialization values
+  const sanitizeForConvex = (obj) => {
+    if (obj === undefined || obj === null) return null;
+    if (typeof obj !== 'object') return obj;
+    if (Array.isArray(obj)) {
+      return obj.map(item => sanitizeForConvex(item));
+    }
+    const clean = {};
+    for (const [k, v] of Object.entries(obj)) {
+      if (v !== undefined) {
+        clean[k] = sanitizeForConvex(v);
+      }
+    }
+    return clean;
+  };
+
+  // Helper to ensure partners list does not embed massive 1.2MB static catalog into DB rows
+  const preparePartnersForConvex = (partnersList) => {
+    return (partnersList || []).map(p => {
+      const { _id, _creationTime, ...rest } = p;
+      const clean = sanitizeForConvex(rest);
+      if (clean && clean.products) {
+        try {
+          if (Array.isArray(clean.products) && (clean.products.length > 50 || JSON.stringify(clean.products).length > 100000)) {
+            delete clean.products;
+          }
+        } catch {
+          delete clean.products;
+        }
+      }
+      return clean;
+    });
+  };
+
   const handleAddPartner = async (newPartner) => {
     const partnerToSave = {
       ...newPartner,
@@ -805,7 +845,8 @@ export default function App() {
     } catch (e) {}
 
     try {
-      await addPartnerMutation(partnerToSave);
+      const safePartner = preparePartnersForConvex([partnerToSave])[0];
+      await addPartnerMutation(safePartner);
       console.log('✅ Convex DB addPartner 완료:', partnerToSave.name);
     } catch (e) {
       console.warn('Convex addPartner note:', e);
@@ -821,30 +862,10 @@ export default function App() {
     } catch (e) {}
 
     try {
+      const safePartner = preparePartnersForConvex([updatedPartner])[0];
       await updatePartnerMutation({
         id: updatedPartner.id || (typeof updatedPartner._id === 'string' ? updatedPartner._id : undefined),
-        name: updatedPartner.name,
-        category: updatedPartner.category,
-        partnerType: updatedPartner.partnerType,
-        categoryName: updatedPartner.categoryName,
-        tag: updatedPartner.tag,
-        location: updatedPartner.location,
-        benefit: updatedPartner.benefit,
-        desc: updatedPartner.desc,
-        rating: Number(updatedPartner.rating) || 4.9,
-        reviews: Number(updatedPartner.reviews) || 50,
-        phone: updatedPartner.phone,
-        color: updatedPartner.color,
-        icon: updatedPartner.icon,
-        imageUrl: updatedPartner.imageUrl || '',
-        featured: !!updatedPartner.featured,
-        shopUrl: updatedPartner.shopUrl,
-        discountRate: updatedPartner.discountRate,
-        products: updatedPartner.products,
-        features: updatedPartner.features,
-        bankInfo: updatedPartner.bankInfo,
-        images: updatedPartner.images,
-        isVisible: updatedPartner.isVisible,
+        ...safePartner,
       });
       console.log('✅ Convex DB updatePartner 완료:', updatedPartner.name);
     } catch (e) {
@@ -873,24 +894,26 @@ export default function App() {
   const handleSyncAllToServer = async () => {
     try {
       showToast('Convex 서버 실시간 동기화 진행 중...');
-      // 1. Sync Partners
+      // 1. Sync Partners (sanitized & large product catalog protected)
       if (partners && partners.length > 0) {
-        await syncPartnersMutation({ partners });
+        const safePartners = preparePartnersForConvex(partners);
+        await syncPartnersMutation({ partners: safePartners });
       }
       // 2. Sync Settings (brand_info, menu_visibility, shop_orders, consultations)
-      await syncSettingsMutation({
-        settings: {
-          brand_info: brandInfo,
-          menu_visibility: menuVisibility,
-          shop_orders: shopOrders,
-          consultations: consultations,
-        }
+      const safeSettings = sanitizeForConvex({
+        brand_info: brandInfo,
+        menu_visibility: menuVisibility,
+        shop_orders: shopOrders,
+        consultations: consultations,
       });
+      await syncSettingsMutation({ settings: safeSettings });
       showToast('운영 서버에 모든 데이터가 성공적으로 실시간 동기화되었습니다!');
       return true;
     } catch (err) {
       console.error('Failed to sync to server:', err);
-      showToast('서버 동기화 중 오류 발생: ' + (err.message || err));
+      const errMsg = err?.message || String(err);
+      showToast('서버 동기화 오류: ' + errMsg);
+      alert('서버 동기화 오류 상세:\n' + errMsg);
       return false;
     }
   };
@@ -1303,7 +1326,16 @@ export default function App() {
         {activeTab === 'membership' && (
           <MembershipPage 
             onOpenMembershipModal={() => setMembershipModalOpen(true)}
-            onOpenMallModal={() => setMallModalOpen(true)}
+            onOpenMallModal={() => handleNavigate('mall')}
+          />
+        )}
+
+        {activeTab === 'mall' && (
+          <MallPage
+            partner={partners.find(p => p.id === 'p_redpuppy' || p.partnerType === 'shop' || p.name?.includes('레드퍼피')) || PARTNER_LIST.find(p => p.id === 'p_redpuppy')}
+            onOrderSubmit={handleCreateShopOrder}
+            user={user}
+            brandInfo={brandInfo}
           />
         )}
 

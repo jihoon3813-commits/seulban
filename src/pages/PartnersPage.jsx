@@ -17,6 +17,9 @@ export default function PartnersPage({
   const [keyword, setKeyword] = useState('');
 
   const filtered = partners.filter(item => {
+    if (item.id === 'p_redpuppy' || item.partnerType === 'shop' || item.category === 'shopping' || item.name?.includes('레드퍼피')) {
+      return false;
+    }
     const matchCat = selectedCat === 'all' || item.category === selectedCat;
     const matchRegion = region === 'all' || item.location.includes(region);
     const matchKey = !keyword || item.name.includes(keyword) || item.location.includes(keyword) || item.desc.includes(keyword);
@@ -89,7 +92,6 @@ export default function PartnersPage({
                 className="w-full px-3 py-2 border border-gray-200 text-xs text-gray-700 focus:outline-none"
               >
                 <option value="all">전체 업종</option>
-                <option value="shopping">🛍️ 반려용품·쇼핑몰</option>
                 <option value="hospital">동물병원</option>
                 <option value="grooming">미용/스파</option>
                 <option value="hotel">호텔/유치원</option>
@@ -101,10 +103,10 @@ export default function PartnersPage({
           {/* Quick pills */}
           <div className="flex flex-wrap items-center gap-1.5 sm:gap-2 pt-1 border-t border-gray-100 text-xs">
             <span className="text-gray-400 font-medium text-[11px]">추천 태그:</span>
-            {['레드퍼피', '슬반생 우대할인', '24시간 응급', '무마취 스케일링', '탄산스파', '천연잔디 운동장'].map((tag, i) => (
+            {['슬반생 우대할인', '24시간 응급', '무마취 스케일링', '탄산스파', '천연잔디 운동장'].map((tag, i) => (
               <button
                 key={i}
-                onClick={() => setKeyword(tag === '레드퍼피' ? '레드퍼피' : tag)}
+                onClick={() => setKeyword(tag)}
                 className="px-2 py-0.5 sm:px-2.5 sm:py-1 bg-[#FAF8F5] hover:bg-[#EFECE6] text-[#5A6862] text-[10px] sm:text-[11px] border border-gray-200"
               >
                 #{tag}

@@ -33,6 +33,7 @@ export default function Header({
     { id: 'travel', label: '반려여행' },
     { id: 'farewell', label: '아름다운 이별' },
     { id: 'membership', label: '슬반생멤버십', highlight: true },
+    { id: 'mall', label: '슬반생몰', badge: '특가', isMall: true },
   ];
 
   const navItems = allNavItems.filter(item => {
@@ -82,17 +83,26 @@ export default function Header({
               <button
                 key={item.id}
                 onClick={() => handleNavClick(item.id)}
-                className={`relative px-3.5 py-2 text-[15px] font-semibold transition-colors ${
-                  activeTab === item.id 
-                    ? 'text-[#144A42] font-bold bg-[#F4F1EA] border-b-2 border-[#144A42]' 
+                className={`relative transition-all cursor-pointer ${
+                  item.isMall
+                    ? activeTab === item.id
+                      ? 'ml-1 px-4 py-2 text-[15px] font-extrabold bg-[#0D3832] text-[#FDE68A] border border-[#C5A880] shadow-md flex items-center gap-1.5'
+                      : 'ml-1 px-4 py-2 text-[15px] font-extrabold bg-[#144A42] text-white hover:bg-[#0D3832] border border-[#C5A880]/80 shadow-sm flex items-center gap-1.5 hover:-translate-y-0.5'
+                    : activeTab === item.id 
+                    ? 'px-3.5 py-2 text-[15px] font-bold text-[#144A42] bg-[#F4F1EA] border-b-2 border-[#144A42]' 
                     : item.highlight
-                    ? 'text-[#B48B55] hover:text-[#144A42] hover:bg-[#F8F6F0]'
-                    : 'text-[#2D3732] hover:text-[#144A42] hover:bg-[#F8F6F0]'
+                    ? 'px-3.5 py-2 text-[15px] font-semibold text-[#B48B55] hover:text-[#144A42] hover:bg-[#F8F6F0]'
+                    : 'px-3.5 py-2 text-[15px] font-semibold text-[#2D3732] hover:text-[#144A42] hover:bg-[#F8F6F0]'
                 }`}
               >
-                {item.label}
+                {item.isMall && (
+                  <ShoppingBagIcon className="w-4 h-4 text-[#C5A880] shrink-0" />
+                )}
+                <span>{item.label}</span>
                 {item.badge && (
-                  <span className="absolute -top-1 right-0 text-[9px] font-bold px-1.5 py-0.2 bg-[#E11D48] text-white">
+                  <span className={`absolute -top-1.5 -right-1 text-[9px] font-extrabold px-1.5 py-0.2 shadow-2xs ${
+                    item.isMall ? 'bg-[#E11D48] text-white animate-pulse' : 'bg-[#E11D48] text-white'
+                  }`}>
                     {item.badge}
                   </span>
                 )}
@@ -128,17 +138,6 @@ export default function Header({
                 </button>
               </div>
             )}
-
-            {/* Shopping Mall Modal Trigger Button */}
-            <button 
-              type="button"
-              onClick={onOpenMallModal}
-              className="flex items-center gap-1.5 text-xs sm:text-sm font-medium px-3 py-1.5 border border-[#1F2C27] text-[#1F2C27] hover:bg-[#1F2C27] hover:text-white transition cursor-pointer"
-              title="슬반생몰 바로가기 (오픈 준비 중)"
-            >
-              <ShoppingBagIcon className="w-3.5 h-3.5" />
-              <span>슬반생몰</span>
-            </button>
           </div>
 
           {/* Mobile Hamburger Button */}
@@ -168,33 +167,27 @@ export default function Header({
                 <button
                   key={item.id}
                   onClick={() => handleNavClick(item.id)}
-                  className={`text-left px-3 py-2.5 text-sm font-semibold transition ${
-                    activeTab === item.id ? 'bg-[#144A42] text-white' : 'bg-[#F8F6F1] text-[#242A27]'
+                  className={`text-left px-3 py-2.5 text-sm font-semibold transition flex items-center justify-between ${
+                    item.isMall
+                      ? activeTab === item.id
+                        ? 'col-span-2 bg-[#0D3832] text-[#FDE68A] font-extrabold border border-[#C5A880] shadow-sm'
+                        : 'col-span-2 bg-[#144A42] text-white font-extrabold border border-[#C5A880]/70 shadow-xs'
+                      : activeTab === item.id
+                      ? 'bg-[#144A42] text-white'
+                      : 'bg-[#F8F6F1] text-[#242A27]'
                   }`}
                 >
-                  {item.label}
+                  <span className="flex items-center gap-1.5">
+                    {item.isMall && <ShoppingBagIcon className="w-4 h-4 text-[#C5A880]" />}
+                    <span>{item.label}</span>
+                  </span>
+                  {item.badge && (
+                    <span className="text-[10px] font-extrabold px-1.5 py-0.5 bg-[#E11D48] text-white">
+                      {item.badge}
+                    </span>
+                  )}
                 </button>
               ))}
-            </div>
-
-            {/* Mobile Mall Button */}
-            <div className="pt-1">
-              <button
-                type="button"
-                onClick={() => {
-                  setMobileMenuOpen(false);
-                  if (onOpenMallModal) onOpenMallModal();
-                }}
-                className="w-full flex items-center justify-between px-3.5 py-2.5 bg-[#FAF8F5] hover:bg-[#EBF5F2] border border-[#144A42]/20 text-[#144A42] transition rounded-none"
-              >
-                <div className="flex items-center gap-2">
-                  <ShoppingBagIcon className="w-4 h-4 text-[#144A42]" />
-                  <span className="text-xs font-bold">슬반생몰 쇼핑</span>
-                </div>
-                <span className="text-[10px] bg-[#C5A880] text-[#144A42] font-bold px-2 py-0.5 rounded-full">
-                  준비중
-                </span>
-              </button>
             </div>
             
             <div className="flex items-center justify-between pt-1">

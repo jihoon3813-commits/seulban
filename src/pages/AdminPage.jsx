@@ -306,6 +306,7 @@ export default function AdminPage({
       travel: visible,
       farewell: visible,
       membership: visible,
+      mall: visible,
     };
     setLocalMenuVisibility(updated);
     if (onUpdateMenuVisibility) {
@@ -1143,7 +1144,6 @@ export default function AdminPage({
                 </div>
                 <div className="hidden sm:flex items-center gap-2 text-xs text-gray-500 font-medium shrink-0 ml-4">
                   <span className="px-2 py-1 bg-white border border-gray-200 text-gray-600">MY</span>
-                  <span className="px-2.5 py-1 bg-[#1F2C27] text-white font-bold">슬반생몰</span>
                 </div>
               </div>
             </div>

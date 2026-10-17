@@ -554,6 +554,7 @@ export const DEFAULT_MENU_VISIBILITY = {
   travel: true,       // 반려여행
   farewell: true,     // 아름다운 이별
   membership: true,   // 슬반생멤버십
+  mall: true,         // 슬반생몰
 };
 
 // 네비게이션 메뉴 상세 정보 목록
@@ -568,7 +569,7 @@ export const NAV_MENU_CONFIG = [
   { 
     id: 'partners', 
     label: '반려생활', 
-    desc: '제휴 동물병원, 미용, 호텔 등 동네 제휴처 및 특가몰',
+    desc: '제휴 동물병원, 미용, 호텔 등 동네 제휴처',
     badge: null,
     highlight: false,
   },
@@ -591,6 +592,13 @@ export const NAV_MENU_CONFIG = [
     label: '슬반생멤버십', 
     desc: '정회원 우대 할인 및 전용 혜택 사전신청 안내',
     badge: null,
+    highlight: true,
+  },
+  { 
+    id: 'mall', 
+    label: '슬반생몰', 
+    desc: '레드퍼피 공식 회원몰 등 슬반생 회원 전용 특가 쇼핑몰',
+    badge: '특가',
     highlight: true,
   },
   { 

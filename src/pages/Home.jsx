@@ -22,6 +22,9 @@ export default function Home({
   const [searchKeyword, setSearchKeyword] = useState('');
 
   const filteredPartners = partners.filter(p => {
+    if (p.id === 'p_redpuppy' || p.partnerType === 'shop' || p.category === 'shopping' || p.name?.includes('레드퍼피')) {
+      return false;
+    }
     const matchCat = partnerCategory === 'all' || p.category === partnerCategory;
     const matchKey = !searchKeyword || p.name.includes(searchKeyword) || p.location.includes(searchKeyword);
     return matchCat && matchKey;

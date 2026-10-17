@@ -16,7 +16,7 @@ export default function MyPage({
   onOpenSignUp,
   onLogout
 }) {
-  const bookmarkedItems = PARTNER_LIST.filter(p => bookmarks.includes(p.id));
+  const bookmarkedItems = PARTNER_LIST.filter(p => bookmarks.includes(p.id) && p.id !== 'p_redpuppy' && p.partnerType !== 'shop');
 
   // 비로그인 상태 가드: 로그인/회원가입 안내 카드 렌더링
   if (!user) {
