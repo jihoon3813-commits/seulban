@@ -2200,6 +2200,7 @@ export default function AdminPage({
             </div>
 
             {/* Modal: 신규 제휴처 등록 */}
+            {isAddPartnerOpen && (
             <AdminPortalModal
               isOpen={isAddPartnerOpen}
               onClose={() => setIsAddPartnerOpen(false)}
@@ -2460,10 +2461,12 @@ export default function AdminPage({
                   
 </form>
             </AdminPortalModal>
+            )}
 
             {/* Modal: 제휴처 정보 수정 */}
+            {isEditPartnerOpen && editingPartner && (
             <AdminPortalModal
-              isOpen={Boolean(isEditPartnerOpen && editingPartner)}
+              isOpen={true}
               onClose={() => { setIsEditPartnerOpen(false); setEditingPartner(null); }}
               title="제휴처 정보 수정"
               badge="수정 모드"
@@ -2733,6 +2736,7 @@ export default function AdminPage({
                   
 </form>
             </AdminPortalModal>
+            )}
 
             {/* Modal: 쇼핑몰 연동 제휴처 상품 및 할인율 관리 */}
             {isShopProductsOpen && selectedShopPartner && (
@@ -3857,6 +3861,7 @@ export default function AdminPage({
             </div>
 
             {/* Modal: 입양 동물 추가 */}
+            {isAddAdoptionOpen && (
             <AdminPortalModal
               isOpen={isAddAdoptionOpen}
               onClose={() => setIsAddAdoptionOpen(false)}
@@ -4106,10 +4111,12 @@ export default function AdminPage({
                   
 </form>
             </AdminPortalModal>
+            )}
 
             {/* Modal: 입양 동물 정보 수정 */}
+            {isEditAdoptionOpen && editingAdoption && (
             <AdminPortalModal
-              isOpen={Boolean(isEditAdoptionOpen && editingAdoption)}
+              isOpen={true}
               onClose={() => { setIsEditAdoptionOpen(false); setEditingAdoption(null); }}
               title="입양 동물 정보 수정"
               badge="수정 모드"
@@ -4357,6 +4364,7 @@ export default function AdminPage({
                   
 </form>
             </AdminPortalModal>
+            )}
           </div>
         )}
 
@@ -4466,6 +4474,7 @@ export default function AdminPage({
             </div>
 
             {/* Modal: 숙소 추가 */}
+            {isAddTravelOpen && (
             <AdminPortalModal
               isOpen={isAddTravelOpen}
               onClose={() => setIsAddTravelOpen(false)}
@@ -4721,10 +4730,12 @@ export default function AdminPage({
                   
 </form>
             </AdminPortalModal>
+            )}
 
             {/* Modal: 반려여행 숙소 정보 수정 */}
+            {isEditTravelOpen && editingTravel && (
             <AdminPortalModal
-              isOpen={Boolean(isEditTravelOpen && editingTravel)}
+              isOpen={true}
               onClose={() => { setIsEditTravelOpen(false); setEditingTravel(null); }}
               title="동반 여행지 숙소 정보 수정"
               badge="수정 모드"
@@ -4974,6 +4985,7 @@ export default function AdminPage({
                   
 </form>
             </AdminPortalModal>
+            )}
           </div>
         )}
 
