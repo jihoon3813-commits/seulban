@@ -3,11 +3,11 @@ export const BRAND_INFO = {
   fullName: "슬기로운 반려생활",
   slogan: "우리 아이의 오늘부터 모든 내일까지",
   subSlogan: "등록부터 건강, 여행, 아름다운 이별까지 반려동물의 평생을 함께합니다.",
-  phone1: "070-4186-1500",
+  phone1: "010-3545-6982",
   phone2: "010-8880-6982",
   email: "contact@seulbanlife.com",
-  address: "서울특별시 강남구 테헤란로 123 슬반생 빌딩 5층",
-  bizNumber: "123-45-67890",
+  address: "경기도 양주시 고원2가길 37, 102호(고암동)",
+  bizNumber: "756-81-04016",
   mallUrl: "https://mall.seulbanlife.com",
 
   // === SEO & 사이트 최적화 설정 ===
@@ -29,10 +29,10 @@ export const BRAND_INFO = {
   author: "주식회사 슬기로운 반려생활",
 
   // === 푸터 상세 정보 (모든 정보 수정 가능) ===
-  companyName: "주식회사 슬기로운 반려생활",
-  ceoName: "김대표",
-  telecomNumber: "2026-서울강남-0123호",
-  cpoName: "박슬기",
+  companyName: "(주)슬기로운 반려생활",
+  ceoName: "박인업",
+  telecomNumber: "2026-경기양주-0123호",
+  cpoName: "박인업",
   hostingProvider: "슬반생 클라우드",
   disclaimer: "슬반생은 통신판매중개자이며 통신판매의 당사자가 아닙니다. 제휴사가 제공하는 상품 및 서비스의 거래와 관련한 책임은 각 제공자에게 있습니다.",
   csTitle: "고객센터 및 제휴상담",

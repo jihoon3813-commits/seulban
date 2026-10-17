@@ -376,9 +376,7 @@ export default function AdminPage({
 
   // Brand, SEO & Footer edit state
   const [brandForm, setBrandForm] = useState(() => {
-    const initial = { ...BRAND_INFO, ...(brandInfo || {}) };
-    if (initial.phone1 === '010-3545-6982') initial.phone1 = BRAND_INFO.phone1;
-    return initial;
+    return { ...BRAND_INFO, ...(brandInfo || {}) };
   });
 
   // 메뉴 탭 이동 시 최신 데이터 자동 동기화 및 폼 새로고침
@@ -387,19 +385,13 @@ export default function AdminPage({
       onRefreshData();
     }
     if (brandInfo) {
-      const merged = { ...BRAND_INFO, ...brandInfo };
-      if (merged.phone1 === '010-3545-6982') merged.phone1 = BRAND_INFO.phone1;
-      setBrandForm(merged);
+      setBrandForm({ ...BRAND_INFO, ...brandInfo });
     }
   }, [currentTab]);
 
   React.useEffect(() => {
     if (brandInfo) {
-      setBrandForm(prev => {
-        const merged = { ...BRAND_INFO, ...prev, ...brandInfo };
-        if (merged.phone1 === '010-3545-6982') merged.phone1 = BRAND_INFO.phone1;
-        return merged;
-      });
+      setBrandForm(prev => ({ ...BRAND_INFO, ...prev, ...brandInfo }));
     }
   }, [brandInfo]);
 

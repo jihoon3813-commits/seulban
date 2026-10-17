@@ -254,47 +254,12 @@ export default function App() {
     if (saved) {
       try {
         const parsed = JSON.parse(saved);
-        const pIndex = parsed.findIndex(p => p.id === 'p_redpuppy');
-        const defaultRedpuppy = PARTNER_LIST.find(p => p.id === 'p_redpuppy');
-        let hasChanged = false;
-
-        if (pIndex === -1 && defaultRedpuppy) {
-          const updated = [defaultRedpuppy, ...parsed];
-          localStorage.setItem('seulban_partners', JSON.stringify(updated));
-          return updated;
-        } else if (pIndex !== -1 && defaultRedpuppy) {
-          // If stored benefit contains 25% or discountRate is 25, migrate to 20%
-          if (parsed[pIndex].benefit?.includes('25%') || parsed[pIndex].discountRate === 25 || !parsed[pIndex].benefit) {
-            parsed[pIndex].benefit = defaultRedpuppy.benefit || '전 상품 20% 회원 단독 할인';
-            parsed[pIndex].discountRate = 20;
-            hasChanged = true;
-          }
-          // If stored products list is less than 500 or products have 25% discount, sync with full RedPuppy products catalog
-          if (!parsed[pIndex].products || parsed[pIndex].products.length < 500 || parsed[pIndex].benefit?.includes('25%')) {
-            parsed[pIndex].products = defaultRedpuppy.products;
-            parsed[pIndex].imageUrl = defaultRedpuppy.imageUrl;
-            hasChanged = true;
-          }
+        // 만약 예전 목업 제휴처(p1, p4 등)만 남아있고 실제 3대 제휴처(설악포유, 오블라디 등)가 없다면 최신 PARTNER_LIST로 갱신
+        const hasLegacyOnly = Array.isArray(parsed) && parsed.some(p => p.id === 'p1' || p.id === 'p4') && !parsed.some(p => p.id === 'p_seorak' || p.name?.includes('설악'));
+        if (hasLegacyOnly) {
+          localStorage.setItem('seulban_partners', JSON.stringify(PARTNER_LIST));
+          return PARTNER_LIST;
         }
-
-        // Check any partner with redpuppy name
-        parsed.forEach(p => {
-          if (p.id === 'p_redpuppy' || p.name?.includes('레드퍼피')) {
-            if (p.benefit?.includes('25%')) {
-              p.benefit = p.benefit.replace('25%', '20%');
-              hasChanged = true;
-            }
-            if (p.discountRate === 25) {
-              p.discountRate = 20;
-              hasChanged = true;
-            }
-          }
-        });
-
-        if (hasChanged) {
-          localStorage.setItem('seulban_partners', JSON.stringify(parsed));
-        }
-
         return parsed;
       } catch {
         return PARTNER_LIST;
@@ -302,6 +267,15 @@ export default function App() {
     }
     return PARTNER_LIST;
   });
+
+  // Convex DB에 저장된 제휴처 목록이 수신되면 로컬 스토리지도 최신으로 일치 유지
+  useEffect(() => {
+    if (convexPartners && convexPartners.length > 0) {
+      try {
+        localStorage.setItem('seulban_partners', JSON.stringify(convexPartners));
+      } catch (e) {}
+    }
+  }, [convexPartners]);
 
   const rawPartners = (convexPartners && convexPartners.length > 0) ? convexPartners : localPartners;
   const partners = React.useMemo(() => {
@@ -343,11 +317,7 @@ export default function App() {
     if (saved) {
       try {
         const parsed = JSON.parse(saved);
-        if (parsed.phone1 === '010-3545-6982') {
-          parsed.phone1 = BRAND_INFO.phone1;
-          localStorage.setItem('seulban_brand', JSON.stringify(parsed));
-        }
-        return parsed;
+        return { ...BRAND_INFO, ...parsed };
       } catch (e) {
         return BRAND_INFO;
       }
@@ -355,6 +325,15 @@ export default function App() {
     return BRAND_INFO;
   });
   const brandInfo = convexBrand || localBrandInfo;
+
+  // Convex DB의 브랜드 설정이 갱신되면 로컬 스토리지도 일치 갱신
+  useEffect(() => {
+    if (convexBrand && typeof convexBrand === 'object') {
+      try {
+        localStorage.setItem('seulban_brand', JSON.stringify(convexBrand));
+      } catch (e) {}
+    }
+  }, [convexBrand]);
 
   // Real-time SEO Meta and Favicon synchronization
   useEffect(() => {
@@ -566,10 +545,6 @@ export default function App() {
       const b = localStorage.getItem('seulban_brand');
       if (b) {
         const parsed = JSON.parse(b);
-        if (parsed.phone1 === '010-3545-6982') {
-          parsed.phone1 = BRAND_INFO.phone1;
-          localStorage.setItem('seulban_brand', JSON.stringify(parsed));
-        }
         setLocalBrandInfo(parsed);
       }
       const pop = localStorage.getItem('seulban_popups');
@@ -889,15 +864,17 @@ export default function App() {
       showToast('Convex 운영 서버 실시간 동기화 진행 중...');
       // 1. Sync Partners (sanitized & large product catalog protected)
       let partnersToSync = partners;
-      try {
-        const stored = localStorage.getItem('seulban_partners');
-        if (stored) {
-          const parsed = JSON.parse(stored);
-          if (Array.isArray(parsed) && parsed.length > 0) {
-            partnersToSync = parsed;
+      if (!partnersToSync || partnersToSync.length === 0) {
+        try {
+          const stored = localStorage.getItem('seulban_partners');
+          if (stored) {
+            const parsed = JSON.parse(stored);
+            if (Array.isArray(parsed) && parsed.length > 0) {
+              partnersToSync = parsed;
+            }
           }
-        }
-      } catch (e) {}
+        } catch (e) {}
+      }
 
       const safePartners = (partnersToSync && partnersToSync.length > 0)
         ? preparePartnersForConvex(partnersToSync)
@@ -926,6 +903,18 @@ export default function App() {
           await prodClient.mutation(api.partners.syncAll, { partners: safePartners });
         }
         await prodClient.mutation(api.settings.syncAllSettings, { settings: safeSettings });
+      }
+
+      // 동기화 완료 후 브라우저 localStorage도 확실히 최신으로 확정 저장
+      if (safePartners.length > 0) {
+        try {
+          localStorage.setItem('seulban_partners', JSON.stringify(safePartners));
+        } catch (e) {}
+      }
+      if (safeSettings.brand_info) {
+        try {
+          localStorage.setItem('seulban_brand', JSON.stringify(safeSettings.brand_info));
+        } catch (e) {}
       }
 
       showToast('운영 서버에 모든 데이터가 성공적으로 실시간 동기화되었습니다!');
