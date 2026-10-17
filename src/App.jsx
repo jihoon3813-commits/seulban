@@ -29,6 +29,7 @@ import { updateSeoMeta } from './utils/seoHelper';
 
 import { PhoneIcon, SparklesIcon, PawIcon, MessageSquare, KakaoIcon, HeadphoneIcon } from './components/Icons';
 import { useQuery, useMutation } from 'convex/react';
+import { ConvexHttpClient } from 'convex/browser';
 import { api } from '../convex/_generated/api';
 import { 
   INITIAL_PET, 
@@ -880,10 +881,12 @@ export default function App() {
     showToast('제휴처가 삭제되었습니다.');
   };
 
+  const PROD_CONVEX_URL = 'https://uncommon-opossum-624.convex.cloud';
+
   // 전체 데이터 운영/개발 Convex 서버 실시간 원클릭 동기화
   const handleSyncAllToServer = async () => {
     try {
-      showToast('Convex 서버 실시간 동기화 진행 중...');
+      showToast('Convex 운영 서버 실시간 동기화 진행 중...');
       // 1. Sync Partners (sanitized & large product catalog protected)
       let partnersToSync = partners;
       try {
@@ -896,10 +899,10 @@ export default function App() {
         }
       } catch (e) {}
 
-      if (partnersToSync && partnersToSync.length > 0) {
-        const safePartners = preparePartnersForConvex(partnersToSync);
-        await syncPartnersMutation({ partners: safePartners });
-      }
+      const safePartners = (partnersToSync && partnersToSync.length > 0)
+        ? preparePartnersForConvex(partnersToSync)
+        : [];
+
       // 2. Sync Settings (brand_info, menu_visibility, shop_orders, consultations)
       const safeSettings = sanitizeForConvex({
         brand_info: brandInfo,
@@ -907,7 +910,24 @@ export default function App() {
         shop_orders: shopOrders,
         consultations: consultations,
       });
+
+      // A) 현재 연결된 클라이언트로 동기화 (개발 또는 운영)
+      if (safePartners.length > 0) {
+        await syncPartnersMutation({ partners: safePartners });
+      }
       await syncSettingsMutation({ settings: safeSettings });
+
+      // B) 현재 클라이언트가 개발 서버인 경우, 운영 서버(Prod)에도 무조건 직접 동기화 전송
+      const currentConvexUrl = import.meta.env.VITE_CONVEX_URL;
+      if (currentConvexUrl !== PROD_CONVEX_URL) {
+        console.log('🚀 개발 환경에서 운영 서버(Prod)로 직접 이중 동기화 전송...');
+        const prodClient = new ConvexHttpClient(PROD_CONVEX_URL);
+        if (safePartners.length > 0) {
+          await prodClient.mutation(api.partners.syncAll, { partners: safePartners });
+        }
+        await prodClient.mutation(api.settings.syncAllSettings, { settings: safeSettings });
+      }
+
       showToast('운영 서버에 모든 데이터가 성공적으로 실시간 동기화되었습니다!');
       return true;
     } catch (err) {
