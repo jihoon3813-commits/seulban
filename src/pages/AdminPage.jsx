@@ -43,8 +43,12 @@ export default function AdminPage({
   onRefreshData,
   menuVisibility = DEFAULT_MENU_VISIBILITY,
   onUpdateMenuVisibility,
+  onSyncAllToServer,
+  serverStatus,
   showToast
 }) {
+  const [isSyncing, setIsSyncing] = useState(false);
+
   // Admin Authentication State
   const [adminAuth, setAdminAuth] = useState(() => {
     const saved = localStorage.getItem('seulban_admin_auth');
@@ -761,6 +765,40 @@ export default function AdminPage({
           </div>
 
           <div className="flex items-center gap-2 sm:gap-3 text-xs">
+            {/* Server Environment Badge */}
+            {serverStatus && (
+              <div 
+                className={`hidden md:flex items-center gap-1.5 px-2.5 py-1 border font-bold rounded-sm text-[11px] ${
+                  serverStatus.env === 'production'
+                    ? 'bg-emerald-50 text-emerald-800 border-emerald-300'
+                    : 'bg-amber-50 text-amber-800 border-amber-300'
+                }`}
+                title={`연결 서버: ${serverStatus.convexUrl || 'Convex Cloud'}`}
+              >
+                <span className={`w-2 h-2 rounded-full ${serverStatus.env === 'production' ? 'bg-emerald-600' : 'bg-amber-500'}`}></span>
+                <span>{serverStatus.env === 'production' ? '운영 서버 (Prod)' : '개발 서버 (Dev)'}</span>
+                <span className="text-gray-400 font-normal">| 서버 제휴처 {serverStatus.convexPartnersCount || 0}건</span>
+              </div>
+            )}
+
+            {/* Realtime Server Sync Button */}
+            <button
+              onClick={async () => {
+                setIsSyncing(true);
+                try {
+                  if (onSyncAllToServer) await onSyncAllToServer();
+                } finally {
+                  setIsSyncing(false);
+                }
+              }}
+              disabled={isSyncing}
+              className="px-3.5 py-1.5 bg-[#144A42] hover:bg-[#0D3832] text-white font-bold flex items-center gap-1.5 transition shadow-xs cursor-pointer disabled:opacity-50"
+              title="현재 등록/수정된 제휴처 및 설정값을 Convex 서버로 즉시 업로드"
+            >
+              <RefreshCwIcon className={`w-3.5 h-3.5 text-[#D4AF7A] ${isSyncing ? 'animate-spin' : ''}`} />
+              <span>{isSyncing ? '동기화 중...' : '서버 실시간 동기화'}</span>
+            </button>
+
             <button
               onClick={() => {
                 if (onRefreshData) onRefreshData();
@@ -792,6 +830,32 @@ export default function AdminPage({
             </button>
           </div>
         </header>
+
+        {/* Unsynced Server Warning Banner */}
+        {serverStatus && serverStatus.convexPartnersCount === 0 && (
+          <div className="bg-amber-50 border-b border-amber-200 px-4 sm:px-6 py-2.5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 text-xs text-amber-950">
+            <div className="flex items-center gap-2">
+              <span className="px-2 py-0.5 bg-amber-500 text-white font-extrabold text-[10px] rounded-xs">필독 안내</span>
+              <span className="font-semibold">
+                현재 브라우저에 등록된 제휴처({partners.length}개) 및 설정이 Convex 서버에 아직 올라가지 않았습니다. 다른 PC에서도 동일하게 표시되려면 서버 동기화를 실행해 주세요!
+              </span>
+            </div>
+            <button
+              onClick={async () => {
+                setIsSyncing(true);
+                try {
+                  if (onSyncAllToServer) await onSyncAllToServer();
+                } finally {
+                  setIsSyncing(false);
+                }
+              }}
+              disabled={isSyncing}
+              className="px-3.5 py-1 bg-amber-600 hover:bg-amber-700 text-white font-bold rounded-xs shrink-0 cursor-pointer shadow-xs disabled:opacity-50"
+            >
+              {isSyncing ? '서버 전송 중...' : '👉 지금 서버로 즉시 동기화하기'}
+            </button>
+          </div>
+        )}
 
         {/* Content Body */}
         <main className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 flex-1">

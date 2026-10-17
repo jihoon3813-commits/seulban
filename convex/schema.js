@@ -53,21 +53,32 @@ export default defineSchema({
 
   // 제휴처 (Partners)
   partners: defineTable({
+    id: v.optional(v.string()), // 'p_redpuppy', 'p_01' 등 클라이언트 고유 식별자
+    partnerType: v.optional(v.string()), // 'shop', 'normal' 등
     name: v.string(),
-    category: v.string(), // hospital, grooming, kindergarten, funeral
-    categoryName: v.string(),
-    tag: v.string(),
-    location: v.string(),
-    benefit: v.string(),
-    desc: v.string(),
-    rating: v.number(),
-    reviews: v.number(),
-    phone: v.string(),
-    color: v.string(),
-    icon: v.string(),
+    category: v.string(), // hospital, grooming, kindergarten, funeral, shopping, hotel 등
+    categoryName: v.optional(v.string()),
+    tag: v.optional(v.string()),
+    location: v.optional(v.string()),
+    benefit: v.optional(v.string()),
+    desc: v.optional(v.string()),
+    rating: v.optional(v.number()),
+    reviews: v.optional(v.number()),
+    phone: v.optional(v.string()),
+    color: v.optional(v.string()),
+    icon: v.optional(v.string()),
     imageUrl: v.optional(v.string()),
-    featured: v.boolean(),
-  }).index("by_category", ["category"]),
+    featured: v.optional(v.boolean()),
+    shopUrl: v.optional(v.string()),
+    discountRate: v.optional(v.number()),
+    products: v.optional(v.any()),
+    features: v.optional(v.array(v.string())),
+    bankInfo: v.optional(v.any()),
+    images: v.optional(v.array(v.string())),
+    isVisible: v.optional(v.boolean()),
+  })
+    .index("by_category", ["category"])
+    .index("by_partner_id", ["id"]),
 
   // 안심입양 동물 (Adoption)
   adoptions: defineTable({

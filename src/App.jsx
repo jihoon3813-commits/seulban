@@ -96,6 +96,9 @@ export default function App() {
   const convexTravels = useQuery(api.travels.list);
   const convexPopups = useQuery(api.popups.list);
   const convexBrand = useQuery(api.settings.get, { key: 'brand_info' });
+  const convexMenuVisibility = useQuery(api.settings.get, { key: 'menu_visibility' });
+  const convexShopOrders = useQuery(api.settings.get, { key: 'shop_orders' });
+  const convexConsultations = useQuery(api.settings.get, { key: 'consultations' });
 
   // Convex Mutations
   const submitAppMutation = useMutation(api.applications.submit);
@@ -106,6 +109,7 @@ export default function App() {
   const addPartnerMutation = useMutation(api.partners.add);
   const updatePartnerMutation = useMutation(api.partners.update);
   const removePartnerMutation = useMutation(api.partners.remove);
+  const syncPartnersMutation = useMutation(api.partners.syncAll);
   const addAdoptionMutation = useMutation(api.adoptions.add);
   const updateAdoptionMutation = useMutation(api.adoptions.update);
   const removeAdoptionMutation = useMutation(api.adoptions.remove);
@@ -116,6 +120,7 @@ export default function App() {
   const togglePopupMutation = useMutation(api.popups.toggleActive);
   const removePopupMutation = useMutation(api.popups.remove);
   const setSettingMutation = useMutation(api.settings.set);
+  const syncSettingsMutation = useMutation(api.settings.syncAllSettings);
 
   // Local state as fallback & optimistic store
   const [localPet, setLocalPet] = useState(null);
@@ -367,10 +372,12 @@ export default function App() {
       return [];
     }
   });
-  const consultations = localConsultations;
+  const consultations = (convexConsultations && Array.isArray(convexConsultations))
+    ? convexConsultations
+    : localConsultations;
 
   // Shop Orders State (제휴 쇼핑몰 주문 내역)
-  const [shopOrders, setShopOrders] = useState(() => {
+  const [localShopOrders, setLocalShopOrders] = useState(() => {
     try {
       const saved = localStorage.getItem('seulban_shop_orders');
       return saved ? JSON.parse(saved) : INITIAL_SHOP_ORDERS;
@@ -378,15 +385,25 @@ export default function App() {
       return INITIAL_SHOP_ORDERS;
     }
   });
+  const shopOrders = (convexShopOrders && Array.isArray(convexShopOrders))
+    ? convexShopOrders
+    : localShopOrders;
 
-  const handleCreateShopOrder = (newOrder) => {
+  const handleCreateShopOrder = async (newOrder) => {
     const updated = [newOrder, ...shopOrders];
-    setShopOrders(updated);
-    localStorage.setItem('seulban_shop_orders', JSON.stringify(updated));
+    setLocalShopOrders(updated);
+    try {
+      localStorage.setItem('seulban_shop_orders', JSON.stringify(updated));
+    } catch (e) {}
+    try {
+      await setSettingMutation({ key: 'shop_orders', value: updated });
+    } catch (e) {
+      console.warn('Convex save shop_orders note:', e);
+    }
     showToast(`[${newOrder.partnerName}] 회원 특가 주문이 성공적으로 접수되었습니다!`);
   };
 
-  const handleUpdateShopOrderStatus = (orderId, newStatus, shippingInfo) => {
+  const handleUpdateShopOrderStatus = async (orderId, newStatus, shippingInfo) => {
     const statusMap = {
       ORDERED: '주문 접수',
       PAID: '결제/입금 확인',
@@ -406,15 +423,29 @@ export default function App() {
       }
       return o;
     });
-    setShopOrders(updated);
-    localStorage.setItem('seulban_shop_orders', JSON.stringify(updated));
+    setLocalShopOrders(updated);
+    try {
+      localStorage.setItem('seulban_shop_orders', JSON.stringify(updated));
+    } catch (e) {}
+    try {
+      await setSettingMutation({ key: 'shop_orders', value: updated });
+    } catch (e) {
+      console.warn('Convex save shop_orders note:', e);
+    }
     showToast('주문 및 배송 정보가 성공적으로 변경되었습니다.');
   };
 
-  const handleDeleteShopOrder = (orderId) => {
+  const handleDeleteShopOrder = async (orderId) => {
     const updated = shopOrders.filter(o => o.id !== orderId);
-    setShopOrders(updated);
-    localStorage.setItem('seulban_shop_orders', JSON.stringify(updated));
+    setLocalShopOrders(updated);
+    try {
+      localStorage.setItem('seulban_shop_orders', JSON.stringify(updated));
+    } catch (e) {}
+    try {
+      await setSettingMutation({ key: 'shop_orders', value: updated });
+    } catch (e) {
+      console.warn('Convex save shop_orders note:', e);
+    }
     showToast('주문 내역이 삭제되었습니다.');
   };
 
@@ -430,7 +461,7 @@ export default function App() {
   const [policyModal, setPolicyModal] = useState({ isOpen: false, type: 'privacy' });
 
   // Navigation Menu Visibility State (어드민에서 메뉴 숨김/노출 제어)
-  const [menuVisibility, setMenuVisibility] = useState(() => {
+  const [localMenuVisibility, setLocalMenuVisibility] = useState(() => {
     try {
       const saved = localStorage.getItem('seulban_menu_visibility');
       if (saved) return { ...DEFAULT_MENU_VISIBILITY, ...JSON.parse(saved) };
@@ -439,13 +470,21 @@ export default function App() {
     }
     return DEFAULT_MENU_VISIBILITY;
   });
+  const menuVisibility = (convexMenuVisibility && typeof convexMenuVisibility === 'object')
+    ? { ...DEFAULT_MENU_VISIBILITY, ...convexMenuVisibility }
+    : localMenuVisibility;
 
-  const handleUpdateMenuVisibility = (newVisibility) => {
-    setMenuVisibility(newVisibility);
+  const handleUpdateMenuVisibility = async (newVisibility) => {
+    setLocalMenuVisibility(newVisibility);
     try {
       localStorage.setItem('seulban_menu_visibility', JSON.stringify(newVisibility));
     } catch (e) {
       console.error('Error saving menu visibility:', e);
+    }
+    try {
+      await setSettingMutation({ key: 'menu_visibility', value: newVisibility });
+    } catch (e) {
+      console.warn('Convex save menu_visibility note:', e);
     }
     showToast('메뉴 노출 설정이 저장되었습니다.');
   };
@@ -467,23 +506,44 @@ export default function App() {
       status: 'PENDING',
       ...newConsult
     };
-    const updated = [item, ...localConsultations];
+    const updated = [item, ...consultations];
     setLocalConsultations(updated);
-    localStorage.setItem('seulban_consultations', JSON.stringify(updated));
+    try {
+      localStorage.setItem('seulban_consultations', JSON.stringify(updated));
+    } catch (e) {}
+    try {
+      await setSettingMutation({ key: 'consultations', value: updated });
+    } catch (e) {
+      console.warn('Convex save consultations note:', e);
+    }
     showToast('빠른 상담 신청이 성공적으로 접수되었습니다.');
   };
 
-  const handleDeleteConsultation = (id) => {
-    const updated = localConsultations.filter(c => (c.id !== id && c._id !== id));
+  const handleDeleteConsultation = async (id) => {
+    const updated = consultations.filter(c => (c.id !== id && c._id !== id));
     setLocalConsultations(updated);
-    localStorage.setItem('seulban_consultations', JSON.stringify(updated));
+    try {
+      localStorage.setItem('seulban_consultations', JSON.stringify(updated));
+    } catch (e) {}
+    try {
+      await setSettingMutation({ key: 'consultations', value: updated });
+    } catch (e) {
+      console.warn('Convex save consultations note:', e);
+    }
     showToast('상담 신청 건이 삭제되었습니다.');
   };
 
-  const handleUpdateConsultStatus = (id, newStatus) => {
-    const updated = localConsultations.map(c => (c.id === id || c._id === id) ? { ...c, status: newStatus } : c);
+  const handleUpdateConsultStatus = async (id, newStatus) => {
+    const updated = consultations.map(c => (c.id === id || c._id === id) ? { ...c, status: newStatus } : c);
     setLocalConsultations(updated);
-    localStorage.setItem('seulban_consultations', JSON.stringify(updated));
+    try {
+      localStorage.setItem('seulban_consultations', JSON.stringify(updated));
+    } catch (e) {}
+    try {
+      await setSettingMutation({ key: 'consultations', value: updated });
+    } catch (e) {
+      console.warn('Convex save consultations note:', e);
+    }
     showToast(`상담 처리 상태가 [${newStatus === 'COMPLETED' ? '상담 완료' : '상담 대기'}]로 변경되었습니다.`);
   };
 
@@ -728,27 +788,25 @@ export default function App() {
   };
 
   const handleAddPartner = async (newPartner) => {
-    const updated = [newPartner, ...partners];
+    const partnerToSave = {
+      ...newPartner,
+      id: newPartner.id || `p_${Date.now()}`,
+      rating: Number(newPartner.rating) || 4.9,
+      reviews: Number(newPartner.reviews) || 50,
+      color: newPartner.color || 'bg-[#EBF3FB] text-[#2563EB]',
+      icon: newPartner.icon || 'stethoscope',
+      imageUrl: newPartner.imageUrl || '',
+      featured: !!newPartner.featured,
+    };
+    const updated = [partnerToSave, ...partners];
     setLocalPartners(updated);
-    localStorage.setItem('seulban_partners', JSON.stringify(updated));
+    try {
+      localStorage.setItem('seulban_partners', JSON.stringify(updated));
+    } catch (e) {}
 
     try {
-      await addPartnerMutation({
-        name: newPartner.name,
-        category: newPartner.category,
-        categoryName: newPartner.categoryName,
-        tag: newPartner.tag,
-        location: newPartner.location,
-        benefit: newPartner.benefit,
-        desc: newPartner.desc,
-        rating: Number(newPartner.rating) || 4.9,
-        reviews: Number(newPartner.reviews) || 50,
-        phone: newPartner.phone,
-        color: newPartner.color || 'bg-[#EBF3FB] text-[#2563EB]',
-        icon: newPartner.icon || 'stethoscope',
-        imageUrl: newPartner.imageUrl || '',
-        featured: !!newPartner.featured,
-      });
+      await addPartnerMutation(partnerToSave);
+      console.log('✅ Convex DB addPartner 완료:', partnerToSave.name);
     } catch (e) {
       console.warn('Convex addPartner note:', e);
     }
@@ -758,28 +816,37 @@ export default function App() {
     const pId = updatedPartner._id || updatedPartner.id;
     const updated = partners.map(p => (p._id === pId || p.id === pId) ? { ...p, ...updatedPartner } : p);
     setLocalPartners(updated);
-    localStorage.setItem('seulban_partners', JSON.stringify(updated));
+    try {
+      localStorage.setItem('seulban_partners', JSON.stringify(updated));
+    } catch (e) {}
 
     try {
-      if (updatedPartner._id) {
-        await updatePartnerMutation({
-          id: updatedPartner._id,
-          name: updatedPartner.name,
-          category: updatedPartner.category,
-          categoryName: updatedPartner.categoryName,
-          tag: updatedPartner.tag,
-          location: updatedPartner.location,
-          benefit: updatedPartner.benefit,
-          desc: updatedPartner.desc,
-          rating: Number(updatedPartner.rating) || 4.9,
-          reviews: Number(updatedPartner.reviews) || 50,
-          phone: updatedPartner.phone,
-          color: updatedPartner.color,
-          icon: updatedPartner.icon,
-          imageUrl: updatedPartner.imageUrl || '',
-          featured: !!updatedPartner.featured,
-        });
-      }
+      await updatePartnerMutation({
+        id: updatedPartner.id || (typeof updatedPartner._id === 'string' ? updatedPartner._id : undefined),
+        name: updatedPartner.name,
+        category: updatedPartner.category,
+        partnerType: updatedPartner.partnerType,
+        categoryName: updatedPartner.categoryName,
+        tag: updatedPartner.tag,
+        location: updatedPartner.location,
+        benefit: updatedPartner.benefit,
+        desc: updatedPartner.desc,
+        rating: Number(updatedPartner.rating) || 4.9,
+        reviews: Number(updatedPartner.reviews) || 50,
+        phone: updatedPartner.phone,
+        color: updatedPartner.color,
+        icon: updatedPartner.icon,
+        imageUrl: updatedPartner.imageUrl || '',
+        featured: !!updatedPartner.featured,
+        shopUrl: updatedPartner.shopUrl,
+        discountRate: updatedPartner.discountRate,
+        products: updatedPartner.products,
+        features: updatedPartner.features,
+        bankInfo: updatedPartner.bankInfo,
+        images: updatedPartner.images,
+        isVisible: updatedPartner.isVisible,
+      });
+      console.log('✅ Convex DB updatePartner 완료:', updatedPartner.name);
     } catch (e) {
       console.warn('Convex updatePartner note:', e);
     }
@@ -789,17 +856,62 @@ export default function App() {
   const handleDeletePartner = async (id) => {
     const updated = partners.filter(p => p.id !== id && p._id !== id);
     setLocalPartners(updated);
-    localStorage.setItem('seulban_partners', JSON.stringify(updated));
+    try {
+      localStorage.setItem('seulban_partners', JSON.stringify(updated));
+    } catch (e) {}
 
     try {
-      if (typeof id === 'string' && id.startsWith('p_') === false) {
-        await removePartnerMutation({ id });
-      }
+      await removePartnerMutation({ id: String(id) });
+      console.log('✅ Convex DB removePartner 완료:', id);
     } catch (e) {
       console.warn('Convex removePartner note:', e);
     }
     showToast('제휴처가 삭제되었습니다.');
   };
+
+  // 전체 데이터 운영/개발 Convex 서버 실시간 원클릭 동기화
+  const handleSyncAllToServer = async () => {
+    try {
+      showToast('Convex 서버 실시간 동기화 진행 중...');
+      // 1. Sync Partners
+      if (partners && partners.length > 0) {
+        await syncPartnersMutation({ partners });
+      }
+      // 2. Sync Settings (brand_info, menu_visibility, shop_orders, consultations)
+      await syncSettingsMutation({
+        settings: {
+          brand_info: brandInfo,
+          menu_visibility: menuVisibility,
+          shop_orders: shopOrders,
+          consultations: consultations,
+        }
+      });
+      showToast('운영 서버에 모든 데이터가 성공적으로 실시간 동기화되었습니다!');
+      return true;
+    } catch (err) {
+      console.error('Failed to sync to server:', err);
+      showToast('서버 동기화 중 오류 발생: ' + (err.message || err));
+      return false;
+    }
+  };
+
+  // 최초 1회: 로컬 브라우저에 등록된 데이터가 있고 Convex 서버가 비어있는 경우 자동 동기화
+  const hasAutoSyncedRef = React.useRef(false);
+  useEffect(() => {
+    if (hasAutoSyncedRef.current) return;
+    if (convexPartners && convexPartners.length === 0 && localPartners && localPartners.length > 0) {
+      const hasCustomData = localPartners.some(p => 
+        p.name?.includes('설악') || 
+        p.name?.includes('오블라디') || 
+        (p.id === 'p_redpuppy' && localPartners.length < 5)
+      );
+      if (hasCustomData) {
+        hasAutoSyncedRef.current = true;
+        console.log('🔄 로컬 브라우저의 제휴처/설정을 Convex 서버로 자동 동기화합니다...');
+        handleSyncAllToServer();
+      }
+    }
+  }, [convexPartners, localPartners]);
 
   const handleAddAdoption = async (newAnimal) => {
     const updated = [newAnimal, ...adoptionList];
@@ -1103,6 +1215,13 @@ export default function App() {
           onRefreshData={handleRefreshAdminData}
           menuVisibility={menuVisibility}
           onUpdateMenuVisibility={handleUpdateMenuVisibility}
+          onSyncAllToServer={handleSyncAllToServer}
+          serverStatus={{
+            isConnected: !!convexApps,
+            convexPartnersCount: convexPartners ? convexPartners.length : 0,
+            env: import.meta.env.VITE_ENV_NAME || (import.meta.env.PROD ? 'production' : 'development'),
+            convexUrl: import.meta.env.VITE_CONVEX_URL || '',
+          }}
           showToast={showToast}
         />
       </div>
