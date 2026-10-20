@@ -1793,13 +1793,15 @@ export function ApplyRegistrationModal({ isOpen, onClose, onApplySuccess, user, 
 }
 
 
-// 2. 멤버십 혜택 & 사전신청 모달 (MEM-001 & MEM-002)
+// 2. 멤버십 혜택 & 가입/사전신청 모달 (MEM-001 & MEM-002)
 export function MembershipModal({ isOpen, onClose, onLeadSubmit }) {
   const [leadForm, setLeadForm] = useState({
     name: '',
     phone: '',
     petBreed: '',
-    interest: '병원비 할인',
+    plan: '슬반생-G (골드) · 월 29,900원',
+    cycle: '월간 결제',
+    interest: '리조트 회원가 & 용품 할인',
     agree: true,
   });
   const [submitted, setSubmitted] = useState(false);
@@ -1824,7 +1826,7 @@ export function MembershipModal({ isOpen, onClose, onLeadSubmit }) {
         <div className="px-4 sm:px-6 py-3 sm:py-5 bg-[#144A42] text-white flex items-center justify-between">
           <div className="flex items-center gap-2">
             <SparklesIcon className="w-4 h-4 sm:w-5 sm:h-5 text-[#E6CAA4]" />
-            <span className="font-bold text-sm sm:text-lg text-white">슬반생 프리미엄 멤버십 사전신청</span>
+            <span className="font-bold text-sm sm:text-lg text-white">슬반생 멤버십 가입 및 상담 신청</span>
           </div>
           <button onClick={onClose} className="p-1 text-white/70 hover:text-white transition">
             <XIcon className="w-4 h-4 sm:w-5 sm:h-5" />
@@ -1836,45 +1838,53 @@ export function MembershipModal({ isOpen, onClose, onLeadSubmit }) {
           
           {/* Header Copy */}
           <div className="bg-[#FAF8F5] p-3.5 sm:p-5 border border-[#ECE5DA]">
-            <span className="text-[10px] sm:text-xs font-bold tracking-widest text-[#9C7A4E] uppercase">SEULBAN VIP CLUB</span>
+            <span className="text-[10px] sm:text-xs font-bold tracking-widest text-[#9C7A4E] uppercase">MEMBERSHIP SERVICE GUIDE</span>
             <h3 className="text-base sm:text-2xl font-bold text-[#144A42] mt-0.5 sm:mt-1 leading-snug">
-              반려생활의 부담은 가볍게,<br className="hidden sm:inline" />혜택은 더 든든하게
+              반려동물과의 더 나은 삶을 위한<br className="hidden sm:inline" /> 맞춤형 프리미엄 케어 멤버십
             </h3>
             <p className="text-[11px] sm:text-xs text-[#5E6D67] mt-1 sm:mt-2 leading-relaxed">
-              정식 론칭 전 사전신청자 분들께만 평생 월회비 40% 할인 혜택 및 웰컴 스타터 패키지를 선물합니다.
+              합리적인 월 구독형 플랜(베이직, 골드, 프리미엄)으로 가입 즉시 리조트 회원가 및 용품 최대 30% 할인 혜택을 누리세요. 년가입 시 2개월 면제 혜택이 적용됩니다.
             </p>
           </div>
 
-          {/* Perks Comparison Table */}
+          {/* 3-Tier Plans Summary Table */}
           <div className="bg-white border border-[#E3DDD1] overflow-hidden shadow-xs">
-            <div className="grid grid-cols-3 bg-[#F4F1EB] px-4 py-3 text-xs font-bold text-[#144A42] border-b border-[#E3DDD1]">
-              <span>혜택 항목</span>
-              <span className="text-center text-gray-500">일반 회원</span>
-              <span className="text-center text-[#9C7A4E] font-extrabold">★ 슬반생 멤버십</span>
+            <div className="grid grid-cols-4 bg-[#F4F1EB] px-3 py-2.5 text-[11px] sm:text-xs font-bold text-[#144A42] border-b border-[#E3DDD1] text-center">
+              <span className="text-left">구분</span>
+              <span className="text-gray-700">슬반생-B (베이직)</span>
+              <span className="text-[#B47B32] font-extrabold">슬반생-G (골드)</span>
+              <span className="text-[#144A42] font-extrabold">슬반생-프리미엄</span>
             </div>
-            <div className="divide-y divide-[#EFECE6] text-xs">
-              <div className="grid grid-cols-3 px-4 py-3 items-center">
-                <span className="font-semibold text-gray-800">모바일 동물등록</span>
-                <span className="text-center text-gray-500">일반 대행 접수</span>
-                <span className="text-center text-[#144A42] font-bold bg-[#EBF5F2] py-1">간편 대행 & 외장칩 패키지 우대</span>
+            <div className="divide-y divide-[#EFECE6] text-[11px] sm:text-xs text-center">
+              <div className="grid grid-cols-4 px-3 py-2.5 items-center">
+                <span className="font-semibold text-gray-800 text-left">월 가입금액</span>
+                <span className="font-bold text-[#144A42]">9,900원</span>
+                <span className="font-extrabold text-[#B47B32]">29,900원</span>
+                <span className="font-extrabold text-[#144A42]">59,900원</span>
               </div>
-              <div className="grid grid-cols-3 px-4 py-3 items-center">
-                <span className="font-semibold text-gray-800">제휴 동물병원</span>
-                <span className="text-center text-gray-500">기본 상담</span>
-                <span className="text-center text-[#144A42] font-bold bg-[#EBF5F2] py-1">진료비 10~20% 즉시할인</span>
+              <div className="grid grid-cols-4 px-3 py-2.5 items-center bg-[#FAF8F5]">
+                <span className="font-semibold text-gray-800 text-left">년가입 (2개월면제)</span>
+                <span className="text-gray-700 font-medium">99,000원</span>
+                <span className="text-gray-800 font-bold">299,000원</span>
+                <span className="text-gray-800 font-bold">599,000원</span>
               </div>
-              <div className="grid grid-cols-3 px-4 py-3 items-center">
-                <span className="font-semibold text-gray-800">반려동물 숙소</span>
-                <span className="text-center text-gray-500">정가 이용</span>
-                <span className="text-center text-[#144A42] font-bold bg-[#EBF5F2] py-1">주중 최대 30% 우대</span>
+              <div className="grid grid-cols-4 px-3 py-2.5 items-center">
+                <span className="font-semibold text-gray-800 text-left">리조트 할인</span>
+                <span className="text-[#144A42] font-bold">회원가 적용</span>
+                <span className="text-[#144A42] font-bold">회원가 적용</span>
+                <span className="text-[#144A42] font-bold">회원가 적용</span>
               </div>
-              <div className="grid grid-cols-3 px-4 py-3 items-center">
-                <div className="flex items-center gap-1.5">
-                  <span className="font-semibold text-gray-800">반려용품·쇼핑</span>
-                  <span className="text-[10px] bg-[#EAE4D7] text-[#144A42] px-1 py-0.5 rounded font-bold">단독혜택</span>
-                </div>
-                <span className="text-center text-gray-500">기본 배송비 부담</span>
-                <span className="text-center text-[#144A42] font-bold bg-[#EBF5F2] py-1">무제한 무료배송 & 전용 핫딜관</span>
+              <div className="grid grid-cols-4 px-3 py-2.5 items-center">
+                <span className="font-semibold text-gray-800 text-left">용품 할인</span>
+                <span className="text-gray-700 font-semibold">10% 할인</span>
+                <span className="text-[#B47B32] font-bold">20% 할인</span>
+                <span className="text-[#144A42] font-extrabold bg-[#EBF5F2] py-0.5">30% 할인</span>
+              </div>
+              <div className="grid grid-cols-4 px-3 py-2.5 items-center">
+                <span className="font-semibold text-gray-800 text-left">훈련소 할인</span>
+                <span className="text-gray-400">-</span>
+                <span className="text-gray-700 font-medium">20% 예정</span>
+                <span className="text-[#144A42] font-bold">30% 예정</span>
               </div>
             </div>
           </div>
@@ -1883,8 +1893,8 @@ export function MembershipModal({ isOpen, onClose, onLeadSubmit }) {
           {!submitted ? (
             <form onSubmit={handleSubmit} className="bg-[#FAF8F5] p-5 border border-[#ECE5DA] space-y-3.5 shadow-xs">
               <div className="flex items-center justify-between border-b border-[#ECE5DA] pb-2.5">
-                <p className="font-bold text-[#144A42] text-sm">사전 예약 신청서</p>
-                <span className="text-xs font-semibold text-[#9C7A4E] bg-[#F2EDE2] px-2 py-0.5">비용 발생 없음</span>
+                <p className="font-bold text-[#144A42] text-sm">멤버십 가입 / 상담 신청서</p>
+                <span className="text-xs font-semibold text-[#9C7A4E] bg-[#F2EDE2] px-2 py-0.5">전담 매니저 안내</span>
               </div>
               
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -1917,28 +1927,39 @@ export function MembershipModal({ isOpen, onClose, onLeadSubmit }) {
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-xs font-semibold text-gray-700 mb-1">반려견/묘 품종</label>
-                  <input 
-                    type="text" 
-                    value={leadForm.petBreed} 
-                    onChange={(e) => setLeadForm({...leadForm, petBreed: e.target.value})}
-                    placeholder="예: 푸들, 말티즈, 코숏"
-                    className="w-full px-3.5 py-2.5 bg-white border border-gray-300 text-gray-900 text-xs focus:border-[#144A42] focus:ring-1 focus:ring-[#144A42] focus:outline-none"
-                  />
-                </div>
-                <div>
-                  <label className="block text-xs font-semibold text-gray-700 mb-1">가장 기대되는 혜택</label>
+                  <label className="block text-xs font-semibold text-gray-700 mb-1">희망 플랜 선택</label>
                   <select 
-                    value={leadForm.interest} 
-                    onChange={(e) => setLeadForm({...leadForm, interest: e.target.value})}
+                    value={leadForm.plan} 
+                    onChange={(e) => setLeadForm({...leadForm, plan: e.target.value})}
                     className="w-full px-3.5 py-2.5 bg-white border border-gray-300 text-gray-900 text-xs focus:border-[#144A42] focus:ring-1 focus:ring-[#144A42] focus:outline-none"
                   >
-                    <option value="동물병원비 할인">동물병원비 할인</option>
-                    <option value="반려동물 숙소 우대">반려동물 숙소 우대</option>
-                    <option value="동물등록 지원">동물등록 지원</option>
-                    <option value="쇼핑몰 쿠폰">쇼핑몰 정기 할인쿠폰</option>
+                    <option value="슬반생-B (베이직) · 월 9,900원">슬반생-B (베이직) · 월 9,900원</option>
+                    <option value="슬반생-G (골드) · 월 29,900원">슬반생-G (골드) · 월 29,900원</option>
+                    <option value="슬반생-프리미엄 · 월 59,900원">슬반생-프리미엄 · 월 59,900원</option>
                   </select>
                 </div>
+                <div>
+                  <label className="block text-xs font-semibold text-gray-700 mb-1">결제 주기 선택</label>
+                  <select 
+                    value={leadForm.cycle} 
+                    onChange={(e) => setLeadForm({...leadForm, cycle: e.target.value})}
+                    className="w-full px-3.5 py-2.5 bg-white border border-gray-300 text-gray-900 text-xs focus:border-[#144A42] focus:ring-1 focus:ring-[#144A42] focus:outline-none"
+                  >
+                    <option value="월간 결제">월간 결제 (1개월 단위)</option>
+                    <option value="년간 결제 (2개월 면제 할인)">년간 결제 (2개월 면제 할인)</option>
+                  </select>
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-xs font-semibold text-gray-700 mb-1">반려견/묘 품종 (선택)</label>
+                <input 
+                  type="text" 
+                  value={leadForm.petBreed} 
+                  onChange={(e) => setLeadForm({...leadForm, petBreed: e.target.value})}
+                  placeholder="예: 푸들, 말티즈, 코숏"
+                  className="w-full px-3.5 py-2.5 bg-white border border-gray-300 text-gray-900 text-xs focus:border-[#144A42] focus:ring-1 focus:ring-[#144A42] focus:outline-none"
+                />
               </div>
 
               <label className="flex items-center gap-2 cursor-pointer pt-1">
@@ -1949,14 +1970,14 @@ export function MembershipModal({ isOpen, onClose, onLeadSubmit }) {
                   className="accent-[#144A42] w-4 h-4"
                   required
                 />
-                <span className="text-xs text-gray-600">[필수] 사전 예약 혜택 안내 및 출시 알림 수신 동의</span>
+                <span className="text-xs text-gray-600">[필수] 멤버십 가입 안내 및 혜택 알림 수신 동의</span>
               </label>
 
               <button
                 type="submit"
-                className="w-full py-3.5 bg-[#144A42] hover:bg-[#0E352F] text-white font-bold text-sm transition shadow-md mt-2 flex items-center justify-center gap-2"
+                className="w-full py-3.5 bg-[#144A42] hover:bg-[#0E352F] text-white font-bold text-sm transition shadow-md mt-2 flex items-center justify-center gap-2 cursor-pointer"
               >
-                <span>사전신청 완료하고 혜택 찜하기</span>
+                <span>멤버십 가입 신청 완료하기</span>
                 <span>→</span>
               </button>
             </form>
@@ -1965,9 +1986,9 @@ export function MembershipModal({ isOpen, onClose, onLeadSubmit }) {
               <div className="w-14 h-14 bg-[#EAF5F2] text-[#144A42] flex items-center justify-center mx-auto rounded-full mb-1">
                 <CheckIcon className="w-8 h-8" />
               </div>
-              <h4 className="text-xl font-bold text-[#144A42]">사전예약 신청이 완료되었습니다!</h4>
+              <h4 className="text-xl font-bold text-[#144A42]">멤버십 가입 상담 신청이 완료되었습니다!</h4>
               <p className="text-xs text-gray-600 max-w-md mx-auto leading-relaxed">
-                정식 출시 시 신청해주신 연락처로 가장 먼저 우대 혜택 및 알림톡을 발송해 드리겠습니다. 감사합니다.
+                신청해주신 연락처로 담당 매니저가 선택하신 플랜({leadForm.plan}) 혜택 및 리조트·용품 쿠폰 발급 절차를 신속히 안내해 드리겠습니다. 감사합니다.
               </p>
             </div>
           )}
