@@ -16,17 +16,17 @@ export default function MembershipPage({ onOpenMembershipModal, onOpenMallModal 
     {
       num: '01',
       title: '실질적 비용 절감',
-      desc: '연간 가입 할인 혜택 및 리조트 회원가, 용품 최대 30% 할인 적용으로 가입비 이상의 경제적 혜택 제공.',
+      desc: '연회원 가입 혜택(2개월 구독료 FREE) 및 리조트제휴회원요금, 펫용품 구입 시 최대 30% 포인트 적립으로 가입비 이상의 경제적 혜택 제공.',
     },
     {
       num: '02',
       title: '토탈 라이프 케어',
-      desc: '여가(리조트/카페)부터 필수 케어(병원/훈련), 에프터 케어(장례)까지 일관된 프리미엄 품질 보장.',
+      desc: '여가(리조트/펜션, 제휴애견카페)부터 필수 케어(제휴훈련소, 제휴병원 검진권), 에프터 케어(장례서비스, 애견상조)까지 일관된 프리미엄 품질 보장.',
     },
     {
       num: '03',
       title: '유연한 플랜 선택',
-      desc: '보호자의 소비 패턴과 반려동물의 케어 니즈에 맞춘 베이직, 골드, 프리미엄 3단계 요금제 운영.',
+      desc: '보호자의 소비 패턴과 반려동물의 케어 니즈에 맞춘 슬반생-B(베이직), 슬반생-G(골드), 슬반생-프리미엄 3단계 요금제 운영.',
     },
   ];
 
@@ -36,65 +36,89 @@ export default function MembershipPage({ onOpenMembershipModal, onOpenMallModal 
       basic: '1개월',
       gold: '1개월',
       premium: '1개월',
+      goldRed: true,
     },
     {
-      label: '가입금액 (월)',
-      basic: '9,900 원',
-      gold: '29,900 원',
-      premium: '59,900 원',
+      label: '가입금액',
+      basic: '9,900',
+      gold: '29,900',
+      premium: '59,900',
       isPrice: true,
+      goldRed: true,
     },
     {
-      label: '년가입시 혜택',
-      basic: '99,000 원',
-      basicSub: '(2개월면제)',
-      gold: '299,000 원',
-      goldSub: '(2개월면제)',
-      premium: '599,000 원',
-      premiumSub: '(2개월면제)',
-      isAnnual: true,
+      label: '연회원가입혜택',
+      basic: '년가입시 99,000',
+      gold: '년가입시 299,000',
+      premium: '년가입시 599,000',
+      isAnnualBanner: true,
+      goldRed: true,
     },
     {
-      label: '리조트 할인',
-      basic: '회원가 적용',
-      gold: '회원가 적용',
-      premium: '회원가 적용',
+      isFreeBanner: true,
+      text: '연회원으로 가입시 2개월 구독료 FREE',
+    },
+    {
+      label: '리조트/펜션',
+      basic: '리조트제휴회원요금',
+      gold: '리조트제휴회원요금',
+      premium: '리조트제휴회원요금',
+      goldRed: true,
       highlight: true,
     },
     {
-      label: '용품 할인',
-      basic: '10% 할인',
-      gold: '20% 할인',
-      premium: '30% 할인',
+      label: '펫용품구입',
+      basic: '10% 포인트적립',
+      gold: '20% 포인트적립',
+      premium: '30% 포인트적립',
+      goldRed: true,
       highlight: true,
       isMallLink: true,
     },
     {
-      label: '병원 할인',
+      label: '제휴병원 검진권',
       basic: '추후예정',
       gold: '추후예정',
       premium: '추후예정',
+      allRed: true,
       isUpcoming: true,
     },
     {
-      label: '훈련소 할인',
+      label: '제휴훈련소 할인',
       basic: '-',
-      gold: '20% 예정',
-      premium: '30% 예정',
+      gold: '20%(예정)',
+      premium: '30%(예정)',
+      goldRed: true,
       isMixedUpcoming: true,
     },
     {
-      label: '장례 서비스',
+      label: '제휴펫시터서비스',
       basic: '추후예정',
       gold: '추후예정',
       premium: '추후예정',
+      goldRed: true,
       isUpcoming: true,
     },
     {
-      label: '펫시터 / 애견카페',
+      label: '제휴애견카페',
+      isColSpan3: true,
+      mergedText: '20%할인',
+      mergedColor: 'text-[#1E40AF] font-bold',
+    },
+    {
+      label: '장례서비스',
       basic: '추후예정',
       gold: '추후예정',
       premium: '추후예정',
+      goldRed: true,
+      isUpcoming: true,
+    },
+    {
+      label: '애견상조',
+      basic: '추후예정',
+      gold: '추후예정',
+      premium: '추후예정',
+      goldRed: true,
       isUpcoming: true,
     },
   ];
@@ -102,20 +126,20 @@ export default function MembershipPage({ onOpenMembershipModal, onOpenMallModal 
   const roadmapSteps = [
     {
       step: 'STEP 01 (기본)',
-      title: '리조트 & 용품 혜택',
-      desc: '자사몰 용품 할인 및 제휴 리조트 회원가 단독 개방',
+      title: '리조트 & 펫용품 포인트 적립',
+      desc: '공식 몰 펫용품 구입 시 최대 30% 포인트 적립 및 제휴 리조트/펜션 회원요금 단독 개방',
       active: true,
     },
     {
       step: 'STEP 02 (확장중)',
-      title: '훈련소 & 병원 연계',
-      desc: '반려견 행동교정 훈련소 최대 30% 할인 및 제휴병원 연계',
+      title: '훈련소 & 애견카페 & 병원 검진권',
+      desc: '제휴애견카페 20% 할인, 제휴훈련소 최대 30%(예정) 및 제휴병원 검진권 연계',
       expanding: true,
     },
     {
       step: 'STEP 03 (예정)',
       title: '토탈 라이프케어 완성',
-      desc: '펫시터, 애견카페 우대 혜택 및 장례 전문 서비스 연계',
+      desc: '제휴 펫시터 서비스 및 전문 장례서비스, 애견상조 케어 네트워크 연계',
       upcoming: true,
     },
   ];
@@ -152,16 +176,16 @@ export default function MembershipPage({ onOpenMembershipModal, onOpenMallModal 
           {/* 3 Key Highlights from Cover */}
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5 sm:gap-4 pt-2 max-w-2xl mx-auto">
             <div className="bg-white border border-[#E5DFD1] p-3.5 sm:p-4 shadow-2xs text-center">
-              <span className="block text-[10px] sm:text-xs text-[#8C7A5B] font-semibold mb-0.5">숙박 & 리조트</span>
-              <strong className="text-xs sm:text-sm font-extrabold text-[#144A42]">전용 회원가 혜택</strong>
+              <span className="block text-[10px] sm:text-xs text-[#8C7A5B] font-semibold mb-0.5">리조트 / 펜션</span>
+              <strong className="text-xs sm:text-sm font-extrabold text-[#144A42]">제휴회원요금 적용</strong>
             </div>
             <div className="bg-white border border-[#E5DFD1] p-3.5 sm:p-4 shadow-2xs text-center">
-              <span className="block text-[10px] sm:text-xs text-[#8C7A5B] font-semibold mb-0.5">반려 용품 할인</span>
-              <strong className="text-xs sm:text-sm font-extrabold text-[#144A42]">최대 30% DC</strong>
+              <span className="block text-[10px] sm:text-xs text-[#8C7A5B] font-semibold mb-0.5">펫용품 구입</span>
+              <strong className="text-xs sm:text-sm font-extrabold text-[#144A42]">최대 30% 적립</strong>
             </div>
             <div className="bg-white border border-[#E5DFD1] p-3.5 sm:p-4 shadow-2xs text-center">
               <span className="block text-[10px] sm:text-xs text-[#8C7A5B] font-semibold mb-0.5">토탈 펫케어</span>
-              <strong className="text-xs sm:text-sm font-extrabold text-[#144A42]">병원·훈련·장례 연계</strong>
+              <strong className="text-xs sm:text-sm font-extrabold text-[#144A42]">카페·훈련·병원·상조</strong>
             </div>
           </div>
 
@@ -260,115 +284,151 @@ export default function MembershipPage({ onOpenMembershipModal, onOpenMallModal 
             </span>
           </div>
 
-          {/* Product Comparison Table */}
-          <div className="overflow-x-auto border border-[#DFD8CA]">
-            <table className="w-full text-xs sm:text-sm text-center border-collapse min-w-[600px]">
+          {/* Table Header Bar with Unit */}
+          <div className="flex items-center justify-between px-1 text-xs sm:text-sm font-bold text-gray-700">
+            <span className="font-extrabold text-[#144A42]">슬반생멤버십서비스 상품구성</span>
+            <span className="text-[#6B7280] font-normal text-xs">(단위 : 원)</span>
+          </div>
+
+          {/* Product Comparison Table (Matches Image Exactly) */}
+          <div className="overflow-x-auto border-2 border-[#A8C5BE] shadow-xs">
+            <table className="w-full text-xs sm:text-sm text-center border-collapse min-w-[620px]">
               <thead>
-                <tr className="border-b border-[#DFD8CA]">
-                  <th className="py-3.5 px-4 bg-[#F4F1EB] font-extrabold text-[#3D4843] border-r border-[#DFD8CA] w-1/4">
-                    구분
+                <tr className="border-b-2 border-[#A8C5BE] bg-[#E8F3F1]">
+                  <th className="py-3 px-4 font-bold text-[#1F2937] border-r border-[#CBD5E1] w-[22%]">
+                    구 분
                   </th>
-                  <th className="py-3.5 px-4 bg-[#F4F1EB] font-extrabold text-[#1D2522] border-r border-[#DFD8CA] w-1/4">
-                    슬반생-B (베이직)
+                  <th className="py-3 px-4 font-bold text-[#1F2937] border-r border-[#CBD5E1] w-[26%]">
+                    슬반생-B(베이직)
                   </th>
-                  <th className="py-3.5 px-4 bg-[#C58B43] font-extrabold text-white border-r border-[#DFD8CA] w-1/4">
-                    슬반생-G (골드)
+                  <th className="py-3 px-4 font-bold text-[#DC2626] border-r border-[#CBD5E1] w-[26%]">
+                    슬반생-G(골드)
                   </th>
-                  <th className="py-3.5 px-4 bg-[#144A42] font-extrabold text-white w-1/4">
+                  <th className="py-3 px-4 font-bold text-[#144A42] w-[26%]">
                     슬반생-프리미엄
                   </th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-[#EAE4D8]">
-                {planRows.map((row, idx) => (
-                  <tr
-                    key={idx}
-                    onClick={row.isMallLink ? onOpenMallModal : undefined}
-                    className={`${
-                      row.isPrice ? 'bg-[#FDFBF7]' : 'bg-white'
-                    } ${row.isMallLink ? 'cursor-pointer hover:bg-[#F2F8F6] transition' : ''}`}
-                    title={row.isMallLink ? '슬반생몰 바로가기' : undefined}
-                  >
-                    <td className="py-3.5 px-4 font-bold text-[#2C3732] bg-[#FAF8F4] border-r border-[#EAE4D8]">
-                      <div className="flex items-center justify-center gap-1.5">
-                        <span>{row.label}</span>
-                        {row.isMallLink && (
-                          <span className="text-[10px] bg-[#144A42] text-white px-1.5 py-0.5 font-bold">
-                            몰 이동
-                          </span>
-                        )}
-                      </div>
-                    </td>
+              <tbody className="divide-y divide-[#D1D5DB]">
+                {planRows.map((row, idx) => {
+                  // 1. 연회원 가입 2개월 무료 배너 행 (colSpan=4)
+                  if (row.isFreeBanner) {
+                    return (
+                      <tr key={idx} className="bg-[#FFF5F5] border-y-2 border-[#FCA5A5]">
+                        <td
+                          colSpan={4}
+                          className="py-3 px-4 text-center font-extrabold text-sm sm:text-base text-[#DC2626] tracking-wide"
+                        >
+                          {row.text}
+                        </td>
+                      </tr>
+                    );
+                  }
 
-                    {/* Basic */}
-                    <td className="py-3.5 px-4 border-r border-[#EAE4D8]">
-                      {row.isPrice ? (
-                        <span className="text-sm sm:text-base font-extrabold text-[#144A42]">{row.basic}</span>
-                      ) : row.isAnnual ? (
-                        <div>
-                          <span className="font-extrabold text-[#1D2522]">{row.basic}</span>{' '}
-                          <span className="text-[11px] text-[#B48B55] font-semibold">{row.basicSub}</span>
-                        </div>
-                      ) : row.isUpcoming ? (
-                        <span className="inline-block bg-[#F7F1E5] text-[#8C7248] text-[11px] font-bold px-2.5 py-0.5">
+                  // 2. 연회원 가입 혜택 행 (초록 하이라이트 배경 + 굵은 텍스트)
+                  if (row.isAnnualBanner) {
+                    return (
+                      <tr key={idx} className="bg-[#EAF5E9] border-y-2 border-[#4ADE80]/80">
+                        <td className="py-3.5 px-4 font-black text-[#14532D] border-r border-[#CBD5E1] bg-[#E2F0E0]">
+                          {row.label}
+                        </td>
+                        <td className="py-3.5 px-4 font-black text-[#1F2937] border-r border-[#CBD5E1]">
                           {row.basic}
-                        </span>
-                      ) : row.highlight ? (
-                        <span className="font-bold text-[#1D2522]">{row.basic}</span>
-                      ) : (
-                        <span className="text-gray-600">{row.basic}</span>
-                      )}
-                    </td>
-
-                    {/* Gold */}
-                    <td className="py-3.5 px-4 border-r border-[#EAE4D8] bg-[#FDFBF7]/50">
-                      {row.isPrice ? (
-                        <span className="text-sm sm:text-base font-extrabold text-[#B47B32]">{row.gold}</span>
-                      ) : row.isAnnual ? (
-                        <div>
-                          <span className="font-extrabold text-[#1D2522]">{row.gold}</span>{' '}
-                          <span className="text-[11px] text-[#B47B32] font-semibold">{row.goldSub}</span>
-                        </div>
-                      ) : row.isUpcoming ? (
-                        <span className="inline-block bg-[#F7F1E5] text-[#8C7248] text-[11px] font-bold px-2.5 py-0.5">
+                        </td>
+                        <td className="py-3.5 px-4 font-black text-[#DC2626] border-r border-[#CBD5E1]">
                           {row.gold}
-                        </span>
-                      ) : row.isMixedUpcoming ? (
-                        <span className="font-bold text-[#1D2522]">
-                          20% <span className="inline-block bg-[#F7F1E5] text-[#8C7248] text-[10px] font-bold px-1.5 py-0.5 ml-0.5">예정</span>
-                        </span>
-                      ) : row.highlight ? (
-                        <span className="font-extrabold text-[#144A42]">{row.gold}</span>
-                      ) : (
-                        <span className="text-gray-600">{row.gold}</span>
-                      )}
-                    </td>
-
-                    {/* Premium */}
-                    <td className="py-3.5 px-4 bg-[#F4F9F7]/50">
-                      {row.isPrice ? (
-                        <span className="text-sm sm:text-base font-extrabold text-[#144A42]">{row.premium}</span>
-                      ) : row.isAnnual ? (
-                        <div>
-                          <span className="font-extrabold text-[#1D2522]">{row.premium}</span>{' '}
-                          <span className="text-[11px] text-[#144A42] font-semibold">{row.premiumSub}</span>
-                        </div>
-                      ) : row.isUpcoming ? (
-                        <span className="inline-block bg-[#F7F1E5] text-[#8C7248] text-[11px] font-bold px-2.5 py-0.5">
+                        </td>
+                        <td className="py-3.5 px-4 font-black text-[#144A42]">
                           {row.premium}
-                        </span>
-                      ) : row.isMixedUpcoming ? (
-                        <span className="font-extrabold text-[#144A42]">
-                          30% <span className="inline-block bg-[#F7F1E5] text-[#8C7248] text-[10px] font-bold px-1.5 py-0.5 ml-0.5">예정</span>
-                        </span>
-                      ) : row.highlight ? (
-                        <span className="font-extrabold text-[#144A42]">{row.premium}</span>
-                      ) : (
-                        <span className="text-gray-600">{row.premium}</span>
-                      )}
-                    </td>
-                  </tr>
-                ))}
+                        </td>
+                      </tr>
+                    );
+                  }
+
+                  // 3. 제휴애견카페 행 (colSpan=3 병합)
+                  if (row.isColSpan3) {
+                    return (
+                      <tr key={idx} className="bg-white">
+                        <td className="py-3 px-4 font-bold text-[#374151] bg-[#FAF8F4] border-r border-[#CBD5E1]">
+                          {row.label}
+                        </td>
+                        <td
+                          colSpan={3}
+                          className="py-3 px-4 text-center font-extrabold text-sm sm:text-base text-[#2563EB]"
+                        >
+                          {row.mergedText}
+                        </td>
+                      </tr>
+                    );
+                  }
+
+                  // 4. 일반 행들
+                  return (
+                    <tr
+                      key={idx}
+                      onClick={row.isMallLink ? onOpenMallModal : undefined}
+                      className={`${
+                        row.isPrice ? 'bg-[#FCFBF8]' : 'bg-white'
+                      } ${row.isMallLink ? 'cursor-pointer hover:bg-[#F2F8F6] transition' : ''}`}
+                      title={row.isMallLink ? '슬반생 공식 제휴몰 바로가기' : undefined}
+                    >
+                      {/* Label Column */}
+                      <td className="py-3 px-4 font-bold text-[#374151] bg-[#FAF8F4] border-r border-[#CBD5E1]">
+                        <div className="flex items-center justify-center gap-1.5">
+                          <span>{row.label}</span>
+                          {row.isMallLink && (
+                            <span className="text-[10px] bg-[#144A42] text-white px-1.5 py-0.5 font-bold shadow-2xs">
+                              몰 이동
+                            </span>
+                          )}
+                        </div>
+                      </td>
+
+                      {/* Basic Column */}
+                      <td className="py-3 px-4 border-r border-[#CBD5E1] text-[#374151]">
+                        {row.isPrice ? (
+                          <span className="font-extrabold text-sm sm:text-base text-[#111827]">
+                            {row.basic}
+                          </span>
+                        ) : row.allRed ? (
+                          <span className="text-[#DC2626] font-semibold">{row.basic}</span>
+                        ) : row.highlight ? (
+                          <span className="font-bold text-[#111827]">{row.basic}</span>
+                        ) : (
+                          <span>{row.basic}</span>
+                        )}
+                      </td>
+
+                      {/* Gold Column (붉은색 포인트 폰트) */}
+                      <td className="py-3 px-4 border-r border-[#CBD5E1]">
+                        {row.isPrice ? (
+                          <span className="font-extrabold text-sm sm:text-base text-[#DC2626]">
+                            {row.gold}
+                          </span>
+                        ) : row.goldRed || row.allRed ? (
+                          <span className="text-[#DC2626] font-semibold">{row.gold}</span>
+                        ) : (
+                          <span className="font-medium text-[#111827]">{row.gold}</span>
+                        )}
+                      </td>
+
+                      {/* Premium Column */}
+                      <td className="py-3 px-4 text-[#374151]">
+                        {row.isPrice ? (
+                          <span className="font-extrabold text-sm sm:text-base text-[#144A42]">
+                            {row.premium}
+                          </span>
+                        ) : row.allRed ? (
+                          <span className="text-[#DC2626] font-semibold">{row.premium}</span>
+                        ) : row.highlight ? (
+                          <span className="font-bold text-[#144A42]">{row.premium}</span>
+                        ) : (
+                          <span className="font-medium">{row.premium}</span>
+                        )}
+                      </td>
+                    </tr>
+                  );
+                })}
               </tbody>
             </table>
           </div>
@@ -377,7 +437,7 @@ export default function MembershipPage({ onOpenMembershipModal, onOpenMallModal 
           <div className="bg-[#FAF6EC] border border-[#EAE0C8] px-4 py-3 text-xs text-[#6B5735] flex items-center gap-2 font-medium">
             <span className="font-extrabold text-[#B48B55]">ⓘ 참고사항:</span>
             <span>
-              년가입 시 2개월 상당의 가입비 절감 효과가 적용됩니다. &apos;추후예정&apos; 항목은 제휴 협약 체결에 따라 순차적 오픈됩니다.
+              연회원으로 가입 시 2개월 구독료 FREE(면제) 혜택이 적용됩니다. &apos;추후예정&apos; 항목은 제휴 협약 체결에 따라 순차적으로 오픈됩니다.
             </span>
           </div>
         </section>
@@ -407,26 +467,26 @@ export default function MembershipPage({ onOpenMembershipModal, onOpenMallModal 
                   현재 이용 가능
                 </span>
                 <h3 className="text-base sm:text-lg font-extrabold text-[#144A42]">
-                  리조트 & 용품 할인
+                  리조트·용품 적립·애견카페 할인
                 </h3>
               </div>
               <ul className="space-y-2 text-xs sm:text-sm text-[#3F4A45] leading-relaxed">
                 <li className="flex items-start gap-2">
                   <span className="text-[#144A42] font-bold">•</span>
                   <span>
-                    <strong className="text-[#1D2522]">반려동물 동반 리조트:</strong> 전 등급 회원 대상 우대 회원가 예약 혜택 제공
+                    <strong className="text-[#1D2522]">리조트/펜션:</strong> 전 등급 회원 대상 우대 &apos;리조트제휴회원요금&apos; 적용
                   </span>
                 </li>
                 <li className="flex items-start gap-2">
                   <span className="text-[#144A42] font-bold">•</span>
                   <span>
-                    <strong className="text-[#1D2522]">공식 몰 용품 할인:</strong> 베이직 10%, 골드 20%, 프리미엄 30% 즉시 할인 쿠폰 제공
+                    <strong className="text-[#1D2522]">펫용품구입:</strong> 공식 몰 구매 시 등급별 베이직 10%, 골드 20%, 프리미엄 30% 포인트 적립
                   </span>
                 </li>
                 <li className="flex items-start gap-2">
                   <span className="text-[#144A42] font-bold">•</span>
                   <span>
-                    <strong className="text-[#1D2522]">신제품 체험단:</strong> 프리미엄 회원 대상 신규 반려용품 우선 체험 기회
+                    <strong className="text-[#1D2522]">제휴애견카페:</strong> 전 등급 공통 20% 즉시 할인 혜택 제공
                   </span>
                 </li>
               </ul>
@@ -446,19 +506,19 @@ export default function MembershipPage({ onOpenMembershipModal, onOpenMallModal 
                 <li className="flex items-start gap-2">
                   <span className="text-[#C58B43] font-bold">•</span>
                   <span>
-                    <strong className="text-[#1D2522]">전문 훈련소 할인:</strong> 골드 20%, 프리미엄 30% 할인 적용 예정
+                    <strong className="text-[#1D2522]">제휴훈련소 할인:</strong> 골드 20%(예정), 프리미엄 30%(예정)
                   </span>
                 </li>
                 <li className="flex items-start gap-2">
                   <span className="text-[#C58B43] font-bold">•</span>
                   <span>
-                    <strong className="text-[#1D2522]">제휴 동물병원:</strong> 건강검진 및 예방접종 할인 네트워크 구축 중
+                    <strong className="text-[#1D2522]">제휴병원 검진권:</strong> 회원 전용 건강검진 우대 혜택 (추후예정)
                   </span>
                 </li>
                 <li className="flex items-start gap-2">
                   <span className="text-[#C58B43] font-bold">•</span>
                   <span>
-                    <strong className="text-[#1D2522]">장례 & 펫시터/카페:</strong> 안심 케어 서비스 제휴업체 확대 추진
+                    <strong className="text-[#1D2522]">제휴펫시터 / 장례서비스 / 애견상조:</strong> 안심 토탈 라이프케어 네트워크 순차 오픈
                   </span>
                 </li>
               </ul>
@@ -530,7 +590,7 @@ export default function MembershipPage({ onOpenMembershipModal, onOpenMallModal 
                 월 9,900원~
               </strong>
               <span className="text-xs text-[#5F6E68] font-medium block">
-                부담 없는 시작 (베이직 플랜)
+                부담 없는 시작 (슬반생-B 베이직)
               </span>
             </div>
             <div className="bg-[#FAF6EC] border border-[#EAE0C8] p-5 text-center space-y-1">
@@ -538,15 +598,15 @@ export default function MembershipPage({ onOpenMembershipModal, onOpenMallModal 
                 최대 30%
               </strong>
               <span className="text-xs text-[#5F6E68] font-medium block">
-                용품 & 훈련소 우대 할인
+                펫용품 포인트 적립 & 훈련소 우대
               </span>
             </div>
             <div className="bg-[#FAF6EC] border border-[#EAE0C8] p-5 text-center space-y-1">
-              <strong className="text-xl sm:text-2xl font-black text-[#144A42] block">
+              <strong className="text-xl sm:text-2xl font-black text-[#DC2626] block">
                 2개월 FREE
               </strong>
               <span className="text-xs text-[#5F6E68] font-medium block">
-                년가입 선택 시 비용 절감
+                연회원으로 가입 시 2개월 구독료 무료
               </span>
             </div>
           </div>
@@ -562,15 +622,15 @@ export default function MembershipPage({ onOpenMembershipModal, onOpenMallModal 
               <ol className="space-y-2.5 text-xs sm:text-sm text-[#3F4A45]">
                 <li className="flex items-start gap-2">
                   <span className="font-extrabold text-[#144A42]">1. 플랜 선택:</span>
-                  <span>베이직 / 골드 / 프리미엄 중 선택</span>
+                  <span>슬반생-B(베이직) / 슬반생-G(골드) / 슬반생-프리미엄 중 선택</span>
                 </li>
                 <li className="flex items-start gap-2">
                   <span className="font-extrabold text-[#144A42]">2. 주기 선택:</span>
-                  <span>월간 결제 또는 년간 결제(할인) 선택</span>
+                  <span>월간 결제 또는 년간 결제(2개월 무료 혜택) 선택</span>
                 </li>
                 <li className="flex items-start gap-2">
                   <span className="font-extrabold text-[#144A42]">3. 혜택 적용:</span>
-                  <span>가입 즉시 회원전용 리조트가 및 쿠폰 발급</span>
+                  <span>가입 즉시 리조트제휴회원요금, 용품 적립, 애견카페 할인 적용</span>
                 </li>
               </ol>
               <div className="pt-2">

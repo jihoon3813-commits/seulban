@@ -1799,9 +1799,9 @@ export function MembershipModal({ isOpen, onClose, onLeadSubmit }) {
     name: '',
     phone: '',
     petBreed: '',
-    plan: '슬반생-G (골드) · 월 29,900원',
+    plan: '슬반생-G(골드) · 월 29,900원',
     cycle: '월간 결제',
-    interest: '리조트 회원가 & 용품 할인',
+    interest: '리조트제휴회원요금 & 펫용품 포인트적립',
     agree: true,
   });
   const [submitted, setSubmitted] = useState(false);
@@ -1843,48 +1843,67 @@ export function MembershipModal({ isOpen, onClose, onLeadSubmit }) {
               반려동물과의 더 나은 삶을 위한<br className="hidden sm:inline" /> 맞춤형 프리미엄 케어 멤버십
             </h3>
             <p className="text-[11px] sm:text-xs text-[#5E6D67] mt-1 sm:mt-2 leading-relaxed">
-              합리적인 월 구독형 플랜(베이직, 골드, 프리미엄)으로 가입 즉시 리조트 회원가 및 용품 최대 30% 할인 혜택을 누리세요. 년가입 시 2개월 면제 혜택이 적용됩니다.
+              합리적인 월 구독형 플랜(베이직, 골드, 프리미엄)으로 리조트제휴회원요금, 펫용품 최대 30% 포인트 적립 및 제휴애견카페 20% 할인을 누리세요. 연회원으로 가입 시 2개월 구독료 FREE 혜택이 적용됩니다.
             </p>
           </div>
 
-          {/* 3-Tier Plans Summary Table */}
-          <div className="bg-white border border-[#E3DDD1] overflow-hidden shadow-xs">
-            <div className="grid grid-cols-4 bg-[#F4F1EB] px-3 py-2.5 text-[11px] sm:text-xs font-bold text-[#144A42] border-b border-[#E3DDD1] text-center">
-              <span className="text-left">구분</span>
-              <span className="text-gray-700">슬반생-B (베이직)</span>
-              <span className="text-[#B47B32] font-extrabold">슬반생-G (골드)</span>
+          {/* 3-Tier Plans Summary Table (Matches Image Exactly) */}
+          <div className="bg-white border-2 border-[#A8C5BE] overflow-hidden shadow-xs">
+            <div className="grid grid-cols-4 bg-[#E8F3F1] px-3 py-2.5 text-[11px] sm:text-xs font-bold border-b border-[#CBD5E1] text-center">
+              <span className="text-center text-[#1F2937]">구 분</span>
+              <span className="text-[#1F2937]">슬반생-B(베이직)</span>
+              <span className="text-[#DC2626] font-extrabold">슬반생-G(골드)</span>
               <span className="text-[#144A42] font-extrabold">슬반생-프리미엄</span>
             </div>
-            <div className="divide-y divide-[#EFECE6] text-[11px] sm:text-xs text-center">
+            <div className="divide-y divide-[#CBD5E1] text-[11px] sm:text-xs text-center">
               <div className="grid grid-cols-4 px-3 py-2.5 items-center">
-                <span className="font-semibold text-gray-800 text-left">월 가입금액</span>
-                <span className="font-bold text-[#144A42]">9,900원</span>
-                <span className="font-extrabold text-[#B47B32]">29,900원</span>
-                <span className="font-extrabold text-[#144A42]">59,900원</span>
+                <span className="font-bold text-gray-700">입회기간</span>
+                <span className="text-gray-800">1개월</span>
+                <span className="text-[#DC2626] font-semibold">1개월</span>
+                <span className="text-gray-800">1개월</span>
               </div>
               <div className="grid grid-cols-4 px-3 py-2.5 items-center bg-[#FAF8F5]">
-                <span className="font-semibold text-gray-800 text-left">년가입 (2개월면제)</span>
-                <span className="text-gray-700 font-medium">99,000원</span>
-                <span className="text-gray-800 font-bold">299,000원</span>
-                <span className="text-gray-800 font-bold">599,000원</span>
+                <span className="font-bold text-gray-700">가입금액</span>
+                <span className="font-extrabold text-gray-900">9,900</span>
+                <span className="font-extrabold text-[#DC2626]">29,900</span>
+                <span className="font-extrabold text-[#144A42]">59,900</span>
+              </div>
+              <div className="grid grid-cols-4 px-3 py-2.5 items-center bg-[#EAF5E9]">
+                <span className="font-black text-[#14532D]">연회원가입혜택</span>
+                <span className="font-black text-gray-900">년가입시 99,000</span>
+                <span className="font-black text-[#DC2626]">년가입시 299,000</span>
+                <span className="font-black text-[#144A42]">년가입시 599,000</span>
+              </div>
+              <div className="bg-[#FFF5F5] py-2 px-3 text-center font-extrabold text-xs sm:text-sm text-[#DC2626]">
+                연회원으로 가입시 2개월 구독료 FREE
               </div>
               <div className="grid grid-cols-4 px-3 py-2.5 items-center">
-                <span className="font-semibold text-gray-800 text-left">리조트 할인</span>
-                <span className="text-[#144A42] font-bold">회원가 적용</span>
-                <span className="text-[#144A42] font-bold">회원가 적용</span>
-                <span className="text-[#144A42] font-bold">회원가 적용</span>
+                <span className="font-bold text-gray-700">리조트/펜션</span>
+                <span className="text-gray-800">리조트제휴회원요금</span>
+                <span className="text-[#DC2626] font-medium">리조트제휴회원요금</span>
+                <span className="text-gray-800">리조트제휴회원요금</span>
+              </div>
+              <div className="grid grid-cols-4 px-3 py-2.5 items-center bg-[#FAF8F5]">
+                <span className="font-bold text-gray-700">펫용품구입</span>
+                <span className="text-gray-800 font-semibold">10% 포인트적립</span>
+                <span className="text-[#DC2626] font-bold">20% 포인트적립</span>
+                <span className="text-[#144A42] font-extrabold">30% 포인트적립</span>
               </div>
               <div className="grid grid-cols-4 px-3 py-2.5 items-center">
-                <span className="font-semibold text-gray-800 text-left">용품 할인</span>
-                <span className="text-gray-700 font-semibold">10% 할인</span>
-                <span className="text-[#B47B32] font-bold">20% 할인</span>
-                <span className="text-[#144A42] font-extrabold bg-[#EBF5F2] py-0.5">30% 할인</span>
-              </div>
-              <div className="grid grid-cols-4 px-3 py-2.5 items-center">
-                <span className="font-semibold text-gray-800 text-left">훈련소 할인</span>
+                <span className="font-bold text-gray-700">제휴훈련소 할인</span>
                 <span className="text-gray-400">-</span>
-                <span className="text-gray-700 font-medium">20% 예정</span>
-                <span className="text-[#144A42] font-bold">30% 예정</span>
+                <span className="text-[#DC2626] font-medium">20%(예정)</span>
+                <span className="text-[#144A42] font-bold">30%(예정)</span>
+              </div>
+              <div className="grid grid-cols-4 px-3 py-2.5 items-center bg-[#FAF8F5]">
+                <span className="font-bold text-gray-700">제휴애견카페</span>
+                <span className="col-span-3 text-[#2563EB] font-bold text-center">20%할인</span>
+              </div>
+              <div className="grid grid-cols-4 px-3 py-2 items-center text-[10px] text-gray-500">
+                <span className="font-medium text-gray-600">기타제휴</span>
+                <span className="col-span-3 text-center text-[#DC2626]">
+                  제휴병원 검진권 / 펫시터 / 장례서비스 / 애견상조 (추후예정)
+                </span>
               </div>
             </div>
           </div>
@@ -1933,8 +1952,8 @@ export function MembershipModal({ isOpen, onClose, onLeadSubmit }) {
                     onChange={(e) => setLeadForm({...leadForm, plan: e.target.value})}
                     className="w-full px-3.5 py-2.5 bg-white border border-gray-300 text-gray-900 text-xs focus:border-[#144A42] focus:ring-1 focus:ring-[#144A42] focus:outline-none"
                   >
-                    <option value="슬반생-B (베이직) · 월 9,900원">슬반생-B (베이직) · 월 9,900원</option>
-                    <option value="슬반생-G (골드) · 월 29,900원">슬반생-G (골드) · 월 29,900원</option>
+                    <option value="슬반생-B(베이직) · 월 9,900원">슬반생-B(베이직) · 월 9,900원</option>
+                    <option value="슬반생-G(골드) · 월 29,900원">슬반생-G(골드) · 월 29,900원</option>
                     <option value="슬반생-프리미엄 · 월 59,900원">슬반생-프리미엄 · 월 59,900원</option>
                   </select>
                 </div>
@@ -1946,7 +1965,7 @@ export function MembershipModal({ isOpen, onClose, onLeadSubmit }) {
                     className="w-full px-3.5 py-2.5 bg-white border border-gray-300 text-gray-900 text-xs focus:border-[#144A42] focus:ring-1 focus:ring-[#144A42] focus:outline-none"
                   >
                     <option value="월간 결제">월간 결제 (1개월 단위)</option>
-                    <option value="년간 결제 (2개월 면제 할인)">년간 결제 (2개월 면제 할인)</option>
+                    <option value="년간 결제 (2개월 구독료 FREE)">년간 결제 (2개월 구독료 FREE)</option>
                   </select>
                 </div>
               </div>
