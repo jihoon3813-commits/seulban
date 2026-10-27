@@ -485,21 +485,21 @@ export const INITIAL_SHOP_ORDERS = [
 // 네비게이션 메뉴 기본 노출 여부 설정
 export const DEFAULT_MENU_VISIBILITY = {
   registration: true, // 동물등록
-  adoption: true,     // 새로운 만남
   partners: true,     // 반려생활
   travel: true,       // 반려여행
   farewell: true,     // 아름다운 이별
   membership: true,   // 슬반생멤버십
   mall: true,         // 슬반생몰
+  adoption: true,     // 새로운 만남 (별도 서비스)
 };
 
 // 네비게이션 메뉴 상세 정보 목록
 export const NAV_MENU_CONFIG = [
   { 
-    id: 'adoption', 
-    label: '새로운 만남', 
-    desc: '안심 입양 안내 및 유기동물 가족 매칭 프로필',
-    badge: null,
+    id: 'registration', 
+    label: '동물등록', 
+    desc: '국가 공인 동물등록 신청 및 무료 대행 혜택',
+    badge: '필수',
     highlight: false,
   },
   { 
@@ -538,10 +538,11 @@ export const NAV_MENU_CONFIG = [
     highlight: true,
   },
   { 
-    id: 'registration', 
-    label: '동물등록', 
-    desc: '국가 공인 동물등록 신청 및 무료 대행 혜택',
-    badge: '필수',
+    id: 'adoption', 
+    label: '새로운 만남', 
+    desc: '안심 입양 안내 및 유기동물 가족 매칭 프로필 (별도 연계 서비스)',
+    badge: null,
     highlight: false,
+    isSubService: true,
   },
 ];

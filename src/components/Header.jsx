@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { LogoEmblem, PawIcon, MenuIcon, XIcon, ExternalLinkIcon, UserIcon, ShieldCheckIcon, ShoppingBagIcon } from './Icons';
+import { LogoEmblem, PawIcon, MenuIcon, XIcon, ExternalLinkIcon, UserIcon, ShieldCheckIcon, ShoppingBagIcon, HeartIcon } from './Icons';
 import { BRAND_INFO } from '../data/mockData';
 
 export default function Header({ 
@@ -28,12 +28,12 @@ export default function Header({
 
   const allNavItems = [
     { id: 'registration', label: '동물등록', badge: '필수' },
-    { id: 'adoption', label: '새로운 만남' },
     { id: 'partners', label: '반려생활' },
     { id: 'travel', label: '반려여행' },
     { id: 'farewell', label: '아름다운 이별' },
     { id: 'membership', label: '슬반생멤버십', highlight: true },
     { id: 'mall', label: '슬반생몰', badge: '특가', isMall: true },
+    { id: 'adoption', label: '새로운 만남', isSubService: true },
   ];
 
   const navItems = allNavItems.filter(item => {
@@ -78,36 +78,59 @@ export default function Header({
           </button>
 
           {/* Desktop Navigation Menus */}
-          <nav className="hidden md:flex items-center gap-1 lg:gap-2">
-            {navItems.map((item) => (
-              <button
-                key={item.id}
-                onClick={() => handleNavClick(item.id)}
-                className={`relative transition-all cursor-pointer ${
-                  item.isMall
-                    ? activeTab === item.id
-                      ? 'ml-1 px-4 py-2 text-[15px] font-extrabold bg-[#0D3832] text-[#FDE68A] border border-[#C5A880] shadow-md flex items-center gap-1.5'
-                      : 'ml-1 px-4 py-2 text-[15px] font-extrabold bg-[#144A42] text-white hover:bg-[#0D3832] border border-[#C5A880]/80 shadow-sm flex items-center gap-1.5 hover:-translate-y-0.5'
-                    : activeTab === item.id 
-                    ? 'px-3.5 py-2 text-[15px] font-bold text-[#144A42] bg-[#F4F1EA] border-b-2 border-[#144A42]' 
-                    : item.highlight
-                    ? 'px-3.5 py-2 text-[15px] font-semibold text-[#B48B55] hover:text-[#144A42] hover:bg-[#F8F6F0]'
-                    : 'px-3.5 py-2 text-[15px] font-semibold text-[#2D3732] hover:text-[#144A42] hover:bg-[#F8F6F0]'
-                }`}
-              >
-                {item.isMall && (
-                  <ShoppingBagIcon className="w-4 h-4 text-[#C5A880] shrink-0" />
-                )}
-                <span>{item.label}</span>
-                {item.badge && (
-                  <span className={`absolute -top-1.5 -right-1 text-[9px] font-extrabold px-1.5 py-0.2 shadow-2xs ${
-                    item.isMall ? 'bg-[#E11D48] text-white animate-pulse' : 'bg-[#E11D48] text-white'
-                  }`}>
-                    {item.badge}
-                  </span>
-                )}
-              </button>
-            ))}
+          <nav className="hidden md:flex items-center gap-1 lg:gap-1.5">
+            {navItems.map((item) => {
+              if (item.isSubService) {
+                const isActive = activeTab === item.id;
+                return (
+                  <React.Fragment key={item.id}>
+                    <div className="h-3.5 w-px bg-[#D6CFC1] mx-1 shrink-0" aria-hidden="true" />
+                    <button
+                      onClick={() => handleNavClick(item.id)}
+                      className={`relative px-2.5 py-2 text-[13.5px] transition-all cursor-pointer flex items-center gap-1.5 ${
+                        isActive
+                          ? 'font-bold text-[#144A42]'
+                          : 'font-medium text-[#66736D] hover:text-[#144A42]'
+                      }`}
+                      title="새로운 만남 (안심 입양 안내)"
+                    >
+                      <HeartIcon className={`w-3.5 h-3.5 shrink-0 transition-colors ${isActive ? 'text-[#144A42]' : 'text-[#9AA5A0]'}`} />
+                      <span>{item.label}</span>
+                    </button>
+                  </React.Fragment>
+                );
+              }
+
+              return (
+                <button
+                  key={item.id}
+                  onClick={() => handleNavClick(item.id)}
+                  className={`relative transition-all cursor-pointer ${
+                    item.isMall
+                      ? activeTab === item.id
+                        ? 'ml-1 px-4 py-2 text-[15px] font-extrabold bg-[#0D3832] text-[#FDE68A] border border-[#C5A880] shadow-md flex items-center gap-1.5'
+                        : 'ml-1 px-4 py-2 text-[15px] font-extrabold bg-[#144A42] text-white hover:bg-[#0D3832] border border-[#C5A880]/80 shadow-sm flex items-center gap-1.5 hover:-translate-y-0.5'
+                      : activeTab === item.id 
+                      ? 'px-3.5 py-2 text-[15px] font-bold text-[#144A42] bg-[#F4F1EA] border-b-2 border-[#144A42]' 
+                      : item.highlight
+                      ? 'px-3.5 py-2 text-[15px] font-semibold text-[#B48B55] hover:text-[#144A42] hover:bg-[#F8F6F0]'
+                      : 'px-3.5 py-2 text-[15px] font-semibold text-[#2D3732] hover:text-[#144A42] hover:bg-[#F8F6F0]'
+                  }`}
+                >
+                  {item.isMall && (
+                    <ShoppingBagIcon className="w-4 h-4 text-[#C5A880] shrink-0" />
+                  )}
+                  <span>{item.label}</span>
+                  {item.badge && (
+                    <span className={`absolute -top-1.5 -right-1 text-[9px] font-extrabold px-1.5 py-0.2 shadow-2xs ${
+                      item.isMall ? 'bg-[#E11D48] text-white animate-pulse' : 'bg-[#E11D48] text-white'
+                    }`}>
+                      {item.badge}
+                    </span>
+                  )}
+                </button>
+              );
+            })}
           </nav>
 
           {/* Right Action Buttons */}
@@ -174,11 +197,14 @@ export default function Header({
                         : 'col-span-2 bg-[#144A42] text-white font-extrabold border border-[#C5A880]/70 shadow-xs'
                       : activeTab === item.id
                       ? 'bg-[#144A42] text-white'
+                      : item.isSubService
+                      ? 'bg-[#F8F6F1] text-[#5A6862]'
                       : 'bg-[#F8F6F1] text-[#242A27]'
                   }`}
                 >
                   <span className="flex items-center gap-1.5">
                     {item.isMall && <ShoppingBagIcon className="w-4 h-4 text-[#C5A880]" />}
+                    {item.isSubService && <HeartIcon className={`w-3.5 h-3.5 ${activeTab === item.id ? 'text-white' : 'text-[#84796D]'}`} />}
                     <span>{item.label}</span>
                   </span>
                   {item.badge && (

@@ -1120,17 +1120,25 @@ export default function AdminPage({
                       </span>
                     ) : (
                       NAV_MENU_CONFIG.filter(item => localMenuVisibility[item.id] !== false).map(item => (
-                        <span 
-                          key={item.id}
-                          className="px-2.5 py-1 text-xs font-bold text-[#144A42] bg-white border border-[#DCD6C8] shadow-2xs rounded-xs flex items-center gap-1"
-                        >
-                          <span>{item.label}</span>
-                          {item.badge && (
-                            <span className="text-[9px] bg-[#E11D48] text-white px-1 py-0.2 font-bold">
-                              {item.badge}
-                            </span>
+                        <React.Fragment key={item.id}>
+                          {item.id === 'adoption' && (
+                            <div className="h-3 w-px bg-[#D6CFC1] mx-0.5 shrink-0" aria-hidden="true" />
                           )}
-                        </span>
+                          <span 
+                            className={`px-2 py-1 text-xs flex items-center gap-1 ${
+                              item.id === 'adoption'
+                                ? 'text-[#5C6A64] font-medium'
+                                : 'font-bold text-[#144A42] bg-white border border-[#DCD6C8] shadow-2xs rounded-xs'
+                            }`}
+                          >
+                            <span>{item.label}</span>
+                            {item.badge && (
+                              <span className="text-[9px] bg-[#E11D48] text-white px-1 py-0.2 font-bold">
+                                {item.badge}
+                              </span>
+                            )}
+                          </span>
+                        </React.Fragment>
                       ))
                     )}
                   </nav>

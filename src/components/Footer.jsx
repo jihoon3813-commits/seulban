@@ -25,17 +25,17 @@ export default function Footer({ onOpenAdmin, onNavigate, brandInfo, onOpenPolic
             {(!menuVisibility || menuVisibility.partners !== false) && (
               <button onClick={() => onNavigate('partners')} className="hover:text-white transition">제휴처 찾기</button>
             )}
-            {(!menuVisibility || menuVisibility.farewell !== false) && (
-              <button onClick={() => onNavigate('farewell')} className="hover:text-white transition">장례케어 안내</button>
-            )}
-            {(!menuVisibility || menuVisibility.adoption !== false) && (
-              <button onClick={() => onNavigate('adoption')} className="hover:text-white transition">안심입양 안내</button>
-            )}
             {(!menuVisibility || menuVisibility.travel !== false) && (
               <button onClick={() => onNavigate('travel')} className="hover:text-white transition">반려여행 안내</button>
             )}
+            {(!menuVisibility || menuVisibility.farewell !== false) && (
+              <button onClick={() => onNavigate('farewell')} className="hover:text-white transition">장례케어 안내</button>
+            )}
             {(!menuVisibility || menuVisibility.mall !== false) && (
               <button onClick={() => onNavigate('mall')} className="hover:text-white transition">슬반생몰</button>
+            )}
+            {(!menuVisibility || menuVisibility.adoption !== false) && (
+              <button onClick={() => onNavigate('adoption')} className="hover:text-white transition text-[#8E9B95] hover:text-[#CAD4CF]">새로운 만남(입양)</button>
             )}
           </div>
         </div>
