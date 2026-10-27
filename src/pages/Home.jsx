@@ -200,12 +200,13 @@ export default function Home({
           </p>
         </div>
 
-        {/* Row 1: Featured Card (동물등록) */}
-        <div className="mb-3 sm:mb-5">
+        {/* Row 1: 2 Wide Featured Cards (상단 2개: 동물등록 & 병원·건강) */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-5 mb-3 sm:mb-5">
+          
           {/* Card 1: 동물등록 */}
           <div
             onClick={onOpenApplyModal}
-            className="group relative bg-[#173F35] text-white p-4 sm:p-8 flex items-center justify-between cursor-pointer shadow-xs hover:shadow-xl hover:-translate-y-0.5 transition-all duration-300 border border-[#1E564E] min-h-[110px] sm:min-h-[180px]"
+            className="group relative bg-[#173F35] text-white p-4 sm:p-8 flex items-center justify-between cursor-pointer shadow-xs hover:shadow-xl hover:-translate-y-0.5 transition-all duration-300 border border-[#1E564E] min-h-[110px] sm:min-h-[190px]"
           >
             <div className="flex items-center gap-3.5 sm:gap-6">
               <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-[#245348] flex items-center justify-center flex-shrink-0 text-[#ECBE81] transition-transform group-hover:scale-105">
@@ -222,81 +223,84 @@ export default function Home({
             </div>
             <ArrowRight className="w-4 h-4 text-white/70 group-hover:text-white group-hover:translate-x-1 transition-all flex-shrink-0 ml-2" />
           </div>
-        </div>
 
-        {/* Row 2: 4 Service Cards (병원·건강, 미용생활, 반려여행, 아름다운 이별) */}
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-2.5 sm:gap-5">
-          
-          {/* Card 3: 병원·건강 */}
+          {/* Card 2: 병원·건강 */}
           <div
             onClick={() => onNavigate('partners')}
-            className="group relative bg-[#EBE5DA] p-3.5 sm:p-7 flex flex-col justify-between cursor-pointer shadow-xs hover:shadow-xl hover:-translate-y-0.5 transition-all duration-300 border border-[#DFD8CB] min-h-[120px] sm:min-h-[210px]"
+            className="group relative bg-[#D4C3AC] text-[#2C241B] p-4 sm:p-8 flex items-center justify-between cursor-pointer shadow-xs hover:shadow-xl hover:-translate-y-0.5 transition-all duration-300 border border-[#C7B59D] min-h-[110px] sm:min-h-[190px]"
           >
-            <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-white flex items-center justify-center text-[#144A42] shadow-xs mb-2 sm:mb-6 transition-transform group-hover:scale-105">
-              <StethoscopeIcon className="w-4 h-4 sm:w-5 sm:h-5" />
+            <div className="flex items-center gap-3.5 sm:gap-6">
+              <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-white flex items-center justify-center flex-shrink-0 text-[#144A42] shadow-xs transition-transform group-hover:scale-105">
+                <StethoscopeIcon className="w-5 h-5 sm:w-7 sm:h-7" />
+              </div>
+              <div>
+                <h3 className="text-base sm:text-2xl font-bold tracking-tight text-[#2C241B]">
+                  병원·건강
+                </h3>
+                <p className="text-[11px] sm:text-sm text-[#5C5042] leading-relaxed mt-0.5 sm:mt-1.5">
+                  가까운 제휴 병원과 안심 건강정보
+                </p>
+              </div>
             </div>
-            <div className="space-y-0.5">
-              <h4 className="text-sm sm:text-lg font-bold tracking-tight text-[#1F2C27]">
-                병원·건강
-              </h4>
-              <p className="text-[10px] sm:text-xs text-[#6A7871] leading-tight">
-                가까운 병원과 건강정보
-              </p>
-            </div>
-            <ArrowRight className="absolute bottom-3.5 right-3.5 sm:bottom-6 sm:right-6 w-3.5 h-3.5 sm:w-4 sm:h-4 text-[#1F2C27]/50 group-hover:text-[#1F2C27] group-hover:translate-x-1 transition-all" />
+            <ArrowRight className="w-4 h-4 text-[#2C241B]/70 group-hover:text-[#2C241B] group-hover:translate-x-1 transition-all flex-shrink-0 ml-2" />
           </div>
 
-          {/* Card 4: 미용생활 */}
+        </div>
+
+        {/* Row 2: 3 Service Cards (하단 3개: 미용생활, 반려여행, 아름다운 이별) */}
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5 sm:gap-5">
+          
+          {/* Card 3: 미용생활 */}
           <div
             onClick={() => onNavigate('partners')}
-            className="group relative bg-[#EBE5DA] p-3.5 sm:p-7 flex flex-col justify-between cursor-pointer shadow-xs hover:shadow-xl hover:-translate-y-0.5 transition-all duration-300 border border-[#DFD8CB] min-h-[120px] sm:min-h-[210px]"
+            className="group relative bg-[#EBE5DA] p-4 sm:p-7 flex flex-col justify-between cursor-pointer shadow-xs hover:shadow-xl hover:-translate-y-0.5 transition-all duration-300 border border-[#DFD8CB] min-h-[130px] sm:min-h-[190px]"
           >
-            <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-white flex items-center justify-center text-[#144A42] shadow-xs mb-2 sm:mb-6 transition-transform group-hover:scale-105">
+            <div className="w-9 h-9 sm:w-11 sm:h-11 rounded-full bg-white flex items-center justify-center text-[#144A42] shadow-xs mb-3 sm:mb-6 transition-transform group-hover:scale-105">
               <ScissorsIcon className="w-4 h-4 sm:w-5 sm:h-5" />
             </div>
-            <div className="space-y-0.5">
+            <div className="space-y-0.5 sm:space-y-1">
               <h4 className="text-sm sm:text-lg font-bold tracking-tight text-[#1F2C27]">
                 미용생활
               </h4>
-              <p className="text-[10px] sm:text-xs text-[#6A7871] leading-tight">
+              <p className="text-[11px] sm:text-xs text-[#6A7871] leading-tight">
                 검증된 미용실 제휴처
               </p>
             </div>
             <ArrowRight className="absolute bottom-3.5 right-3.5 sm:bottom-6 sm:right-6 w-3.5 h-3.5 sm:w-4 sm:h-4 text-[#1F2C27]/50 group-hover:text-[#1F2C27] group-hover:translate-x-1 transition-all" />
           </div>
 
-          {/* Card 5: 반려여행 */}
+          {/* Card 4: 반려여행 */}
           <div
             onClick={() => onNavigate('travel')}
-            className="group relative bg-[#EBE5DA] p-3.5 sm:p-7 flex flex-col justify-between cursor-pointer shadow-xs hover:shadow-xl hover:-translate-y-0.5 transition-all duration-300 border border-[#DFD8CB] min-h-[120px] sm:min-h-[210px]"
+            className="group relative bg-[#EBE5DA] p-4 sm:p-7 flex flex-col justify-between cursor-pointer shadow-xs hover:shadow-xl hover:-translate-y-0.5 transition-all duration-300 border border-[#DFD8CB] min-h-[130px] sm:min-h-[190px]"
           >
-            <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-white flex items-center justify-center text-[#144A42] shadow-xs mb-2 sm:mb-6 transition-transform group-hover:scale-105">
+            <div className="w-9 h-9 sm:w-11 sm:h-11 rounded-full bg-white flex items-center justify-center text-[#144A42] shadow-xs mb-3 sm:mb-6 transition-transform group-hover:scale-105">
               <PlaneIcon className="w-4 h-4 sm:w-5 sm:h-5" />
             </div>
-            <div className="space-y-0.5">
+            <div className="space-y-0.5 sm:space-y-1">
               <h4 className="text-sm sm:text-lg font-bold tracking-tight text-[#1F2C27]">
                 반려여행
               </h4>
-              <p className="text-[10px] sm:text-xs text-[#6A7871] leading-tight">
+              <p className="text-[11px] sm:text-xs text-[#6A7871] leading-tight">
                 함께 머무는 동반 숙소
               </p>
             </div>
             <ArrowRight className="absolute bottom-3.5 right-3.5 sm:bottom-6 sm:right-6 w-3.5 h-3.5 sm:w-4 sm:h-4 text-[#1F2C27]/50 group-hover:text-[#1F2C27] group-hover:translate-x-1 transition-all" />
           </div>
 
-          {/* Card 6: 아름다운 이별 */}
+          {/* Card 5: 아름다운 이별 */}
           <div
             onClick={() => onNavigate('farewell')}
-            className="group relative bg-[#EBE5DA] p-3.5 sm:p-7 flex flex-col justify-between cursor-pointer shadow-xs hover:shadow-xl hover:-translate-y-0.5 transition-all duration-300 border border-[#DFD8CB] min-h-[120px] sm:min-h-[210px]"
+            className="group relative bg-[#EBE5DA] p-4 sm:p-7 flex flex-col justify-between cursor-pointer shadow-xs hover:shadow-xl hover:-translate-y-0.5 transition-all duration-300 border border-[#DFD8CB] min-h-[130px] sm:min-h-[190px]"
           >
-            <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-white flex items-center justify-center text-[#144A42] shadow-xs mb-2 sm:mb-6 transition-transform group-hover:scale-105">
+            <div className="w-9 h-9 sm:w-11 sm:h-11 rounded-full bg-white flex items-center justify-center text-[#144A42] shadow-xs mb-3 sm:mb-6 transition-transform group-hover:scale-105">
               <HeartIcon className="w-4 h-4 sm:w-5 sm:h-5" />
             </div>
-            <div className="space-y-0.5">
+            <div className="space-y-0.5 sm:space-y-1">
               <h4 className="text-sm sm:text-lg font-bold tracking-tight text-[#1F2C27]">
                 아름다운 이별
               </h4>
-              <p className="text-[10px] sm:text-xs text-[#6A7871] leading-tight">
+              <p className="text-[11px] sm:text-xs text-[#6A7871] leading-tight">
                 마지막 곁을 지키는 케어
               </p>
             </div>
