@@ -196,17 +196,16 @@ export default function Home({
             <span className="text-[#B48B55]">슬반생 하나로</span>
           </h2>
           <p className="text-[11px] sm:text-sm text-[#6C7A74]">
-            반려동물의 생애주기 전반을 아우르는 슬반생만의 6대 핵심 서비스
+            반려동물의 생애주기 전반을 아우르는 슬반생만의 5대 핵심 서비스
           </p>
         </div>
 
-        {/* Row 1: 2 Wide Featured Cards (동물등록 & 새로운 만남) */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-5 mb-3 sm:mb-5">
-          
+        {/* Row 1: Featured Card (동물등록) */}
+        <div className="mb-3 sm:mb-5">
           {/* Card 1: 동물등록 */}
           <div
             onClick={onOpenApplyModal}
-            className="group relative bg-[#173F35] text-white p-4 sm:p-8 flex items-center justify-between cursor-pointer shadow-xs hover:shadow-xl hover:-translate-y-0.5 transition-all duration-300 border border-[#1E564E] min-h-[110px] sm:min-h-[210px]"
+            className="group relative bg-[#173F35] text-white p-4 sm:p-8 flex items-center justify-between cursor-pointer shadow-xs hover:shadow-xl hover:-translate-y-0.5 transition-all duration-300 border border-[#1E564E] min-h-[110px] sm:min-h-[180px]"
           >
             <div className="flex items-center gap-3.5 sm:gap-6">
               <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-[#245348] flex items-center justify-center flex-shrink-0 text-[#ECBE81] transition-transform group-hover:scale-105">
@@ -223,28 +222,6 @@ export default function Home({
             </div>
             <ArrowRight className="w-4 h-4 text-white/70 group-hover:text-white group-hover:translate-x-1 transition-all flex-shrink-0 ml-2" />
           </div>
-
-          {/* Card 2: 새로운 만남 */}
-          <div
-            onClick={() => onNavigate('adoption')}
-            className="group relative bg-[#D4C3AC] text-[#2C241B] p-4 sm:p-8 flex items-center justify-between cursor-pointer shadow-xs hover:shadow-xl hover:-translate-y-0.5 transition-all duration-300 border border-[#C7B59D] min-h-[110px] sm:min-h-[210px]"
-          >
-            <div className="flex items-center gap-3.5 sm:gap-6">
-              <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-white flex items-center justify-center flex-shrink-0 text-[#144A42] shadow-xs transition-transform group-hover:scale-105">
-                <HandHeartIcon className="w-5 h-5 sm:w-7 sm:h-7" />
-              </div>
-              <div>
-                <h3 className="text-base sm:text-2xl font-bold tracking-tight text-[#2C241B]">
-                  새로운 만남
-                </h3>
-                <p className="text-[11px] sm:text-sm text-[#5C5042] leading-relaxed mt-0.5 sm:mt-1.5">
-                  책임 있는 입양과 가족의 시작
-                </p>
-              </div>
-            </div>
-            <ArrowRight className="w-4 h-4 text-[#2C241B]/70 group-hover:text-[#2C241B] group-hover:translate-x-1 transition-all flex-shrink-0 ml-2" />
-          </div>
-
         </div>
 
         {/* Row 2: 4 Service Cards (병원·건강, 미용생활, 반려여행, 아름다운 이별) */}

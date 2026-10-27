@@ -241,7 +241,7 @@ export default function AdminPage({
     price: '150,000원~',
     features: '천연잔디 운동장, 수영장, 바베큐',
     memberBenefit: '주중 20% 특별 우대',
-    phone: '033-000-0000',
+    phone: '070-4186-1500',
     imageUrl: '',
   });
 

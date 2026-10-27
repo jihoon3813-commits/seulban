@@ -286,7 +286,7 @@ export const PARTNER_LIST = [
     desc: "속초 시내에서 10분 거리에 위치하여 자연과 문화가 조화를 이루며 강원도 여행의 최고 지역",
     rating: 4.9,
     reviews: 128,
-    phone: "033-635-0000",
+    phone: "070-4186-1500",
     color: "bg-[#E0EFE6] text-[#2A5443]",
     icon: "hotel",
     imageUrl: "https://images.unsplash.com/photo-1601758228041-f3b2795255f1?w=700&auto=format&fit=crop&q=80",

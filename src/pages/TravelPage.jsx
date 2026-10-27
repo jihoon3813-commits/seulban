@@ -101,13 +101,19 @@ export default function TravelPage({ travelList = TRAVEL_LIST }) {
               </div>
 
               <div className="p-4 pt-0 sm:p-6 sm:pt-0">
-                <a
-                  href={`tel:${item.phone}`}
-                  className="w-full py-2.5 sm:py-3.5 bg-[#144A42] text-white text-xs font-bold hover:bg-[#0D3832] transition flex items-center justify-center gap-1.5 shadow-xs"
-                >
-                  <PhoneIcon className="w-3 h-3 sm:w-3.5 sm:h-3.5" />
-                  <span>숙소 문의 및 예약 ({item.phone})</span>
-                </a>
+                {(() => {
+                  const isResort = item.type === '리조트' || item.name?.includes('리조트');
+                  const phoneNum = isResort ? '070-4186-1500' : (item.phone || '070-4186-1500');
+                  return (
+                    <a
+                      href={`tel:${phoneNum}`}
+                      className="w-full py-2.5 sm:py-3.5 bg-[#144A42] text-white text-xs font-bold hover:bg-[#0D3832] transition flex items-center justify-center gap-1.5 shadow-xs"
+                    >
+                      <PhoneIcon className="w-3 h-3 sm:w-3.5 sm:h-3.5" />
+                      <span>{isResort ? `리조트 예약 문의 (${phoneNum})` : `숙소 문의 및 예약 (${phoneNum})`}</span>
+                    </a>
+                  );
+                })()}
               </div>
             </div>
           ))}
